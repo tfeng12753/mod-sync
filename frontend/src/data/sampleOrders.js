@@ -1,33 +1,29 @@
-// Scenario presets for the demo control panel.
-export const SAMPLES = {
-  messy: {
-    label: 'Happy path: messy order',
-    channel: 'DoorDash',
-    name: 'Maria',
-    itemId: 'classic_burger',
-    rawNote: 'No onion pls, sauce on the side, sub fries→side salad, extra pickles',
-    customerPrefers: ['garlic_mayo'],
+// Scenario presets for the demo control panel. Each one is sent to POST /api/evaluate.
+// Dish ids come from the API menu (fixtures/menu.json).
+export const SAMPLES = [
+  {
+    label: 'Happy path: simple mods',
+    dishId: 'chicken_bowl', qty: 1, channel: 'doordash', customerName: 'Maria',
+    text: 'no pickled onion, sauce on the side, extra avocado',
   },
-  eggAllergy: {
-    label: 'Sad path: egg allergy',
-    channel: 'Wolt',
-    name: 'Sam',
-    itemId: 'classic_burger',
-    rawNote: 'allergic to egg, no tomato',
-    customerPrefers: ['garlic_mayo'],
+  {
+    label: 'Swap: pick a replacement',
+    dishId: 'chicken_bowl', qty: 1, channel: 'ubereats', customerName: 'Ken',
+    text: 'can you swap the chicken',
   },
-  ambiguous: {
-    label: 'Sad path: ambiguous note',
-    channel: 'Walk-in',
-    name: 'Lee',
-    itemId: 'chicken_sandwich',
-    rawNote: 'make it like last time, no pickles',
+  {
+    label: 'Allergy: peanut (staff review)',
+    dishId: 'satay_noodles', qty: 1, channel: 'doordash', customerName: 'Sam',
+    text: 'satay noodles but no peanuts at all, I have a severe peanut allergy',
   },
-  sesame: {
-    label: 'Sad path: sesame allergy',
-    channel: 'DoorDash',
-    name: 'Priya',
-    itemId: 'veggie_burger',
-    rawNote: 'sesame allergy, no avocado',
+  {
+    label: 'Diet: vegetarian (staff review)',
+    dishId: 'chicken_bowl', qty: 1, channel: 'walk-in', customerName: 'Priya',
+    text: "I'm vegetarian",
   },
-}
+  {
+    label: 'Ambiguous: "like last time"',
+    dishId: 'falafel_wrap', qty: 1, channel: 'phone', customerName: 'Lee',
+    text: 'make it like last time',
+  },
+]

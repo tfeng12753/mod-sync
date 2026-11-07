@@ -1,5 +1,4 @@
-import { describeMod } from '../logic/order.js'
-
-export default function ModChip({ mod }) {
-  return <span className={`chip chip-${mod.type}`}>{describeMod(mod)}</span>
+// chip = {type: 'remove' | 'add' | 'swap' | 'side', text}
+export default function ModChip({ chip }) {
+  return <span className={`chip chip-${chip.type}`}>{chip.text}</span>
 }
