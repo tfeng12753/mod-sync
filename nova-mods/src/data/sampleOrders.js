@@ -23,6 +23,20 @@ export const SAMPLES = {
     itemId: 'chicken_sandwich',
     rawNote: 'make it like last time, no pickles',
   },
+  noOnion: {
+    label: 'Customer: "no onion"',
+    channel: 'DoorDash',
+    name: 'Kai',
+    itemId: 'classic_burger',
+    rawNote: 'no onion please',
+  },
+  swapRequest: {
+    label: 'Customer asks for swaps',
+    channel: 'DoorDash',
+    name: 'Jo',
+    itemId: 'classic_burger',
+    rawNote: 'swap the beef patty for the veggie patty, sub fries for sweet potato fries',
+  },
   sesame: {
     label: 'Sad path: sesame allergy',
     channel: 'DoorDash',

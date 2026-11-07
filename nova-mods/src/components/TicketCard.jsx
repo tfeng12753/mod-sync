@@ -1,15 +1,16 @@
 import ModChip from './ModChip.jsx'
 import SubstitutionCard from './SubstitutionCard.jsx'
-import { blockers, itemLabel, packChecklist, finalIngredients, ingName } from '../logic/order.js'
+import { blockers, itemLabel, packChecklist, finalIngredients, ingName, requestedSubFor } from '../logic/order.js'
 
 export default function TicketCard({ order, now, dispatch }) {
   const checklist = packChecklist(order)
   const stops = blockers(order)
   const done = order.status === 'handed_off'
-  const needsAttention = order.needsReview || order.subs.some((s) => s.status === 'pending')
+  const removed = order.status === 'removed'
+  const needsAttention = order.needsReview || order.subs.some((s) => ['pending', 'staff_review'].includes(s.status))
 
   return (
-    <article className={`ticket ${done ? 'done' : ''} ${needsAttention ? 'attention' : ''}`}>
+    <article className={`ticket ${done ? 'done' : ''} ${removed ? 'removed' : ''} ${needsAttention && !removed ? 'attention' : ''}`}>
       <div className="row between">
         <h3>#{order.id} · {itemLabel(order)}</h3>
         <span className={`channel ch-${order.channel.toLowerCase().replace(/[^a-z]/g, '')}`}>{order.channel}</span>
@@ -22,7 +23,12 @@ export default function TicketCard({ order, now, dispatch }) {
         <div className="allergy-banner">⚠ ALLERGY: {order.allergens.map((a) => a.name.toUpperCase()).join(', ')}</div>
       )}
 
-      {order.mods.length > 0 && <div className="chips">{order.mods.map((m, i) => <ModChip key={i} mod={m} />)}</div>}
+      {order.mods.length > 0 && <div className="chips">{order.mods.map((m, i) => {
+          // cross out a requested swap the kitchen has changed or undone
+          const sub = requestedSubFor(order, m)
+          const struck = !!sub && (sub.status === 'kept_original' || (m.type === 'swap' && ['approved', 'fallback'].includes(sub.status) && sub.chosenId !== m.to))
+          return <ModChip key={i} mod={m} struck={struck} />
+        })}</div>}
 
       {order.needsReview && (
         <div className="review">
@@ -33,10 +39,12 @@ export default function TicketCard({ order, now, dispatch }) {
       )}
 
       {order.subs.map((s) => (
-        <SubstitutionCard key={s.missing} sub={s} order={order} now={now} audience="staff" dispatch={dispatch} />
+        <SubstitutionCard key={s.id} sub={s} order={order} now={now} audience="staff" dispatch={dispatch} />
       ))}
 
-      {!done && (
+      {removed && <div className="removed-banner">✕ Item removed from the order (customer approved). Refund issued. Nothing to make.</div>}
+
+      {!done && !removed && (
         <>
           <details>
             <summary>What goes in the food</summary>

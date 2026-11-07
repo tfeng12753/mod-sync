@@ -9,7 +9,10 @@ import SubstitutionCard from './SubstitutionCard.jsx'
 const ALLERGENS = ['sesame', 'egg', 'dairy', 'gluten', 'soy', 'peanut']
 
 function statusOf(order) {
+  if (order.status === 'removed') return ['Item removed, refund issued', 'warn']
+  if (order.subs.some((s) => s.status === 'no_reply')) return ['We will call you', 'warn']
   if (order.status === 'handed_off') return ['On its way 🛵', 'ok']
+  if (order.subs.some((s) => s.status === 'staff_review')) return ['Kitchen is checking a swap', 'info']
   if (order.subs.some((s) => s.status === 'pending')) return ['Needs your OK', 'warn']
   if (order.needsReview) return ['Restaurant is double-checking your note', 'warn']
   if (blockers(order).length === 0) return ['Ready for pickup', 'ok']
@@ -80,7 +83,7 @@ export default function CustomerView() {
         return (
           <div key={o.id} className="my-order">
             <div className="row between"><b>#{o.id} · {itemLabel(o)}</b><span className={`status ${tone}`}>{label}</span></div>
-            {o.subs.map((s) => <SubstitutionCard key={s.missing} sub={s} order={o} now={state.now} audience="customer" dispatch={dispatch} />)}
+            {o.subs.map((s) => <SubstitutionCard key={s.id} sub={s} order={o} now={state.now} audience="customer" dispatch={dispatch} />)}
           </div>
         )
       })}

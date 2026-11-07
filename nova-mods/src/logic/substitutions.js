@@ -14,7 +14,7 @@ function jaccard(a, b) {
  * Rank safe replacements for a missing ingredient.
  * Returns { options: [...ranked safe candidates], blocked: [{id, name, reason}] }
  */
-export function rankSubstitutes(missingId, order, stock) {
+export function rankSubstitutes(missingId, order, stock, exclude = []) {
   const missing = INGREDIENTS[missingId]
   const allergens = (order.allergens || []).map((a) => a.name)
   const prefers = order.customerPrefers || []
@@ -24,7 +24,7 @@ export function rankSubstitutes(missingId, order, stock) {
   const blocked = []
 
   const candidates = Object.values(INGREDIENTS).filter(
-    (c) => c.id !== missingId && c.category === missing.category,
+    (c) => c.id !== missingId && c.category === missing.category && !exclude.includes(c.id),
   )
 
   for (const c of candidates) {
