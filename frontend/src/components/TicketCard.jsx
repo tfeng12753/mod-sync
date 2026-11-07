@@ -147,6 +147,12 @@ export default function TicketCard({ order, dish, now, dispatch, packed = {}, ha
       </div>
 
       {order.original_text && <blockquote>“{order.original_text}”</blockquote>}
+      {e.clarifications?.length > 0 && (
+        <details>
+          <summary>Customer updates</summary>
+          <ol>{e.clarifications.map((item, i) => <li key={i}>{item.answer}</li>)}</ol>
+        </details>
+      )}
 
       {restrictions.length > 0 && (
         <div className="allergy-banner">⚠ {restrictions.map((r) => restrictionText(r).toUpperCase()).join(' · ')}</div>

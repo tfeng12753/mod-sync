@@ -1,6 +1,7 @@
 """One test per row of the edge-case table in backend/inventory/plan.md, plus basics."""
 
 import unittest
+from dataclasses import replace
 
 from .helpers import codes, fresh_inventory
 
@@ -52,10 +53,32 @@ class BasicCheckTests(unittest.TestCase):
         self.assertEqual(r.requirements["tofu"], 150)
         self.assertIn("SUB Crispy tofu for Grilled chicken", r.kitchen_instructions)
 
-    def test_substitute_price_delta(self):
+    def test_cheaper_substitute_does_not_discount_menu_price(self):
         r = self.inv.check("chicken_bowl", [{"op": "substitute", "ingredient": "grilled_chicken", "with": "roasted_mushrooms"}])
         self.assertEqual(r.status, "ok")
-        self.assertEqual(r.price_delta_cents, -100)
+        self.assertEqual(r.price_delta_cents, 0)
+        self.assertLess(r.cost_delta_cents, 0)  # ingredient cost still reflects the actual recipe
+
+    def test_cheaper_swap_does_not_offset_extra_charges(self):
+        r = self.inv.check("chicken_bowl", [
+            {"op": "substitute", "ingredient": "chicken", "with": "roasted_mushrooms"},
+            {"op": "add", "ingredient": "avocado", "qty": 2},
+            {"op": "remove", "ingredient": "pickled_onion"},
+        ], qty=2)
+        self.assertTrue(r.ok)
+        self.assertEqual(r.price_delta_cents, 800)  # two $2 extras on each of two dishes
+
+    def test_premium_substitution_keeps_its_upcharge(self):
+        dish = self.inv.catalog.dishes["chicken_bowl"]
+        self.inv.catalog.dishes[dish.id] = replace(dish, substitutions=tuple(
+            replace(swap, price_delta_cents=150) if swap.with_ == "crispy_tofu" else swap
+            for swap in dish.substitutions
+        ))
+        r = self.inv.check("chicken_bowl", [
+            {"op": "substitute", "ingredient": "chicken", "with": "crispy_tofu"},
+        ], qty=2)
+        self.assertTrue(r.ok)
+        self.assertEqual(r.price_delta_cents, 300)
 
     def test_on_side_whole_sauce(self):
         r = self.inv.check("chicken_bowl", [{"op": "on_side", "ingredient": "garlic_sauce"}])

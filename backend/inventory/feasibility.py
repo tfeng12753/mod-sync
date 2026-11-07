@@ -242,7 +242,7 @@ class _Ctx:
             part = self.parts[cid] = Part(cid, Fraction(0))
         part.servings += op.qty
         part.extra += op.qty
-        self.price_delta += extra.price_cents * op.qty
+        self.price_delta += max(0, extra.price_cents) * op.qty
         self.instructions.append(f"EXTRA {self.name(cid)} x{op.qty}")
 
     def _op_substitute(self, op: Op) -> None:
@@ -282,7 +282,8 @@ class _Ctx:
             else:
                 rebuilt[k] = p
         self.parts = rebuilt
-        self.price_delta += sub.price_delta_cents
+        # The listed dish price is the minimum. A cheaper swap cannot discount other extras.
+        self.price_delta += max(0, sub.price_delta_cents)
         self.instructions.append(f"SUB {self.name(sub.with_)} for {self.name(cid)}")
 
     def _op_on_side(self, op: Op) -> None:

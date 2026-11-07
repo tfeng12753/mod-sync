@@ -31,6 +31,18 @@ Integration status and decisions: [docs/integration-plan.md](docs/integration-pl
 Demo-control orders are linked to **Customer app → Your orders** in the same browser session;
 **Review options** opens the original ticket for customer acceptance.
 
+Customer app submissions always use the DoorDash channel and have no channel selector.
+Restaurant tickets retain their original channel tags, including other-channel demo orders.
+
+The listed menu price is the minimum per dish. Removals and cheaper swaps give no discount;
+each extra or premium swap adds its full nonnegative upcharge. Negative configured modifier
+prices are ignored for customer quotes, without changing recipe-cost inputs used for ranking.
+
+Clarification replies retain the full history and rerun parser → inventory → engine. A reply may
+replace an unresolved change; unrelated changes and all prior allergy/diet concerns are retained.
+After three unsuccessful replies the API returns `unavailable` with `clarification_exhausted`,
+no order/hold, and directions to start again or contact staff. A valid third reply can still succeed.
+
 Kitchen checklists and staff option instructions show only actual order changes (remove, extra,
 swap, light, on the side). Allergy/diet banners remain visible; routine preparation and bagging
 reminders are omitted from these lists.

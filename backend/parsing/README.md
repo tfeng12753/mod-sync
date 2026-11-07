@@ -84,6 +84,14 @@ model call.
   rejects two changes to the same item as unsafe, so the fixture's "conflict" case (which passes both
   through) can't be produced by this parser; an unresolved contradiction → `needs_clarification`.
 
+- **Follow-ups:** keep the original text and every clarification answer. In offline mode a new
+  command replaces unresolved unknown/unapproved clauses; a bare known ingredient fills the
+  original ambiguous target or replacement. Unrelated changes remain. "Also" adds to the request
+  without discarding an unresolved item; "keep the original" withdraws that unresolved change.
+  Original and earlier-answer allergy/diet concerns still pass through the deterministic backstop.
+  OpenRouter receives the same complete history with explicit revision instructions. The API
+  limits unsuccessful recovery to three replies, then returns a clear unavailable outcome.
+
 ## Safety
 
 - The model must return strict JSON (`OUTPUT_SCHEMA`); `validate_result` rejects invented cart items or

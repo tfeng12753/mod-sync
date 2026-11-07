@@ -19,6 +19,21 @@ Demo-control orders also appear under **Customer app → Your orders** in the sa
 **Review options** restores the ticket's dish, quantity, request, and customer details; accepting
 an option updates that same kitchen ticket.
 
+The customer form has no channel selector and always submits `channel: "doordash"`.
+Restaurant tickets continue to show the order's channel, including other-channel demo orders.
+
+Restaurant pricing: the menu price is the minimum per dish. Negative swap prices produce no
+discount and cannot offset extras or premium swaps. Inventory, engine offers, menu exports, and
+mock quotes use nonnegative modifier prices; recipe costs remain unchanged for ranking.
+
+Clarification recovery: the UI sends the original request plus all question/answer replies to the
+full evaluation pipeline. Replies can revise an unresolved unknown/unapproved change, with unrelated
+changes and safety history retained. Both clarification and unavailable results allow another reply.
+Three unsuccessful replies end with `unavailable` / `clarification_exhausted`, no ticket or stock hold,
+and a start-again/contact-staff message. A valid third reply proceeds normally. Parser and full HTTP
+regressions cover caviar → lettuce (unapproved extra) → avocado, bare replacement answers,
+contradictions, repeated failures, withdrawal, and allergy preservation.
+
 Kitchen checklists and staff option instruction lists display only recipe changes. Allergy/diet
 labels remain on tickets, while routine hygiene and packaging reminders are omitted from the lists.
 Only recipe-change checks gate the existing handoff action.

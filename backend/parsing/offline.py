@@ -98,6 +98,62 @@ class _Resolver:
 
 
 def offline_parse(inv, request: ParseRequest, dish_id: str) -> ParseResult:
+    """Resolve follow-ups before parsing; the adapter still validates the entire original history."""
+    if not request.clarifications:
+        return _parse_text(inv, request, dish_id)
+
+    def parse(text):
+        return _parse_text(inv, request.model_copy(update={"instructions": text, "clarifications": []}), dish_id)
+
+    def unresolved(result):
+        if result.unknown_items or result.status == "needs_clarification":
+            return True
+        # Known catalog items can still be unapproved extras/swaps on this particular dish.
+        # This read only identifies the clause to revise; the complete order is checked again later.
+        from .adapter import to_parser_output
+        ops = to_parser_output(inv, request, result, dish_id, 1)["ops"]
+        check = inv.check(dish_id, ops)
+        return any(reason.status not in ("info", "out_of_stock") for reason in check.reasons)
+
+    clauses = [part.strip() for part in _SPLIT.split(request.instructions) if part.strip()]
+    for clarification in request.clarifications:
+        answer = clarification.answer.strip()
+        if not answer:
+            continue
+        pending = {i: parse(clause) for i, clause in enumerate(clauses)}
+        pending = {i: result for i, result in pending.items() if unresolved(result)}
+        response = parse(answer)
+        cancel = " ".join(_words(answer)) in {
+            "never mind", "nevermind", "no changes", "keep it as is", "keep the original",
+            "keep original", "cancel that change", "forget that", "skip that", "nothing",
+        }
+        # A follow-up command revises the unresolved clause, while "also" keeps it pending.
+        command = bool(response.changes or response.unknown_items or any(pattern.search(answer.lower())
+                       for pattern in (_SUB_SWAP, _SUB_INSTEAD, _SUB_BARE, _ON_SIDE, _LESS, _REMOVE, _ADD)))
+        if pending and re.search(r"\b(?:also|in addition)\b", answer, re.I):
+            clauses.append(answer)
+        elif pending and (cancel or command):
+            clauses = [clause for i, clause in enumerate(clauses) if i not in pending]
+            if not cancel:
+                clauses.append(f"actually {answer}")
+        elif pending and len(pending) == 1:
+            # A bare ingredient answers "what instead?" or "which sauce?" in the original operation.
+            index, result = next(iter(pending.items()))
+            targets = [item.word for item in result.unknown_items]
+            targets += [match.group(1) for question in result.questions
+                        if (match := re.search(r"Which do you mean by '([^']+)'", question))]
+            if len(targets) == 1 and _Resolver(inv, dish_id).resolve(answer)[0] == "id":
+                clauses[index] = re.sub(rf"\b{re.escape(targets[0])}\b", lambda _: answer,
+                                        clauses[index], flags=re.I)
+            else:
+                clauses.append(answer)
+        else:
+            clauses.append(f"actually {answer}" if command else answer)
+
+    return parse(", ".join(clauses) or "no changes")
+
+
+def _parse_text(inv, request: ParseRequest, dish_id: str) -> ParseResult:
     """Rule-based ``ParseResult`` (not yet validated; the adapter runs ``validate_result``)."""
     cart_id = request.cart[0].cart_item_id
     recipe = request.cart[0].ingredients
@@ -117,6 +173,7 @@ def offline_parse(inv, request: ParseRequest, dish_id: str) -> ParseResult:
         if same and correction:
             for e in same:
                 entries.remove(e)
+            conflicts.discard(key)
         elif same:
             if all(e["op"] == entry["op"] for e in same):
                 return
@@ -142,7 +199,7 @@ def offline_parse(inv, request: ParseRequest, dish_id: str) -> ParseResult:
     for text in texts:
         for raw in _SPLIT.split(text.lower()):
             clause = " ".join(_words(raw))
-            if not clause:
+            if not clause or clause == "no changes":
                 continue
             correction = clause.startswith("actually") or " actually " in f" {clause} "
             clause = re.sub(r"\bactually\b", "", clause).strip()
@@ -185,7 +242,8 @@ def offline_parse(inv, request: ParseRequest, dish_id: str) -> ParseResult:
         questions.append(f"You asked for different things for {label}; which one did you mean?")
 
     has_safety = bool(dietary_review_categories(texts) or keyword_restrictions(texts, request.vocabulary))
-    if not entries and not questions and not has_safety:
+    unchanged = " ".join(_words(request.instructions)) == "no changes"
+    if not entries and not questions and not has_safety and not unchanged:
         questions.append("Sorry, we couldn't work out the change you'd like. Could you rephrase it "
                          "(for example 'no avocado' or 'swap the chicken for tofu')?")
 

@@ -349,7 +349,7 @@ def _plan_option(inv, evaluation, index: int, exclude: list[str], diets: list[st
     price = ref = None
     if swaps:
         subs = {(s.replace, s.with_): s for s in dish.substitutions}
-        price = sum(subs[(c["replace"], c["with"])].price_delta_cents for c in swaps)
+        price = sum(max(0, subs[(c["replace"], c["with"])].price_delta_cents) for c in swaps)
         ref = ";".join(f"catalog:{dish.id}:{c['replace']}->{c['with']}" for c in swaps)
 
     still_has_target = any(_contains(inv, item, target) for item in final)

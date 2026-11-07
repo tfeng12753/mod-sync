@@ -164,6 +164,11 @@ Return strict JSON according to the provided schema.
   staff must resolve them before the order proceeds.
 - When clarification history is supplied, reinterpret the ORIGINAL instructions
   plus the answers. Output the FULL FINAL list of changes, not merely new changes.
+  Process answers in order. A revised request replaces the unresolved change it answers;
+  do not keep an earlier unavailable ingredient after the customer replaces or withdraws it.
+  A complete new command such as "add lettuce instead" replaces the unresolved swap,
+  while a bare ingredient such as "tofu" supplies the replacement for that swap.
+  Preserve unrelated changes and every allergy/diet concern from the full conversation.
 - Never silently discard a requested modification. A request that cannot be
   represented must be flagged for clarification or staff review.
 - Do not output the same (cart_item_id, ingredient_id) more than once. Consolidate

@@ -2,6 +2,7 @@
 
 import asyncio
 import unittest
+from dataclasses import replace
 from datetime import timedelta
 
 from backend.engine import ForecastRequest, decision_is_current
@@ -119,7 +120,7 @@ class MappingTests(unittest.TestCase):
         self.assertEqual(tofu.portion_requirements, {"tofu": 150, "cornstarch": 10, "oil": 10})
         self.assertTrue(tofu.removed_requirements_verified)
         self.assertEqual((tofu.portion_quantity, tofu.portion_unit), (150, "g"))
-        self.assertEqual(mush.menu_price_change_cents, -100)
+        self.assertEqual(mush.menu_price_change_cents, 0)
         self.assertEqual(mush.menu_price_reference, "catalog:chicken_bowl:grilled_chicken->roasted_mushrooms")
         candidates = req.evaluation.candidates
         self.assertEqual([c.similarity for c in candidates], [0.8, 0.65])
@@ -213,7 +214,7 @@ class DemoScenarioTests(unittest.TestCase):
         self.assertEqual(changes_of(ev, best), [("grilled_chicken", "roasted_mushrooms")])
         self.assertEqual(best.route, "customer")
         self.assertGreaterEqual(best.score, 0.75)
-        self.assertEqual(best.price_change_cents, -100)
+        self.assertEqual(best.price_change_cents, 0)
         [tofu] = r.unavailable
         self.assertEqual(tofu["option_index"], 0)
         self.assertTrue(any("below 0.75" in x for x in tofu["reasons"]))
@@ -255,10 +256,24 @@ class DemoScenarioTests(unittest.TestCase):
         self.assertEqual(r.expires_at, DEMO_EVALUATION_TIME + timedelta(minutes=5))
         self.assertFalse(decision_is_current(decision, DEMO_EVALUATION_TIME + timedelta(minutes=5)))
 
-    def test_qty_scales_prices_once(self):
+    def test_multiple_dishes_do_not_gain_a_swap_discount(self):
         _, r = route(self.inv, request("chicken_bowl", SWAP_CHICKEN, qty=2))
-        self.assertEqual(r.choices[0].price_change_cents, -200)
-        self.assertEqual(r.raw[0]["customer_options"][0]["price_change_cents"], -200)
+        self.assertEqual(r.choices[0].price_change_cents, 0)
+        self.assertEqual(r.raw[0]["customer_options"][0]["price_change_cents"], 0)
+
+    def test_suggested_swap_keeps_full_extra_price_across_dishes(self):
+        self.inv.set_on_hand("avocado", 5000, "plenty of reserve for pricing regression")
+        dish = self.inv.catalog.dishes["chicken_bowl"]
+        # Keep this pricing regression eligible despite the extra's added ingredient cost.
+        self.inv.catalog.dishes[dish.id] = replace(dish, substitutions=tuple(
+            replace(swap, similarity=0.8) if swap.with_ == "roasted_mushrooms" else swap
+            for swap in dish.substitutions
+        ))
+        _, r = route(self.inv, request("chicken_bowl", SWAP_CHICKEN + [
+            {"op": "add", "ingredient": "avocado"},
+        ], qty=2))
+        self.assertTrue(r.choices)
+        self.assertEqual(r.choices[0].price_change_cents, 400)
 
     def test_extra_within_forecast_reserve_goes_to_customer(self):
         _, r = route(self.inv, request("chicken_bowl", [{"op": "add", "ingredient": "avocado"}]))

@@ -5,13 +5,6 @@ import { ORDER_STATUS, countdown, describeOp, money, priceChange, questionText, 
 import ModChip from './ModChip.jsx'
 import SubstitutionCard from './SubstitutionCard.jsx'
 
-const CHANNELS = [
-  ['doordash', 'DoorDash'],
-  ['ubereats', 'Uber Eats'],
-  ['walk-in', 'Walk-in'],
-  ['phone', 'Phone'],
-]
-
 function Instructions({ lines, title = 'What the kitchen will see' }) {
   if (!lines?.length) return null
   return (
@@ -52,10 +45,10 @@ export default function CustomerView() {
   const [dishId, setDishId] = useState(null)
   const [qty, setQty] = useState(1)
   const [note, setNote] = useState('')
-  const [channel, setChannel] = useState('doordash')
   const [customerName, setCustomerName] = useState('')
   const [evaluation, setEvaluation] = useState(null)
-  const [answers, setAnswers] = useState({})
+  const [clarificationHistory, setClarificationHistory] = useState([])
+  const [reply, setReply] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [flash, setFlash] = useState(null)
@@ -65,15 +58,16 @@ export default function CustomerView() {
   const evalDish = evaluation ? menu.find((d) => d.id === evaluation.dish?.id) : null
   const mine = state.orders.filter((o) => state.myOrderIds.includes(o.order_id))
 
-  const submit = async (clarifications) => {
+  const submit = async (clarifications = []) => {
     if (!selectedId) return
     setBusy(true)
     setError(null)
     setFlash(null)
     try {
-      const e = await api.evaluate({ dishId: selectedId, qty, text: note, clarifications, channel, customerName: customerName.trim() })
+      const e = await api.evaluate({ dishId: selectedId, qty, text: note, clarifications, channel: 'doordash', customerName: customerName.trim() })
       setEvaluation(e)
-      setAnswers({})
+      setClarificationHistory(clarifications)
+      setReply('')
       if (e.order_id) {
         dispatch({ type: 'MINE', orderId: e.order_id })
         dispatch({ type: 'LOG', text: `${e.order_id}: ${e.dish?.name} → ${e.status}` })
@@ -86,8 +80,8 @@ export default function CustomerView() {
   }
 
   const sendAnswers = () => {
-    const clarifications = (evaluation.questions ?? []).map((q, i) => ({ question: questionText(q), answer: (answers[i] ?? '').trim() }))
-    submit(clarifications)
+    const question = (evaluation.questions ?? []).map(questionText).join('\n') || evaluation.customer_message
+    submit([...clarificationHistory, { question, answer: reply.trim() }])
   }
 
   const accept = async (optionId) => {
@@ -102,6 +96,8 @@ export default function CustomerView() {
         : `Order ${order.order_id} sent. The kitchen is confirming it.`)
       setEvaluation(null)
       setNote('')
+      setClarificationHistory([])
+      setReply('')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -110,17 +106,21 @@ export default function CustomerView() {
   }
 
   const startOver = () => {
+    if (evaluation?.clarification_exhausted) setNote('')
     setEvaluation(null)
     setError(null)
+    setFlash(null)
+    setClarificationHistory([])
+    setReply('')
   }
 
   const reviewOrder = (order) => {
     setDishId(order.dish.id)
     setQty(order.qty)
     setNote(order.original_text ?? '')
-    setChannel(order.channel ?? 'doordash')
     setCustomerName(order.customer_name ?? '')
-    setAnswers({})
+    setClarificationHistory(order.evaluation.clarifications ?? [])
+    setReply('')
     setError(null)
     setFlash(null)
     setEvaluation(order.evaluation)
@@ -128,7 +128,9 @@ export default function CustomerView() {
 
   const total = dish ? dish.price_cents * qty : 0
   const questions = evaluation?.questions ?? []
-  const allAnswered = questions.every((_, i) => (answers[i] ?? '').trim())
+  const canReply = evaluation && ['needs_clarification', 'unavailable'].includes(evaluation.status)
+    && !evaluation.clarification_exhausted
+  const clarificationLimit = evaluation?.clarification_limit ?? 3
 
   return (
     <div className="phone">
@@ -162,12 +164,6 @@ export default function CustomerView() {
           <span>Name (optional)</span>
           <input type="text" value={customerName} disabled={!!evaluation} onChange={(e) => setCustomerName(e.target.value)} placeholder="e.g. Sam" />
         </label>
-        <label className="field inline">
-          <span>Channel</span>
-          <select value={channel} disabled={!!evaluation} onChange={(e) => setChannel(e.target.value)}>
-            {CHANNELS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-          </select>
-        </label>
       </div>
 
       <label className="field">
@@ -192,16 +188,7 @@ export default function CustomerView() {
           {evaluation.status === 'needs_clarification' && (
             <div className="sub sub-pending">
               <strong>{evaluation.customer_message || 'A quick question first'}</strong>
-              {questions.map((q, i) => (
-                <label key={i} className="field">
-                  <span>{questionText(q)}</span>
-                  <input type="text" value={answers[i] ?? ''} onChange={(e) => setAnswers({ ...answers, [i]: e.target.value })} />
-                </label>
-              ))}
-              <div className="row">
-                <button className="btn primary" disabled={busy || !allAnswered} onClick={sendAnswers}>{busy ? 'Checking…' : 'Send answers'}</button>
-                <button className="btn ghost" disabled={busy} onClick={startOver}>Edit request</button>
-              </div>
+              <ul className="why-list">{questions.map((q, i) => <li key={i}>{questionText(q)}</li>)}</ul>
             </div>
           )}
 
@@ -265,7 +252,33 @@ export default function CustomerView() {
                 <ul className="why-list">{evaluation.as_requested.reasons.map((r, i) => <li key={i} className="why">{r}</li>)}</ul>
               )}
               <UnavailableList items={evaluation.unavailable_options} />
-              <div className="row"><button className="btn primary" onClick={startOver}>Edit request</button></div>
+              {evaluation.clarification_exhausted && (
+                <div className="row"><button className="btn primary" onClick={startOver}>Start a new request</button></div>
+              )}
+            </div>
+          )}
+
+          {canReply && (
+            <div className="sub sub-pending">
+              {clarificationHistory.length > 0 && (
+                <details>
+                  <summary>Your replies</summary>
+                  <ul>{clarificationHistory.map((item, i) => <li key={i}>{item.answer}</li>)}</ul>
+                </details>
+              )}
+              <label className="field">
+                <span>What would you like instead?</span>
+                <textarea rows={2} value={reply} disabled={busy} onChange={(e) => setReply(e.target.value)}
+                  placeholder="e.g. add avocado instead, or swap chicken for tofu" />
+              </label>
+              <p className="muted">Answer the questions or revise the change. We'll check it with the kitchen again.</p>
+              <small className="muted">{Math.max(0, clarificationLimit - clarificationHistory.length)} replies remaining.</small>
+              <div className="row">
+                <button className="btn primary" disabled={busy || !reply.trim()} onClick={sendAnswers}>
+                  {busy ? 'Checking with the kitchen…' : 'Check updated request'}
+                </button>
+                <button className="btn ghost" disabled={busy} onClick={startOver}>Edit original request</button>
+              </div>
             </div>
           )}
         </section>
@@ -283,6 +296,12 @@ export default function CustomerView() {
               <span className={`status ${tone}`}>{label}</span>
             </div>
             {o.original_text && <div className="muted">“{o.original_text}”</div>}
+            {o.evaluation?.clarifications?.length > 0 && (
+              <details>
+                <summary>Your updates</summary>
+                <ol>{o.evaluation.clarifications.map((item, i) => <li key={i}>{item.answer}</li>)}</ol>
+              </details>
+            )}
             {waiting && o.expires_at && <small className="muted">Expires in {countdown(o.expires_at, state.now)}</small>}
             {waiting && (
               <div className="row">

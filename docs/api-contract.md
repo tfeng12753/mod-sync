@@ -4,6 +4,11 @@ One FastAPI app: `uvicorn backend.api.app:app --reload --port 8000` (from the re
 Base path `/api`. JSON everywhere. Money in integer cents. CORS allows `http://localhost:5173`.
 All data is synthetic. Frontend reads the base URL from `VITE_API_URL` (default `http://localhost:8000`).
 
+The listed `price_cents` is the minimum per dish. Customer `price_change_cents` is the sum of
+nonnegative extra and swap upcharges for the whole order, with dish quantity applied once.
+Cheaper swaps and removals give no discount and cannot offset other upcharges. Null still means
+staff must set a price; recipe cost savings are separate from customer prices.
+
 ## Order lifecycle
 
 ```text
@@ -36,6 +41,15 @@ Request:
  "channel": "doordash", "customer_name": "Sam"}
 ```
 `clarifications`, `channel`, `customer_name` optional.
+
+Send the original `text` and the complete ordered `clarifications` history on every follow-up.
+The customer UI combines the current questions into one `question` and sends one free-text answer
+per reply. Every reply reruns parsing, inventory, and (when feasible) forecast routing. A revised
+command replaces the unresolved change; unrelated modifications and all safety concerns remain.
+Both `needs_clarification` and `unavailable` can be revised. After three unsuccessful replies,
+the response is `unavailable`, `clarification_exhausted: true`, with no order/hold and a message to
+start again or contact staff. A valid third reply still proceeds. Evaluation responses include
+`clarifications`, `clarification_limit: 3`, and `clarification_exhausted` for UI recovery and review.
 
 Response `Evaluation`:
 ```json

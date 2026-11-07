@@ -19,6 +19,7 @@ from .store import Order, OrderStore, utcnow
 logger = logging.getLogger(__name__)
 
 HOLD_SECONDS = 600
+MAX_CLARIFICATION_REPLIES = 3
 UNAVAILABLE_MESSAGE = "We cannot accommodate this request with the available menu and inventory options."
 
 
@@ -78,6 +79,8 @@ class OrderService:
             "parsed": {"ops": list(parsed.parser_output.get("ops", [])), "restrictions": list(parsed.restrictions),
                        "source": getattr(parsed, "source", None)},
             "options": [], "recommended_option_id": None, "unavailable_options": [], "warnings": [],
+            "clarifications": list(clarifications or []),
+            "clarification_limit": MAX_CLARIFICATION_REPLIES, "clarification_exhausted": False,
         }
 
         if parsed.status == "needs_clarification":
@@ -231,6 +234,14 @@ class OrderService:
         out.setdefault("expires_at", None)
         if status in ("needs_clarification", "unavailable"):
             out["order_id"] = None
+            if len(out.get("clarifications", [])) >= MAX_CLARIFICATION_REPLIES:
+                out["status"] = "unavailable"
+                out["questions"] = []
+                out["clarification_exhausted"] = True
+                out["customer_message"] = (
+                    "We couldn't find a request we can accommodate after three replies. "
+                    "Please start a new request or contact restaurant staff for help."
+                )
         return out
 
     # ----- order actions -----------------------------------------------------------------------

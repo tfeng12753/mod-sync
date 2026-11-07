@@ -255,7 +255,11 @@ Status precedence: `needs_clarification` > `blocked` > `out_of_stock` > `ok`; al
 - Conflicting ops on the same item are **not applied** at all (`CONFLICTING_OPS`).
 - Safety buffer applies in `check()` only (`LOW_STOCK` → `out_of_stock`); `hold`/`confirm` only refuse
   when stock would go negative, so a check that passed never fails at hold for buffer reasons.
-- Prices: extras add their price, swaps add `price_delta_cents`; remove/less give no discount.
+- Prices: the menu dish price is the minimum. Extras add `max(0, price_cents)` per portion and
+  swaps add `max(0, price_delta_cents)` each; remove/less give no discount. Clamp each modifier
+  before summing so cheaper swaps cannot offset extras or premium swaps. Scale by dish quantity
+  once. Recipe `cost_delta_cents` still reflects actual ingredient savings for forecast ranking.
+  The menu export and engine adapter use the same nonnegative modifier prices.
   `cost_delta_cents` = ingredient cost of the custom dish minus the standard dish.
 - `requires_staff_review` is true whenever allergens or diets were passed in, even if the check is `ok`.
   Evidence says cross-contact is **not verified** by the system.

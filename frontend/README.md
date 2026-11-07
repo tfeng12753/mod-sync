@@ -24,6 +24,19 @@ in the same browser session. For the swap scenario, click **Review options**, th
 the same ticket updates in the kitchen. Reviewing an order restores its dish, quantity, and request
 in the customer form.
 
+The customer form always submits orders as DoorDash, with no channel selector. Restaurant tickets
+still show channel tags; reviewing an existing demo order preserves that ticket's original channel.
+
+The listed menu price is the minimum: removals and cheaper substitutions do not lower it.
+Extras and premium swaps add their full upcharges. For example, mushrooms instead of chicken
+keep the chicken bowl's $14.50 base price; an extra avocado adds $2.00.
+
+When a request needs clarification or cannot be made, enter a revised change and click
+**Check updated request**. The app retains earlier replies and runs the full evaluation again.
+After three unsuccessful replies it offers **Start a new request** and directs the customer to
+restaurant staff for help. A valid last reply can still succeed. Lettuce exists in the demo catalog
+but is not an approved extra for the chicken bowl; avocado is an approved extra for that dish.
+
 ## Environment variables
 
 Set them in the shell or in `frontend/.env.local` (gitignored via `*.local`).

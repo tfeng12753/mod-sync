@@ -127,10 +127,10 @@ class Vocabulary:
                 "name": dish.name,
                 "price_cents": dish.price_cents,
                 "components": [{"id": c, "name": cat.name_of(c), "servings": n} for c, n in dish.components.items()],
-                "extras": [{"id": c, "name": cat.name_of(c), "max": e.max, "price_cents": e.price_cents}
+                "extras": [{"id": c, "name": cat.name_of(c), "max": e.max, "price_cents": max(0, e.price_cents)}
                            for c, e in dish.extras.items()],
                 "swaps": [{"replace": s.replace, "replace_name": cat.name_of(s.replace), "with": s.with_,
-                           "with_name": cat.name_of(s.with_), "price_delta_cents": s.price_delta_cents}
+                           "with_name": cat.name_of(s.with_), "price_delta_cents": max(0, s.price_delta_cents)}
                           for s in dish.substitutions],
                 "allergens": sorted({a for c in dish.components for i in cat.components[c].ingredient_ids()
                                      for a in cat.ingredients[i].allergens}),

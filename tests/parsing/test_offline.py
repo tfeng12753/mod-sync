@@ -99,6 +99,50 @@ class OfflineExtras(unittest.TestCase):
         parsed = offline(self.inv, "falafel_wrap", "no tomatoes")
         self.assertEqual(parsed.parser_output["ops"], [{"op": "remove", "ingredient": "tomato"}])
 
+    def test_followup_replaces_unknown_swap_preserving_unrelated_changes(self):
+        parsed = offline(self.inv, "chicken_bowl", "no pickled onion, swap chicken for caviar",
+                         clarifications=[{"question": "What instead?", "answer": "oh then lets add avocado instead"}])
+        self.assertEqual(parsed.parser_output["ops"], [
+            {"op": "remove", "ingredient": "pickled_onion"},
+            {"op": "add", "ingredient": "avocado", "qty": 1},
+        ])
+        self.assertEqual(self.inv.evaluate_request(parsed.parser_output).status, "ready")
+
+    def test_bare_followup_supplies_replacement(self):
+        parsed = offline(self.inv, "chicken_bowl", "swap chicken for caviar",
+                         clarifications=[{"question": "What instead?", "answer": "tofu"}])
+        self.assertEqual(parsed.parser_output["ops"], [
+            {"op": "substitute", "ingredient": "chicken", "with": "tofu"},
+        ])
+
+    def test_followup_resolves_earlier_contradiction(self):
+        parsed = offline(self.inv, "chicken_bowl", "no avocado and extra avocado",
+                         clarifications=[{"question": "Which one?", "answer": "extra avocado"}])
+        self.assertEqual(parsed.status, "ready")
+        self.assertEqual(parsed.parser_output["ops"], [{"op": "add", "ingredient": "avocado", "qty": 1}])
+
+    def test_followup_can_drop_unavailable_change(self):
+        parsed = offline(self.inv, "chicken_bowl", "swap chicken for caviar",
+                         clarifications=[{"question": "What instead?", "answer": "keep the original"}])
+        self.assertEqual(parsed.status, "ready")
+        self.assertEqual(parsed.parser_output["ops"], [])
+
+    def test_additional_change_does_not_silently_drop_unknown(self):
+        parsed = offline(self.inv, "chicken_bowl", "swap chicken for caviar",
+                         clarifications=[{"question": "What instead?", "answer": "also add avocado"}])
+        self.assertTrue(any(op["ingredient"] == "unknown:caviar" for op in parsed.parser_output["ops"]))
+        self.assertEqual(self.inv.evaluate_request(parsed.parser_output).status, "needs_clarification")
+
+    def test_followup_keeps_original_allergy_and_prior_reply(self):
+        parsed = offline(self.inv, "chicken_bowl", "peanut allergy, swap chicken for caviar",
+                         clarifications=[
+                             {"question": "What instead?", "answer": "add truffles instead"},
+                             {"question": "What instead?", "answer": "add avocado instead"},
+                         ])
+        self.assertEqual(parsed.status, "needs_staff_review")
+        self.assertEqual(parsed.parser_output["ops"], [{"op": "add", "ingredient": "avocado", "qty": 1}])
+        self.assertEqual(parsed.parser_output["flags"]["allergens"], ["peanut"])
+
 
 if __name__ == "__main__":
     unittest.main()

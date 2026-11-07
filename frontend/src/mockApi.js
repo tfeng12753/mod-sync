@@ -182,7 +182,7 @@ function instructionsFor(dish, ops, changes, restrictions) {
 }
 
 function extrasPrice(dish, ops) {
-  return ops.filter((o) => o.op === 'add').reduce((sum, o) => sum + (dish.extras.find((e) => e.id === o.ingredient)?.price_cents ?? 0) * (o.qty ?? 1), 0)
+  return ops.filter((o) => o.op === 'add').reduce((sum, o) => sum + Math.max(0, dish.extras.find((e) => e.id === o.ingredient)?.price_cents ?? 0) * (o.qty ?? 1), 0)
 }
 
 function finalComponents(dish, ops, changes) {
@@ -226,7 +226,7 @@ function buildOptions(dish, problems, ops, restrictions, qty) {
       const bad = conflicts(s.with, restrictions)
       if (bad.length) unavailable.push({ label: `${s.with_name} instead of ${s.replace_name}`, reasons: [`${s.with_name}: ${bad.join(', ')}`] })
       else if (!inStock(s.with, qty)) unavailable.push({ label: `${s.with_name} instead of ${s.replace_name}`, reasons: [`${s.with_name} is out of stock.`] })
-      else choices.push({ change: { replace: s.replace, replace_name: s.replace_name, with: s.with, with_name: s.with_name }, delta: s.price_delta_cents, sim: SIMILARITY[s.with] ?? 0.6 })
+      else choices.push({ change: { replace: s.replace, replace_name: s.replace_name, with: s.with, with_name: s.with_name }, delta: Math.max(0, s.price_delta_cents), sim: SIMILARITY[s.with] ?? 0.6 })
     }
     if (!BASES.includes(p.id)) choices.push({ change: { replace: p.id, replace_name: p.name, with: null, with_name: null }, delta: 0, sim: null })
     return { choices, unavailable }
@@ -313,7 +313,7 @@ function evaluate(body) {
   }
 
   const feasible = problems.length === 0
-  const swapDelta = ops.filter((o) => o.op === 'substitute' && o.with).reduce((s, o) => s + (dish.swaps.find((x) => x.replace === o.ingredient && x.with === o.with)?.price_delta_cents ?? 0), 0)
+  const swapDelta = ops.filter((o) => o.op === 'substitute' && o.with).reduce((s, o) => s + Math.max(0, dish.swaps.find((x) => x.replace === o.ingredient && x.with === o.with)?.price_delta_cents ?? 0), 0)
   evalOut.as_requested = {
     feasible,
     reasons,

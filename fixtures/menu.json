@@ -63,7 +63,7 @@
         "replace_name": "Grilled chicken",
         "with": "roasted_mushrooms",
         "with_name": "Roasted mushrooms",
-        "price_delta_cents": -100
+        "price_delta_cents": 0
       },
       {
         "replace": "garlic_sauce",
@@ -136,7 +136,7 @@
         "replace_name": "Crispy tofu",
         "with": "roasted_mushrooms",
         "with_name": "Roasted mushrooms",
-        "price_delta_cents": -100
+        "price_delta_cents": 0
       },
       {
         "replace": "sesame_dressing",
@@ -217,7 +217,7 @@
         "replace_name": "Grilled chicken",
         "with": "roasted_mushrooms",
         "with_name": "Roasted mushrooms",
-        "price_delta_cents": -100
+        "price_delta_cents": 0
       },
       {
         "replace": "peanut_sauce",
