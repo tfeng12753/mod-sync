@@ -49,6 +49,11 @@ class StockStore:
     def is_tracked(self, item: str) -> bool:
         return item in self._on_hand
 
+    def items(self) -> list[str]:
+        """All tracked stock item IDs."""
+        with self._lock:
+            return list(self._on_hand)
+
     def on_hand(self, item: str) -> int:
         with self._lock:
             return self._on_hand.get(item, 0)
