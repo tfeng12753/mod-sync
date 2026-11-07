@@ -11,14 +11,30 @@ from .feasibility import evaluate, similarity
 from .models import Candidate, CheckResult, RequestEvaluation, StockResult
 from .request import evaluate_request
 from .stock import Clock, StockStore, load_stock
+from .vocabulary import Vocabulary, load_aliases
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
 
 class Inventory:
-    def __init__(self, catalog: Catalog, stock: StockStore) -> None:
+    def __init__(self, catalog: Catalog, stock: StockStore, aliases: dict[str, Any] | None = None) -> None:
         self.catalog = catalog
         self.stock = stock
+        self.vocab = Vocabulary(catalog, aliases)
+
+    # ----- vocabulary / menu -------------------------------------------------------------------
+
+    def parser_vocabulary(self) -> dict[str, Any]:
+        """Everything the parser may output (IDs, names, nicknames, op/flag format, rules)."""
+        return self.vocab.parser_vocabulary()
+
+    def menu(self) -> list[dict[str, Any]]:
+        """Customer-facing menu for GET /menu."""
+        return self.vocab.menu()
+
+    def lookup(self, text: str, dish_id: str | None = None) -> list[str]:
+        """Catalog IDs a customer's word could mean (narrowed by dish). Empty = not on our list."""
+        return self.vocab.lookup(text, dish_id)
 
     # ----- feasibility -------------------------------------------------------------------------
 
@@ -132,4 +148,5 @@ def _op_target(op: dict[str, Any]) -> str | None:
 
 def load_inventory(data_dir: str | Path | None = None, clock: Clock = time.time) -> Inventory:
     d = Path(data_dir) if data_dir else DATA_DIR
-    return Inventory(load_catalog(d / "catalog.json"), load_stock(d / "stock.json", clock=clock))
+    return Inventory(load_catalog(d / "catalog.json"), load_stock(d / "stock.json", clock=clock),
+                     load_aliases(d / "aliases.json"))

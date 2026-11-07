@@ -1,0 +1,238 @@
+{
+  "_note": "Starter test set for the request parser (Person 2) — DRAFT for review. Input = the dish and quantity the customer picked in the UI plus their free text. 'expected' is the exact parser output we want (IDs from fixtures/parser_vocabulary.json). 'inventory_status' is what evaluate_request() returns for that expected output; tests/inventory/test_parser_cases.py checks it. 'first_option' (optional) = changes in the recommended alternative. SYNTHETIC data.",
+  "cases": [
+    {
+      "id": "remove-simple",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "no avocado please",
+      "expected": {"ops": [{"op": "remove", "ingredient": "avocado"}], "flags": null},
+      "inventory_status": "ready"
+    },
+    {
+      "id": "extra-nickname",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "extra avo!!",
+      "expected": {"ops": [{"op": "add", "ingredient": "avocado", "qty": 1}], "flags": null},
+      "inventory_status": "ready",
+      "why": "Nickname 'avo' -> avocado."
+    },
+    {
+      "id": "double-means-one-extra",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "can I get double avocado",
+      "expected": {"ops": [{"op": "add", "ingredient": "avocado", "qty": 1}], "flags": null},
+      "inventory_status": "ready",
+      "why": "'Double' = one extra portion."
+    },
+    {
+      "id": "sauce-on-side",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "sauce on the side",
+      "expected": {"ops": [{"op": "on_side", "ingredient": "garlic_sauce"}], "flags": null},
+      "inventory_status": "ready",
+      "why": "'The sauce' means this dish's sauce."
+    },
+    {
+      "id": "light-sauce",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "go light on the garlic mayo",
+      "expected": {"ops": [{"op": "less", "ingredient": "garlic_sauce"}], "flags": null},
+      "inventory_status": "ready"
+    },
+    {
+      "id": "remove-onions-alias",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "hold the onions",
+      "expected": {"ops": [{"op": "remove", "ingredient": "pickled_onion"}], "flags": null},
+      "inventory_status": "ready",
+      "why": "The only onion in this dish is the pickled onion."
+    },
+    {
+      "id": "premade-ingredient",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "no garlic",
+      "expected": {"ops": [{"op": "remove", "ingredient": "garlic"}], "flags": null},
+      "inventory_status": "needs_customer_approval",
+      "first_option": [["garlic_sauce", "sesame_dressing"]],
+      "why": "Garlic is inside the made-ahead sauce; inventory offers a swap. Parser should NOT guess the swap."
+    },
+    {
+      "id": "swap-specified",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "swap the chicken for tofu",
+      "expected": {"ops": [{"op": "substitute", "ingredient": "chicken", "with": "tofu"}], "flags": null},
+      "inventory_status": "ready"
+    },
+    {
+      "id": "swap-unspecified",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "no chicken, can you put something else instead",
+      "expected": {"ops": [{"op": "substitute", "ingredient": "chicken", "with": null}], "flags": null},
+      "inventory_status": "needs_customer_approval",
+      "first_option": [["grilled_chicken", "crispy_tofu"]],
+      "why": "'Something else instead' = substitute with null, not remove."
+    },
+    {
+      "id": "swap-unapproved",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "could I have falafel instead of chicken",
+      "expected": {"ops": [{"op": "substitute", "ingredient": "chicken", "with": "falafel"}], "flags": null},
+      "inventory_status": "needs_customer_approval",
+      "first_option": [["grilled_chicken", "crispy_tofu"]],
+      "why": "Parser reports what was asked; inventory says it isn't approved and offers approved swaps."
+    },
+    {
+      "id": "swap-base",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "can you do it on greens instead of rice",
+      "expected": {"ops": [{"op": "substitute", "ingredient": "rice", "with": "mixed_greens"}], "flags": null},
+      "inventory_status": "ready"
+    },
+    {
+      "id": "unknown-item",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "add bacon",
+      "expected": {"ops": [{"op": "add", "ingredient": "unknown:bacon", "qty": 1}], "flags": null},
+      "inventory_status": "needs_clarification",
+      "why": "Not on our list -> unknown:<word>."
+    },
+    {
+      "id": "unknown-remove",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "no cilantro",
+      "expected": {"ops": [{"op": "remove", "ingredient": "unknown:cilantro"}], "flags": null},
+      "inventory_status": "needs_clarification",
+      "why": "We don't track cilantro, so staff confirm rather than the system promising anything."
+    },
+    {
+      "id": "not-representable",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "can you make it extra spicy",
+      "expected": {"ops": [{"op": "add", "ingredient": "unknown:spicy", "qty": 1}], "flags": null},
+      "inventory_status": "needs_clarification",
+      "why": "Requests that aren't an op still get passed through as unknown."
+    },
+    {
+      "id": "conflict",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "no avocado. actually extra avocado",
+      "expected": {"ops": [{"op": "remove", "ingredient": "avocado"}, {"op": "add", "ingredient": "avocado", "qty": 1}], "flags": null},
+      "inventory_status": "needs_clarification",
+      "why": "Parser passes both through; inventory flags the conflict. (A smarter parser could keep only the correction.)"
+    },
+    {
+      "id": "extra-not-offered",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "add tomato",
+      "expected": {"ops": [{"op": "add", "ingredient": "tomato", "qty": 1}], "flags": null},
+      "inventory_status": "unavailable"
+    },
+    {
+      "id": "extra-over-max",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "3 extra avocado",
+      "expected": {"ops": [{"op": "add", "ingredient": "avocado", "qty": 3}], "flags": null},
+      "inventory_status": "unavailable"
+    },
+    {
+      "id": "multiple-ops",
+      "dish": "chicken_bowl", "qty": 1,
+      "text": "no onions, sauce on the side and extra chicken",
+      "expected": {"ops": [{"op": "remove", "ingredient": "pickled_onion"}, {"op": "on_side", "ingredient": "garlic_sauce"}, {"op": "add", "ingredient": "chicken", "qty": 1}], "flags": null},
+      "inventory_status": "ready"
+    },
+    {
+      "id": "extra-from-other-dish",
+      "dish": "tofu_bowl", "qty": 1,
+      "text": "add chicken to it",
+      "expected": {"ops": [{"op": "add", "ingredient": "chicken", "qty": 1}], "flags": null},
+      "inventory_status": "ready"
+    },
+    {
+      "id": "diet-only",
+      "dish": "tofu_bowl", "qty": 1,
+      "text": "I'm vegan",
+      "expected": {"ops": [], "flags": {"level": "diet", "allergens": [], "diets": ["vegan"]}},
+      "inventory_status": "needs_staff_review"
+    },
+    {
+      "id": "allergy-not-in-dish",
+      "dish": "tofu_bowl", "qty": 1,
+      "text": "no peanuts please, I'm allergic",
+      "expected": {"ops": [{"op": "remove", "ingredient": "peanuts"}], "flags": {"level": "allergy", "allergens": ["peanut"], "diets": []}},
+      "inventory_status": "needs_staff_review",
+      "why": "No peanuts in the dish, but any allergy still goes to staff."
+    },
+    {
+      "id": "allergy-casual",
+      "dish": "satay_noodles", "qty": 1,
+      "text": "my kid is allergic to peanuts",
+      "expected": {"ops": [], "flags": {"level": "allergy", "allergens": ["peanut"], "diets": []}},
+      "inventory_status": "needs_staff_review",
+      "first_option": [["crushed_peanuts", null], ["peanut_sauce", "sesame_dressing"]],
+      "why": "Allergy mentioned in passing still sets the flag; inventory works out what to change."
+    },
+    {
+      "id": "allergy-explicit",
+      "dish": "satay_noodles", "qty": 1,
+      "text": "no peanuts at all, severe peanut allergy",
+      "expected": {"ops": [{"op": "remove", "ingredient": "peanuts"}], "flags": {"level": "allergy", "allergens": ["peanut"], "diets": []}},
+      "inventory_status": "needs_staff_review",
+      "first_option": [["peanut_sauce", "sesame_dressing"]]
+    },
+    {
+      "id": "gluten-alias",
+      "dish": "satay_noodles", "qty": 1,
+      "text": "I'm celiac, can this be gluten free?",
+      "expected": {"ops": [], "flags": {"level": "allergy", "allergens": ["wheat"], "diets": []}},
+      "inventory_status": "unavailable",
+      "why": "Celiac/gluten -> wheat. The noodles are wheat with no approved swap."
+    },
+    {
+      "id": "side-premade-sauce",
+      "dish": "satay_noodles", "qty": 1,
+      "text": "satay sauce on the side",
+      "expected": {"ops": [{"op": "on_side", "ingredient": "peanut_sauce"}], "flags": null},
+      "inventory_status": "ready"
+    },
+    {
+      "id": "component-beats-ingredient",
+      "dish": "falafel_wrap", "qty": 1,
+      "text": "no tahini",
+      "expected": {"ops": [{"op": "remove", "ingredient": "tahini_sauce"}], "flags": null},
+      "inventory_status": "ready",
+      "why": "'Tahini' means the tahini sauce, not the ingredient inside it."
+    },
+    {
+      "id": "allergy-sesame",
+      "dish": "falafel_wrap", "qty": 1,
+      "text": "sesame allergy",
+      "expected": {"ops": [], "flags": {"level": "allergy", "allergens": ["sesame"], "diets": []}},
+      "inventory_status": "needs_staff_review",
+      "first_option": [["tahini_sauce", "garlic_sauce"]]
+    },
+    {
+      "id": "make-it-a-bowl",
+      "dish": "falafel_wrap", "qty": 1,
+      "text": "can you make it a bowl instead of a wrap, on greens",
+      "expected": {"ops": [{"op": "substitute", "ingredient": "tortilla", "with": "greens_base"}], "flags": null},
+      "inventory_status": "ready"
+    },
+    {
+      "id": "diet-unmeetable",
+      "dish": "miso_soup", "qty": 1,
+      "text": "is this vegan? I need it vegan",
+      "expected": {"ops": [], "flags": {"level": "diet", "allergens": [], "diets": ["vegan"]}},
+      "inventory_status": "unavailable",
+      "why": "The broth has bonito (fish) and no approved swap."
+    },
+    {
+      "id": "qty-from-ui",
+      "dish": "miso_soup", "qty": 2,
+      "text": "extra tofu in both",
+      "expected": {"ops": [{"op": "add", "ingredient": "tofu", "qty": 1}], "flags": null},
+      "inventory_status": "ready",
+      "why": "Quantity comes from the UI; 'in both' doesn't change the extra count per bowl."
+    }
+  ]
+}

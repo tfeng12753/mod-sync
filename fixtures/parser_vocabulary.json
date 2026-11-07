@@ -1,0 +1,1604 @@
+{
+  "_note": "Generated from backend/data/catalog.json + aliases.json (SYNTHETIC demo data). The parser must only emit IDs listed here.",
+  "output_format": {
+    "dish": "<dish id>",
+    "qty": "<int, default 1>",
+    "original_text": "<customer's words, verbatim>",
+    "ops": [
+      {
+        "op": "remove|add|substitute|on_side|less",
+        "ingredient": "<id>",
+        "qty": "<add only>",
+        "with": "<substitute only: id or null>"
+      }
+    ],
+    "flags": {
+      "level": "allergy | diet | null",
+      "allergens": [
+        "<allergen>"
+      ],
+      "diets": [
+        "<diet>"
+      ]
+    }
+  },
+  "rules": [
+    "Use only IDs from this file. Prefer the dish's own items (dishes[].items).",
+    "If the customer mentions something not listed, use \"unknown:<their word>\" as the ID; inventory will ask for clarification.",
+    "If a request can't be expressed as an op (e.g. 'make it spicy'), emit it as an add of \"unknown:<word>\".",
+    "Any mention of an allergy, intolerance or celiac sets flags.level = 'allergy' and lists the allergen, even if worded casually.",
+    "Dietary needs (vegan, vegetarian, etc.) set flags.level = 'diet'. Allergy takes precedence if both.",
+    "'Double X' / 'extra X' = add with qty 1 (one extra portion). '3 extra X' = qty 3.",
+    "Keep the customer's exact words in original_text."
+  ],
+  "ops": {
+    "remove": "Leave an ingredient or component out. {op, ingredient}",
+    "add": "Extra portion of something the dish offers as an extra. {op, ingredient, qty (default 1, = extra portions)}",
+    "substitute": "Swap one thing for another. {op, ingredient, with}; with = null if the customer didn't say what.",
+    "on_side": "Serve a component on the side. {op, ingredient}",
+    "less": "Light / less of something (half portion). {op, ingredient}"
+  },
+  "allergens": [
+    "egg",
+    "fish",
+    "peanut",
+    "sesame",
+    "soy",
+    "wheat"
+  ],
+  "allergen_aliases": {
+    "celiac": "wheat",
+    "coeliac": "wheat",
+    "eggs": "egg",
+    "gluten": "wheat",
+    "peanut butter": "peanut",
+    "peanuts": "peanut",
+    "seafood": "fish",
+    "sesame seeds": "sesame",
+    "soya": "soy"
+  },
+  "diets": [
+    "vegan",
+    "vegetarian"
+  ],
+  "diet_aliases": {
+    "no meat": "vegetarian",
+    "plant based": "vegan",
+    "veggie": "vegetarian"
+  },
+  "dishes": [
+    {
+      "id": "chicken_bowl",
+      "name": "Garlic Chicken Bowl",
+      "aliases": [
+        "chicken bowl",
+        "garlic chicken",
+        "garlic chicken bowl"
+      ],
+      "items": [
+        {
+          "id": "avocado",
+          "name": "Avocado",
+          "aliases": [
+            "avo",
+            "avocados",
+            "avos"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "sliced_avocado"
+          ]
+        },
+        {
+          "id": "chicken",
+          "name": "Chicken thigh",
+          "aliases": [
+            "chicken",
+            "chicken thighs"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "grilled_chicken"
+          ]
+        },
+        {
+          "id": "cornstarch",
+          "name": "Cornstarch",
+          "aliases": [],
+          "kind": "ingredient"
+        },
+        {
+          "id": "crispy_tofu",
+          "name": "Crispy tofu",
+          "aliases": [
+            "fried tofu"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "garlic",
+          "name": "Garlic",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "garlic_sauce"
+          ]
+        },
+        {
+          "id": "garlic_sauce",
+          "name": "Garlic sauce",
+          "aliases": [
+            "sauce",
+            "garlic mayo",
+            "white sauce",
+            "aioli"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "greens_base",
+          "name": "Greens base",
+          "aliases": [
+            "salad base",
+            "bed of greens",
+            "on greens"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "grilled_chicken",
+          "name": "Grilled chicken",
+          "aliases": [],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "lemon",
+          "name": "Lemon juice",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "garlic_sauce"
+          ]
+        },
+        {
+          "id": "mayonnaise",
+          "name": "Mayonnaise",
+          "aliases": [
+            "mayo"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "garlic_sauce"
+          ]
+        },
+        {
+          "id": "mixed_greens",
+          "name": "Mixed greens",
+          "aliases": [
+            "greens",
+            "salad greens",
+            "salad"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "mushrooms",
+          "name": "Cremini mushrooms",
+          "aliases": [
+            "mushroom",
+            "shrooms"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "oil",
+          "name": "Canola oil",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "grilled_chicken"
+          ]
+        },
+        {
+          "id": "pickled_onion",
+          "name": "Pickled red onion",
+          "aliases": [
+            "onion",
+            "onions",
+            "pickled onions",
+            "pickled red onions",
+            "pickles"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "red_onion",
+          "name": "Red onion",
+          "aliases": [
+            "red onions"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "pickled_onion"
+          ]
+        },
+        {
+          "id": "rice",
+          "name": "Jasmine rice",
+          "aliases": [
+            "rice"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "rice_base"
+          ]
+        },
+        {
+          "id": "rice_base",
+          "name": "Rice base",
+          "aliases": [
+            "rice bowl base"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "rice_vinegar",
+          "name": "Rice vinegar",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "pickled_onion"
+          ]
+        },
+        {
+          "id": "roasted_mushrooms",
+          "name": "Roasted mushrooms",
+          "aliases": [
+            "roast mushrooms"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "sesame_dressing",
+          "name": "Sesame dressing",
+          "aliases": [
+            "sauce",
+            "dressing",
+            "sesame sauce"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "sesame_oil",
+          "name": "Sesame oil",
+          "aliases": [],
+          "kind": "ingredient"
+        },
+        {
+          "id": "sliced_avocado",
+          "name": "Sliced avocado",
+          "aliases": [
+            "avocado slices"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "soy_sauce",
+          "name": "Soy sauce",
+          "aliases": [],
+          "kind": "ingredient"
+        },
+        {
+          "id": "sugar",
+          "name": "Sugar",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "pickled_onion"
+          ]
+        },
+        {
+          "id": "tofu",
+          "name": "Firm tofu",
+          "aliases": [
+            "bean curd"
+          ],
+          "kind": "ingredient"
+        }
+      ],
+      "extras": [
+        {
+          "id": "grilled_chicken",
+          "max": 1
+        },
+        {
+          "id": "sliced_avocado",
+          "max": 2
+        },
+        {
+          "id": "garlic_sauce",
+          "max": 1
+        }
+      ],
+      "swaps": [
+        {
+          "replace": "grilled_chicken",
+          "with": "crispy_tofu"
+        },
+        {
+          "replace": "grilled_chicken",
+          "with": "roasted_mushrooms"
+        },
+        {
+          "replace": "garlic_sauce",
+          "with": "sesame_dressing"
+        },
+        {
+          "replace": "rice_base",
+          "with": "greens_base"
+        }
+      ]
+    },
+    {
+      "id": "tofu_bowl",
+      "name": "Crispy Tofu Bowl",
+      "aliases": [
+        "tofu bowl",
+        "crispy tofu bowl"
+      ],
+      "items": [
+        {
+          "id": "avocado",
+          "name": "Avocado",
+          "aliases": [
+            "avo",
+            "avocados",
+            "avos"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "chicken",
+          "name": "Chicken thigh",
+          "aliases": [
+            "chicken",
+            "chicken thighs"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "cornstarch",
+          "name": "Cornstarch",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "crispy_tofu"
+          ]
+        },
+        {
+          "id": "crispy_tofu",
+          "name": "Crispy tofu",
+          "aliases": [
+            "fried tofu"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "garlic",
+          "name": "Garlic",
+          "aliases": [],
+          "kind": "ingredient"
+        },
+        {
+          "id": "garlic_sauce",
+          "name": "Garlic sauce",
+          "aliases": [
+            "sauce",
+            "garlic mayo",
+            "white sauce",
+            "aioli"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "greens_base",
+          "name": "Greens base",
+          "aliases": [
+            "salad base",
+            "bed of greens",
+            "on greens"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "grilled_chicken",
+          "name": "Grilled chicken",
+          "aliases": [],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "lemon",
+          "name": "Lemon juice",
+          "aliases": [],
+          "kind": "ingredient"
+        },
+        {
+          "id": "mayonnaise",
+          "name": "Mayonnaise",
+          "aliases": [
+            "mayo"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "mixed_greens",
+          "name": "Mixed greens",
+          "aliases": [
+            "greens",
+            "salad greens",
+            "salad"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "mushrooms",
+          "name": "Cremini mushrooms",
+          "aliases": [
+            "mushroom",
+            "shrooms"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "oil",
+          "name": "Canola oil",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "crispy_tofu"
+          ]
+        },
+        {
+          "id": "pickled_onion",
+          "name": "Pickled red onion",
+          "aliases": [
+            "onion",
+            "onions",
+            "pickled onions",
+            "pickled red onions",
+            "pickles"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "red_onion",
+          "name": "Red onion",
+          "aliases": [
+            "red onions"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "pickled_onion"
+          ]
+        },
+        {
+          "id": "rice",
+          "name": "Jasmine rice",
+          "aliases": [
+            "rice"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "rice_base"
+          ]
+        },
+        {
+          "id": "rice_base",
+          "name": "Rice base",
+          "aliases": [
+            "rice bowl base"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "rice_vinegar",
+          "name": "Rice vinegar",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "sesame_dressing",
+            "pickled_onion"
+          ]
+        },
+        {
+          "id": "roasted_mushrooms",
+          "name": "Roasted mushrooms",
+          "aliases": [
+            "roast mushrooms"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "sesame_dressing",
+          "name": "Sesame dressing",
+          "aliases": [
+            "sauce",
+            "dressing",
+            "sesame sauce"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "sesame_oil",
+          "name": "Sesame oil",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "sesame_dressing"
+          ]
+        },
+        {
+          "id": "sliced_avocado",
+          "name": "Sliced avocado",
+          "aliases": [
+            "avocado slices"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "soy_sauce",
+          "name": "Soy sauce",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "sesame_dressing"
+          ]
+        },
+        {
+          "id": "sugar",
+          "name": "Sugar",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "pickled_onion"
+          ]
+        },
+        {
+          "id": "tofu",
+          "name": "Firm tofu",
+          "aliases": [
+            "bean curd"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "crispy_tofu"
+          ]
+        }
+      ],
+      "extras": [
+        {
+          "id": "crispy_tofu",
+          "max": 1
+        },
+        {
+          "id": "sliced_avocado",
+          "max": 2
+        },
+        {
+          "id": "grilled_chicken",
+          "max": 1
+        }
+      ],
+      "swaps": [
+        {
+          "replace": "crispy_tofu",
+          "with": "roasted_mushrooms"
+        },
+        {
+          "replace": "sesame_dressing",
+          "with": "garlic_sauce"
+        },
+        {
+          "replace": "rice_base",
+          "with": "greens_base"
+        }
+      ]
+    },
+    {
+      "id": "satay_noodles",
+      "name": "Satay Noodles",
+      "aliases": [
+        "satay",
+        "peanut noodles",
+        "satay noodle"
+      ],
+      "items": [
+        {
+          "id": "chicken",
+          "name": "Chicken thigh",
+          "aliases": [
+            "chicken",
+            "chicken thighs"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "grilled_chicken"
+          ]
+        },
+        {
+          "id": "coconut_milk",
+          "name": "Coconut milk",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "peanut_sauce"
+          ]
+        },
+        {
+          "id": "cornstarch",
+          "name": "Cornstarch",
+          "aliases": [],
+          "kind": "ingredient"
+        },
+        {
+          "id": "crispy_tofu",
+          "name": "Crispy tofu",
+          "aliases": [
+            "fried tofu"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "crushed_peanuts",
+          "name": "Crushed peanuts",
+          "aliases": [
+            "peanut topping",
+            "crushed nuts"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "garlic",
+          "name": "Garlic",
+          "aliases": [],
+          "kind": "ingredient"
+        },
+        {
+          "id": "garlic_sauce",
+          "name": "Garlic sauce",
+          "aliases": [
+            "sauce",
+            "garlic mayo",
+            "white sauce",
+            "aioli"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "grilled_chicken",
+          "name": "Grilled chicken",
+          "aliases": [],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "lemon",
+          "name": "Lemon juice",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "peanut_sauce"
+          ]
+        },
+        {
+          "id": "mayonnaise",
+          "name": "Mayonnaise",
+          "aliases": [
+            "mayo"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "mushrooms",
+          "name": "Cremini mushrooms",
+          "aliases": [
+            "mushroom",
+            "shrooms"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "noodles_base",
+          "name": "Wheat noodles",
+          "aliases": [],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "oil",
+          "name": "Canola oil",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "grilled_chicken"
+          ]
+        },
+        {
+          "id": "peanut_butter",
+          "name": "Peanut butter",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "peanut_sauce"
+          ]
+        },
+        {
+          "id": "peanut_sauce",
+          "name": "Peanut sauce",
+          "aliases": [
+            "sauce",
+            "satay sauce"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "peanuts",
+          "name": "Roasted peanuts",
+          "aliases": [
+            "peanut",
+            "peanut pieces"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "crushed_peanuts"
+          ]
+        },
+        {
+          "id": "rice_vinegar",
+          "name": "Rice vinegar",
+          "aliases": [],
+          "kind": "ingredient"
+        },
+        {
+          "id": "roasted_mushrooms",
+          "name": "Roasted mushrooms",
+          "aliases": [
+            "roast mushrooms"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "scallion",
+          "name": "Scallion",
+          "aliases": [
+            "scallion",
+            "green onion",
+            "green onions",
+            "spring onion",
+            "spring onions"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "scallions"
+          ]
+        },
+        {
+          "id": "scallions",
+          "name": "Scallions",
+          "aliases": [],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "sesame_dressing",
+          "name": "Sesame dressing",
+          "aliases": [
+            "sauce",
+            "dressing",
+            "sesame sauce"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "sesame_oil",
+          "name": "Sesame oil",
+          "aliases": [],
+          "kind": "ingredient"
+        },
+        {
+          "id": "soy_sauce",
+          "name": "Soy sauce",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "peanut_sauce"
+          ]
+        },
+        {
+          "id": "tofu",
+          "name": "Firm tofu",
+          "aliases": [
+            "bean curd"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "wheat_noodles",
+          "name": "Wheat noodles",
+          "aliases": [
+            "noodles",
+            "noodle"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "noodles_base"
+          ]
+        }
+      ],
+      "extras": [
+        {
+          "id": "crushed_peanuts",
+          "max": 1
+        },
+        {
+          "id": "grilled_chicken",
+          "max": 1
+        }
+      ],
+      "swaps": [
+        {
+          "replace": "grilled_chicken",
+          "with": "crispy_tofu"
+        },
+        {
+          "replace": "grilled_chicken",
+          "with": "roasted_mushrooms"
+        },
+        {
+          "replace": "peanut_sauce",
+          "with": "sesame_dressing"
+        },
+        {
+          "replace": "peanut_sauce",
+          "with": "garlic_sauce"
+        }
+      ]
+    },
+    {
+      "id": "falafel_wrap",
+      "name": "Falafel Wrap",
+      "aliases": [
+        "falafel wrap",
+        "wrap"
+      ],
+      "items": [
+        {
+          "id": "avocado",
+          "name": "Avocado",
+          "aliases": [
+            "avo",
+            "avocados",
+            "avos"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "chickpeas",
+          "name": "Chickpeas",
+          "aliases": [
+            "chickpea",
+            "garbanzo",
+            "garbanzo beans"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "falafel"
+          ]
+        },
+        {
+          "id": "falafel",
+          "name": "Falafel",
+          "aliases": [
+            "falafels",
+            "falafel balls"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "flour",
+          "name": "Wheat flour",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "falafel"
+          ]
+        },
+        {
+          "id": "flour_tortilla",
+          "name": "Flour tortilla",
+          "aliases": [
+            "tortilla"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "tortilla"
+          ]
+        },
+        {
+          "id": "garlic",
+          "name": "Garlic",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "falafel",
+            "tahini_sauce"
+          ]
+        },
+        {
+          "id": "garlic_sauce",
+          "name": "Garlic sauce",
+          "aliases": [
+            "sauce",
+            "garlic mayo",
+            "white sauce",
+            "aioli"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "greens_base",
+          "name": "Greens base",
+          "aliases": [
+            "salad base",
+            "bed of greens",
+            "on greens"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "lemon",
+          "name": "Lemon juice",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "tahini_sauce"
+          ]
+        },
+        {
+          "id": "lettuce",
+          "name": "Lettuce",
+          "aliases": [
+            "romaine"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "mayonnaise",
+          "name": "Mayonnaise",
+          "aliases": [
+            "mayo"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "mixed_greens",
+          "name": "Mixed greens",
+          "aliases": [
+            "greens",
+            "salad greens",
+            "salad"
+          ],
+          "kind": "ingredient"
+        },
+        {
+          "id": "sliced_avocado",
+          "name": "Sliced avocado",
+          "aliases": [
+            "avocado slices"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "tahini",
+          "name": "Tahini",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "tahini_sauce"
+          ]
+        },
+        {
+          "id": "tahini_sauce",
+          "name": "Tahini sauce",
+          "aliases": [
+            "sauce",
+            "tahini"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "tomato",
+          "name": "Tomato",
+          "aliases": [
+            "tomatoes"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "tortilla",
+          "name": "Flour tortilla",
+          "aliases": [],
+          "kind": "component",
+          "prep": "assembly"
+        }
+      ],
+      "extras": [
+        {
+          "id": "falafel",
+          "max": 1
+        },
+        {
+          "id": "sliced_avocado",
+          "max": 1
+        }
+      ],
+      "swaps": [
+        {
+          "replace": "tortilla",
+          "with": "greens_base"
+        },
+        {
+          "replace": "tahini_sauce",
+          "with": "garlic_sauce"
+        }
+      ]
+    },
+    {
+      "id": "miso_soup",
+      "name": "Miso Soup",
+      "aliases": [
+        "miso soup",
+        "soup"
+      ],
+      "items": [
+        {
+          "id": "bonito_flakes",
+          "name": "Bonito flakes",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "miso_broth"
+          ]
+        },
+        {
+          "id": "miso",
+          "name": "Miso paste",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "miso_broth"
+          ]
+        },
+        {
+          "id": "miso_broth",
+          "name": "Miso broth",
+          "aliases": [
+            "broth",
+            "soup base"
+          ],
+          "kind": "component",
+          "prep": "premade",
+          "note": "Made ahead: its ingredients can't be removed individually."
+        },
+        {
+          "id": "scallion",
+          "name": "Scallion",
+          "aliases": [
+            "scallion",
+            "green onion",
+            "green onions",
+            "spring onion",
+            "spring onions"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "scallions"
+          ]
+        },
+        {
+          "id": "scallions",
+          "name": "Scallions",
+          "aliases": [],
+          "kind": "component",
+          "prep": "assembly"
+        },
+        {
+          "id": "seaweed",
+          "name": "Kombu seaweed",
+          "aliases": [],
+          "kind": "ingredient",
+          "in": [
+            "miso_broth"
+          ]
+        },
+        {
+          "id": "tofu",
+          "name": "Firm tofu",
+          "aliases": [
+            "bean curd"
+          ],
+          "kind": "ingredient",
+          "in": [
+            "tofu_cubes"
+          ]
+        },
+        {
+          "id": "tofu_cubes",
+          "name": "Silken tofu cubes",
+          "aliases": [
+            "silken tofu",
+            "tofu cubes"
+          ],
+          "kind": "component",
+          "prep": "assembly"
+        }
+      ],
+      "extras": [
+        {
+          "id": "tofu_cubes",
+          "max": 1
+        }
+      ],
+      "swaps": []
+    }
+  ],
+  "all_items": [
+    {
+      "id": "avocado",
+      "name": "Avocado",
+      "aliases": [
+        "avo",
+        "avocados",
+        "avos"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "bonito_flakes",
+      "name": "Bonito flakes",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "chicken",
+      "name": "Chicken thigh",
+      "aliases": [
+        "chicken",
+        "chicken thighs"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "chickpeas",
+      "name": "Chickpeas",
+      "aliases": [
+        "chickpea",
+        "garbanzo",
+        "garbanzo beans"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "coconut_milk",
+      "name": "Coconut milk",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "cornstarch",
+      "name": "Cornstarch",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "crispy_tofu",
+      "name": "Crispy tofu",
+      "aliases": [
+        "fried tofu"
+      ],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "crushed_peanuts",
+      "name": "Crushed peanuts",
+      "aliases": [
+        "peanut topping",
+        "crushed nuts"
+      ],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "falafel",
+      "name": "Falafel",
+      "aliases": [
+        "falafels",
+        "falafel balls"
+      ],
+      "kind": "component",
+      "prep": "premade",
+      "note": "Made ahead: its ingredients can't be removed individually."
+    },
+    {
+      "id": "flour",
+      "name": "Wheat flour",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "flour_tortilla",
+      "name": "Flour tortilla",
+      "aliases": [
+        "tortilla"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "garlic",
+      "name": "Garlic",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "garlic_sauce",
+      "name": "Garlic sauce",
+      "aliases": [
+        "sauce",
+        "garlic mayo",
+        "white sauce",
+        "aioli"
+      ],
+      "kind": "component",
+      "prep": "premade",
+      "note": "Made ahead: its ingredients can't be removed individually."
+    },
+    {
+      "id": "greens_base",
+      "name": "Greens base",
+      "aliases": [
+        "salad base",
+        "bed of greens",
+        "on greens"
+      ],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "grilled_chicken",
+      "name": "Grilled chicken",
+      "aliases": [],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "lemon",
+      "name": "Lemon juice",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "lettuce",
+      "name": "Lettuce",
+      "aliases": [
+        "romaine"
+      ],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "mayonnaise",
+      "name": "Mayonnaise",
+      "aliases": [
+        "mayo"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "miso",
+      "name": "Miso paste",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "miso_broth",
+      "name": "Miso broth",
+      "aliases": [
+        "broth",
+        "soup base"
+      ],
+      "kind": "component",
+      "prep": "premade",
+      "note": "Made ahead: its ingredients can't be removed individually."
+    },
+    {
+      "id": "mixed_greens",
+      "name": "Mixed greens",
+      "aliases": [
+        "greens",
+        "salad greens",
+        "salad"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "mushrooms",
+      "name": "Cremini mushrooms",
+      "aliases": [
+        "mushroom",
+        "shrooms"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "noodles_base",
+      "name": "Wheat noodles",
+      "aliases": [],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "oil",
+      "name": "Canola oil",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "peanut_butter",
+      "name": "Peanut butter",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "peanut_sauce",
+      "name": "Peanut sauce",
+      "aliases": [
+        "sauce",
+        "satay sauce"
+      ],
+      "kind": "component",
+      "prep": "premade",
+      "note": "Made ahead: its ingredients can't be removed individually."
+    },
+    {
+      "id": "peanuts",
+      "name": "Roasted peanuts",
+      "aliases": [
+        "peanut",
+        "peanut pieces"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "pickled_onion",
+      "name": "Pickled red onion",
+      "aliases": [
+        "onion",
+        "onions",
+        "pickled onions",
+        "pickled red onions",
+        "pickles"
+      ],
+      "kind": "component",
+      "prep": "premade",
+      "note": "Made ahead: its ingredients can't be removed individually."
+    },
+    {
+      "id": "red_onion",
+      "name": "Red onion",
+      "aliases": [
+        "red onions"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "rice",
+      "name": "Jasmine rice",
+      "aliases": [
+        "rice"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "rice_base",
+      "name": "Rice base",
+      "aliases": [
+        "rice bowl base"
+      ],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "rice_vinegar",
+      "name": "Rice vinegar",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "roasted_mushrooms",
+      "name": "Roasted mushrooms",
+      "aliases": [
+        "roast mushrooms"
+      ],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "scallion",
+      "name": "Scallion",
+      "aliases": [
+        "scallion",
+        "green onion",
+        "green onions",
+        "spring onion",
+        "spring onions"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "scallions",
+      "name": "Scallions",
+      "aliases": [],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "seaweed",
+      "name": "Kombu seaweed",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "sesame_dressing",
+      "name": "Sesame dressing",
+      "aliases": [
+        "sauce",
+        "dressing",
+        "sesame sauce"
+      ],
+      "kind": "component",
+      "prep": "premade",
+      "note": "Made ahead: its ingredients can't be removed individually."
+    },
+    {
+      "id": "sesame_oil",
+      "name": "Sesame oil",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "sliced_avocado",
+      "name": "Sliced avocado",
+      "aliases": [
+        "avocado slices"
+      ],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "soy_sauce",
+      "name": "Soy sauce",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "sugar",
+      "name": "Sugar",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "tahini",
+      "name": "Tahini",
+      "aliases": [],
+      "kind": "ingredient"
+    },
+    {
+      "id": "tahini_sauce",
+      "name": "Tahini sauce",
+      "aliases": [
+        "sauce",
+        "tahini"
+      ],
+      "kind": "component",
+      "prep": "premade",
+      "note": "Made ahead: its ingredients can't be removed individually."
+    },
+    {
+      "id": "tofu",
+      "name": "Firm tofu",
+      "aliases": [
+        "bean curd"
+      ],
+      "kind": "ingredient"
+    },
+    {
+      "id": "tofu_cubes",
+      "name": "Silken tofu cubes",
+      "aliases": [
+        "silken tofu",
+        "tofu cubes"
+      ],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "tomato",
+      "name": "Tomato",
+      "aliases": [
+        "tomatoes"
+      ],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "tortilla",
+      "name": "Flour tortilla",
+      "aliases": [],
+      "kind": "component",
+      "prep": "assembly"
+    },
+    {
+      "id": "wheat_noodles",
+      "name": "Wheat noodles",
+      "aliases": [
+        "noodles",
+        "noodle"
+      ],
+      "kind": "ingredient"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "_note": "Nicknames customers use, mapped to catalog IDs. Names and IDs (underscores as spaces) match automatically, so only list extra phrasings here. The same phrase may map to several IDs (e.g. 'sauce'); lookup narrows it by dish. SYNTHETIC demo data.",
+  "dishes": {
+    "chicken_bowl": ["chicken bowl", "garlic chicken", "garlic chicken bowl"],
+    "tofu_bowl": ["tofu bowl", "crispy tofu bowl"],
+    "satay_noodles": ["satay", "peanut noodles", "satay noodle"],
+    "falafel_wrap": ["falafel wrap", "wrap"],
+    "miso_soup": ["miso soup", "soup"]
+  },
+  "items": {
+    "avocado": ["avo", "avocados", "avos"],
+    "chicken": ["chicken", "chicken thighs"],
+    "tofu": ["bean curd"],
+    "mushrooms": ["mushroom", "shrooms"],
+    "rice": ["rice"],
+    "mixed_greens": ["greens", "salad greens", "salad"],
+    "peanuts": ["peanut", "peanut pieces"],
+    "scallion": ["scallion", "green onion", "green onions", "spring onion", "spring onions"],
+    "red_onion": ["red onions"],
+    "tomato": ["tomatoes"],
+    "lettuce": ["romaine"],
+    "wheat_noodles": ["noodles", "noodle"],
+    "flour_tortilla": ["tortilla"],
+    "chickpeas": ["chickpea", "garbanzo", "garbanzo beans"],
+    "mayonnaise": ["mayo"],
+
+    "garlic_sauce": ["sauce", "garlic mayo", "white sauce", "aioli"],
+    "sesame_dressing": ["sauce", "dressing", "sesame sauce"],
+    "peanut_sauce": ["sauce", "satay sauce"],
+    "tahini_sauce": ["sauce", "tahini"],
+    "crushed_peanuts": ["peanut topping", "crushed nuts"],
+    "pickled_onion": ["onion", "onions", "pickled onions", "pickled red onions", "pickles"],
+    "sliced_avocado": ["avocado slices"],
+    "greens_base": ["salad base", "bed of greens", "on greens"],
+    "rice_base": ["rice bowl base"],
+    "crispy_tofu": ["fried tofu"],
+    "roasted_mushrooms": ["roast mushrooms"],
+    "miso_broth": ["broth", "soup base"],
+    "tofu_cubes": ["silken tofu", "tofu cubes"],
+    "falafel": ["falafels", "falafel balls"]
+  },
+  "allergens": {
+    "peanuts": "peanut",
+    "peanut butter": "peanut",
+    "gluten": "wheat",
+    "celiac": "wheat",
+    "coeliac": "wheat",
+    "eggs": "egg",
+    "soya": "soy",
+    "sesame seeds": "sesame",
+    "seafood": "fish"
+  },
+  "diets": {
+    "plant based": "vegan",
+    "plant-based": "vegan",
+    "veggie": "vegetarian",
+    "no meat": "vegetarian"
+  }
+}

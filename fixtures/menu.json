@@ -1,0 +1,344 @@
+[
+  {
+    "id": "chicken_bowl",
+    "name": "Garlic Chicken Bowl",
+    "price_cents": 1450,
+    "components": [
+      {
+        "id": "rice_base",
+        "name": "Rice base",
+        "servings": 1
+      },
+      {
+        "id": "grilled_chicken",
+        "name": "Grilled chicken",
+        "servings": 1
+      },
+      {
+        "id": "garlic_sauce",
+        "name": "Garlic sauce",
+        "servings": 1
+      },
+      {
+        "id": "sliced_avocado",
+        "name": "Sliced avocado",
+        "servings": 1
+      },
+      {
+        "id": "pickled_onion",
+        "name": "Pickled red onion",
+        "servings": 1
+      }
+    ],
+    "extras": [
+      {
+        "id": "grilled_chicken",
+        "name": "Grilled chicken",
+        "max": 1,
+        "price_cents": 350
+      },
+      {
+        "id": "sliced_avocado",
+        "name": "Sliced avocado",
+        "max": 2,
+        "price_cents": 200
+      },
+      {
+        "id": "garlic_sauce",
+        "name": "Garlic sauce",
+        "max": 1,
+        "price_cents": 75
+      }
+    ],
+    "swaps": [
+      {
+        "replace": "grilled_chicken",
+        "replace_name": "Grilled chicken",
+        "with": "crispy_tofu",
+        "with_name": "Crispy tofu",
+        "price_delta_cents": 0
+      },
+      {
+        "replace": "grilled_chicken",
+        "replace_name": "Grilled chicken",
+        "with": "roasted_mushrooms",
+        "with_name": "Roasted mushrooms",
+        "price_delta_cents": -100
+      },
+      {
+        "replace": "garlic_sauce",
+        "replace_name": "Garlic sauce",
+        "with": "sesame_dressing",
+        "with_name": "Sesame dressing",
+        "price_delta_cents": 0
+      },
+      {
+        "replace": "rice_base",
+        "replace_name": "Rice base",
+        "with": "greens_base",
+        "with_name": "Greens base",
+        "price_delta_cents": 0
+      }
+    ],
+    "allergens": [
+      "egg"
+    ]
+  },
+  {
+    "id": "tofu_bowl",
+    "name": "Crispy Tofu Bowl",
+    "price_cents": 1350,
+    "components": [
+      {
+        "id": "rice_base",
+        "name": "Rice base",
+        "servings": 1
+      },
+      {
+        "id": "crispy_tofu",
+        "name": "Crispy tofu",
+        "servings": 1
+      },
+      {
+        "id": "sesame_dressing",
+        "name": "Sesame dressing",
+        "servings": 1
+      },
+      {
+        "id": "pickled_onion",
+        "name": "Pickled red onion",
+        "servings": 1
+      }
+    ],
+    "extras": [
+      {
+        "id": "crispy_tofu",
+        "name": "Crispy tofu",
+        "max": 1,
+        "price_cents": 300
+      },
+      {
+        "id": "sliced_avocado",
+        "name": "Sliced avocado",
+        "max": 2,
+        "price_cents": 200
+      },
+      {
+        "id": "grilled_chicken",
+        "name": "Grilled chicken",
+        "max": 1,
+        "price_cents": 350
+      }
+    ],
+    "swaps": [
+      {
+        "replace": "crispy_tofu",
+        "replace_name": "Crispy tofu",
+        "with": "roasted_mushrooms",
+        "with_name": "Roasted mushrooms",
+        "price_delta_cents": -100
+      },
+      {
+        "replace": "sesame_dressing",
+        "replace_name": "Sesame dressing",
+        "with": "garlic_sauce",
+        "with_name": "Garlic sauce",
+        "price_delta_cents": 0
+      },
+      {
+        "replace": "rice_base",
+        "replace_name": "Rice base",
+        "with": "greens_base",
+        "with_name": "Greens base",
+        "price_delta_cents": 0
+      }
+    ],
+    "allergens": [
+      "sesame",
+      "soy",
+      "wheat"
+    ]
+  },
+  {
+    "id": "satay_noodles",
+    "name": "Satay Noodles",
+    "price_cents": 1500,
+    "components": [
+      {
+        "id": "noodles_base",
+        "name": "Wheat noodles",
+        "servings": 1
+      },
+      {
+        "id": "grilled_chicken",
+        "name": "Grilled chicken",
+        "servings": 1
+      },
+      {
+        "id": "peanut_sauce",
+        "name": "Peanut sauce",
+        "servings": 1
+      },
+      {
+        "id": "crushed_peanuts",
+        "name": "Crushed peanuts",
+        "servings": 1
+      },
+      {
+        "id": "scallions",
+        "name": "Scallions",
+        "servings": 1
+      }
+    ],
+    "extras": [
+      {
+        "id": "crushed_peanuts",
+        "name": "Crushed peanuts",
+        "max": 1,
+        "price_cents": 50
+      },
+      {
+        "id": "grilled_chicken",
+        "name": "Grilled chicken",
+        "max": 1,
+        "price_cents": 350
+      }
+    ],
+    "swaps": [
+      {
+        "replace": "grilled_chicken",
+        "replace_name": "Grilled chicken",
+        "with": "crispy_tofu",
+        "with_name": "Crispy tofu",
+        "price_delta_cents": 0
+      },
+      {
+        "replace": "grilled_chicken",
+        "replace_name": "Grilled chicken",
+        "with": "roasted_mushrooms",
+        "with_name": "Roasted mushrooms",
+        "price_delta_cents": -100
+      },
+      {
+        "replace": "peanut_sauce",
+        "replace_name": "Peanut sauce",
+        "with": "sesame_dressing",
+        "with_name": "Sesame dressing",
+        "price_delta_cents": 0
+      },
+      {
+        "replace": "peanut_sauce",
+        "replace_name": "Peanut sauce",
+        "with": "garlic_sauce",
+        "with_name": "Garlic sauce",
+        "price_delta_cents": 0
+      }
+    ],
+    "allergens": [
+      "peanut",
+      "soy",
+      "wheat"
+    ]
+  },
+  {
+    "id": "falafel_wrap",
+    "name": "Falafel Wrap",
+    "price_cents": 1250,
+    "components": [
+      {
+        "id": "tortilla",
+        "name": "Flour tortilla",
+        "servings": 1
+      },
+      {
+        "id": "falafel",
+        "name": "Falafel",
+        "servings": 1
+      },
+      {
+        "id": "tahini_sauce",
+        "name": "Tahini sauce",
+        "servings": 1
+      },
+      {
+        "id": "lettuce",
+        "name": "Lettuce",
+        "servings": 1
+      },
+      {
+        "id": "tomato",
+        "name": "Tomato",
+        "servings": 1
+      }
+    ],
+    "extras": [
+      {
+        "id": "falafel",
+        "name": "Falafel",
+        "max": 1,
+        "price_cents": 250
+      },
+      {
+        "id": "sliced_avocado",
+        "name": "Sliced avocado",
+        "max": 1,
+        "price_cents": 200
+      }
+    ],
+    "swaps": [
+      {
+        "replace": "tortilla",
+        "replace_name": "Flour tortilla",
+        "with": "greens_base",
+        "with_name": "Greens base",
+        "price_delta_cents": 0
+      },
+      {
+        "replace": "tahini_sauce",
+        "replace_name": "Tahini sauce",
+        "with": "garlic_sauce",
+        "with_name": "Garlic sauce",
+        "price_delta_cents": 0
+      }
+    ],
+    "allergens": [
+      "sesame",
+      "wheat"
+    ]
+  },
+  {
+    "id": "miso_soup",
+    "name": "Miso Soup",
+    "price_cents": 650,
+    "components": [
+      {
+        "id": "miso_broth",
+        "name": "Miso broth",
+        "servings": 1
+      },
+      {
+        "id": "tofu_cubes",
+        "name": "Silken tofu cubes",
+        "servings": 1
+      },
+      {
+        "id": "scallions",
+        "name": "Scallions",
+        "servings": 1
+      }
+    ],
+    "extras": [
+      {
+        "id": "tofu_cubes",
+        "name": "Silken tofu cubes",
+        "max": 1,
+        "price_cents": 100
+      }
+    ],
+    "swaps": [],
+    "allergens": [
+      "fish",
+      "soy"
+    ]
+  }
+]

@@ -43,14 +43,21 @@ Only edit another area's folder after agreeing with its owner.
 
 ## Contracts
 
-Parser → inventory: a list of ops, ingredient/component IDs from `backend/data/catalog.json` only:
+Parser → inventory: ops using only IDs from
+[fixtures/parser_vocabulary.json](fixtures/parser_vocabulary.json) (generated from the catalog +
+`backend/data/aliases.json`); anything not listed is sent as `"unknown:<word>"`:
 
 ```python
-{"op": "remove" | "add" | "substitute" | "on_side" | "less",
- "ingredient": "<ingredient or component id>",
- "qty": 1,            # add only, default 1
- "with": "<id>|None"} # substitute only; None = "suggest something"
+{"dish": "<id from UI>", "qty": 1, "original_text": "...",
+ "ops": [{"op": "remove" | "add" | "substitute" | "on_side" | "less",
+          "ingredient": "<ingredient or component id>",
+          "qty": 1,             # add only, default 1
+          "with": "<id>|None"}], # substitute only; None = "suggest something"
+ "flags": {"level": "allergy" | "diet" | None, "allergens": [...], "diets": [...]}}
 ```
+
+Parser test set: [fixtures/parser_cases.json](fixtures/parser_cases.json) (text → expected output →
+expected inventory status). Customer menu for `GET /menu`: [fixtures/menu.json](fixtures/menu.json).
 
 Inventory entry point for the API: `inv.evaluate_request(parser_output)` returns the status
 (`ready | needs_customer_approval | needs_staff_review | needs_clarification | unavailable`),
@@ -65,7 +72,11 @@ Run from the repo root (standard library only, no installs needed):
 py -3 -m unittest discover -s tests -t .      # all tests
 py -3 -m backend.inventory.demo               # walk through the demo scenarios
 py -3 -m backend.inventory.demo --fixture     # regenerate fixtures/allergy_request_example.json
+py -3 -m backend.inventory.export             # regenerate parser_vocabulary.json + menu.json
 ```
+
+After editing `backend/data/catalog.json` or `aliases.json`, rerun both generators; a test fails
+if the fixtures are stale.
 
 Shared example of the full allergy flow: [fixtures/allergy_request_example.json](fixtures/allergy_request_example.json).
 

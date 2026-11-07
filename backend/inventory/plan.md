@@ -1,7 +1,8 @@
 # Inventory, feasibility & similarity — plan
 
-Owner: Siddharth. Branch: `inventory`. Status: **v1 implemented and tested (86 unit tests),
-including the one-call `evaluate_request()`; contracts with Person 2 and Person 4 still to be agreed.**
+Owner: Siddharth. Branch: `inventory` (merged to `main`). Status: **v1 implemented and tested
+(102 unit tests): `evaluate_request()`, parser vocabulary + menu export, and a 30-case starter
+parser test set. Contracts with Person 2 and Person 4 still to be agreed.**
 
 Keep this file updated as tasks finish or decisions change (see `CLAUDE.md`).
 
@@ -14,9 +15,32 @@ Keep this file updated as tasks finish or decisions change (see `CLAUDE.md`).
 | `feasibility.py` | Applies ops to a dish; prep-stage, extras, swaps, allergens, diet, stock; similarity scoring |
 | `request.py` | `evaluate_request()`: parser output in → status, alternatives (combinations of swaps / leave-offs), recommendation, requirements out |
 | `stock.py` | Thread-safe `StockStore`: available, hold (TTL), confirm (once), release, adjust, usage log |
+| `vocabulary.py` | What the parser may output (`parser_vocabulary()`), alias `lookup()`, customer `menu()` |
+| `export.py` | `py -3 -m backend.inventory.export` writes `fixtures/parser_vocabulary.json` + `fixtures/menu.json` |
 | `service.py` | `Inventory` facade + `load_inventory()` — the only thing other modules should import |
 | `demo.py` | `py -3 -m backend.inventory.demo` walks the scenarios; `--fixture` regenerates the shared fixture |
-| `tests/inventory/` | One test per edge-case row, stock/hold flows, staff-review flow, demo scenarios |
+| `backend/data/aliases.json` | Customer nicknames → IDs (items, dishes, allergens, diets) |
+| `fixtures/parser_cases.json` | Starter parser test set: text → expected parser output → expected inventory status |
+| `tests/inventory/` | Edge cases, stock/hold flows, staff review, demo scenarios, vocabulary, parser test set |
+
+## Parser vocabulary and test set (for Person 2)
+
+- **`fixtures/parser_vocabulary.json`** — put this (or the dish's slice of it) in the parser prompt.
+  Has the output format, rules, ops, allergens/diets with aliases, and per dish: every item that can
+  be mentioned (parts, their ingredients, extras, swap targets) with names and nicknames. Premade
+  components carry a note; ingredients list which component they're `in`.
+- **Unknown things:** the parser emits `"unknown:<word>"` (e.g. `unknown:bacon`, `unknown:spicy`);
+  inventory returns `needs_clarification`.
+- **`inv.lookup(text, dish_id)`** — deterministic word → IDs, narrowed to what's in the dish now, then
+  its extras/swaps, then anything. A component beats an ingredient inside it ("no tahini" → tahini sauce).
+  Useful to validate or repair LLM output.
+- **`fixtures/parser_cases.json`** — 30 draft cases (nicknames, "the sauce", casual allergy mentions,
+  celiac → wheat, unknown items, conflicts, premade ingredients, unmeetable diets, qty from UI).
+  Input = dish + qty from the UI + free text. `tests/inventory/test_parser_cases.py` checks every
+  expected output only uses vocabulary IDs and produces the listed `inventory_status`.
+  Person 2 can score the real parser against the same file.
+- The fixtures are generated: after editing `catalog.json` or `aliases.json`, run the export; a test
+  fails if they're stale.
 
 ## Responsibilities
 
@@ -73,6 +97,9 @@ from backend.inventory import load_inventory
 inv = load_inventory()                          # reads backend/data/*.json
 
 inv.evaluate_request(parser_output) -> RequestEvaluation   # START HERE: one call for the API
+inv.parser_vocabulary() -> dict                 # what the parser may output
+inv.menu() -> list[dict]                        # GET /menu
+inv.lookup(text, dish_id=None) -> list[str]     # customer word -> catalog IDs
 inv.requirements(dish_id, ops, qty=1) -> dict[item_id, int]
 inv.check(dish_id, ops, qty=1, exclude_allergens=(), require_diet=()) -> CheckResult
 inv.substitute_candidates(dish_id, target, qty=1, exclude_allergens=(), require_diet=(),
@@ -196,7 +223,9 @@ Status precedence: `needs_clarification` > `blocked` > `out_of_stock` > `ok`; al
 - [x] Demo scenarios: close substitute; blocked premade removal; forecast picks between two swaps;
       stock change forces re-evaluation before confirm
 - [x] `evaluate_request()` one-call entry point + `can_leave_off` catalog flag (20 more tests, 86 total)
-- [ ] Parser vocabulary / menu export (IDs, names, nicknames) for Person 2 and `GET /menu`
+- [x] Parser vocabulary / menu export (IDs, names, nicknames) for Person 2 and `GET /menu`
+- [x] Starter parser test set (30 cases) checked against `evaluate_request()`
+- [ ] Person 2 reviews/extends `fixtures/parser_cases.json` and `aliases.json`
 - [ ] Synthetic usage history for forecast (`usage_log()` only covers live orders)
 - [ ] Use-by dates per stock batch + "expiring before T" query (surplus story)
 - [ ] Multi-dish orders: sum requirements across items into one hold
@@ -207,4 +236,5 @@ Status precedence: `needs_clarification` > `blocked` > `out_of_stock` > `ok`; al
 - Who owns API endpoints, review queue, timeout job? (Inventory already provides hold TTL + `expired_holds()`.)
 - Persistence: in-memory + JSON is enough for the demo?
 - Should forecast warnings apply to direct requests that are feasible (e.g. extra avocado causing a later shortage)?
-- Does the parser send dish IDs from `catalog.json`, or names we need to map?
+- Dish and qty: assumed to come from the UI selection, not parsed from text. Confirm with Person 1/2.
+- Conflicts like "no avocado. actually extra avocado": should the parser keep only the correction?
