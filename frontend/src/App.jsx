@@ -15,21 +15,21 @@ function ApiBadge() {
 
 function Shell() {
   const { state } = useStore()
-  const [role, setRole] = useState('staff')
+  const [activeView, setActiveView] = useState('kitchen')
 
   const mine = state.orders.filter((o) => state.myOrderIds.includes(o.order_id))
   const needsMe = mine.filter((o) => o.status === 'awaiting_customer').length
   const needsStaff = state.orders.filter((o) => o.status === 'awaiting_staff').length
 
   const goOrders = () => {
-    setRole('customer')
+    setActiveView('orders')
     requestAnimationFrame(() => document.getElementById('your-orders')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
   const nav = [
-    { key: 'menu', label: 'Menu', icon: 'menu', active: role === 'customer', onClick: () => setRole('customer') },
+    { key: 'menu', label: 'Menu', icon: 'menu', onClick: () => setActiveView('menu') },
     { key: 'orders', label: 'Your orders', icon: 'bag', badge: needsMe || null, onClick: goOrders },
-    { key: 'kitchen', label: 'Kitchen / staff', icon: 'chef', active: role === 'staff', badge: needsStaff || null, onClick: () => setRole('staff') },
+    { key: 'kitchen', label: 'Kitchen / staff', icon: 'chef', badge: needsStaff || null, onClick: () => setActiveView('kitchen') },
   ]
 
   return (
@@ -41,7 +41,7 @@ function Shell() {
         </div>
         <nav className="nav" aria-label="Views">
           {nav.map((n) => (
-            <button key={n.key} className={`nav-item ${n.active ? 'active' : ''}`} aria-current={n.active ? 'page' : undefined} onClick={n.onClick}>
+            <button key={n.key} className={`nav-item ${activeView === n.key ? 'active' : ''}`} aria-current={activeView === n.key ? 'page' : undefined} onClick={n.onClick}>
               <Icon name={n.icon} />
               <span>{n.label}</span>
               {n.badge && <span className="nav-badge" aria-label={`${n.badge} need attention`}>{n.badge}</span>}
@@ -53,7 +53,7 @@ function Shell() {
           <ApiBadge />
         </div>
       </aside>
-      <main className="content">{role === 'customer' ? <CustomerView /> : <StaffView />}</main>
+      <main className="content">{activeView === 'kitchen' ? <StaffView /> : <CustomerView />}</main>
     </div>
   )
 }
