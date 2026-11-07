@@ -11,6 +11,7 @@ from backend.api.app import create_app
 from backend.api.service import OrderService
 from backend.inventory import load_inventory
 from backend.parsing.adapter import parse_request
+from tests.parsing.helpers import FakeClient, model_output
 
 
 def offline_parse(inv, dish_id, qty, text, clarifications):
@@ -110,6 +111,30 @@ class FullFlowTests(unittest.TestCase):
         order = self.client.post(f"/api/orders/{r['order_id']}/accept", json={"option_id": first["option_id"]}).json()
         self.assertEqual(order["status"], "confirmed")
         self.assertEqual(order["kitchen_instructions"][0], "ALLERGY: peanut")
+
+    def test_vegetarian_declaration_uses_ranked_options_despite_model_question(self):
+        fake = FakeClient(model_output(
+            "needs_staff_review", questions=["Would you like to swap the chicken or remove it?"],
+            restrictions=[{"kind": "diet", "value": "vegetarian"}], staff_notes=["Staff must confirm."],
+        ))
+        self.service.parse_fn = lambda *args: parse_request(*args, client=fake, mode="openrouter")
+
+        result = self.evaluate("chicken_bowl", "I’m vegetarian")
+        self.assertEqual(result["status"], "needs_customer_approval")
+        self.assertEqual(result["questions"], [])
+        self.assertTrue(result["review"]["required"])
+        option = result["options"][0]
+        self.assertEqual(option["changes"][0]["with"], "roasted_mushrooms")
+        self.assertEqual(option["route"], "staff")
+        order = self.client.post(f"/api/orders/{result['order_id']}/accept",
+                                 json={"option_id": option["option_id"]}).json()
+        self.assertEqual(order["status"], "awaiting_staff")
+
+        ambiguous = self.evaluate("chicken_bowl", "I’m vegetarian, can you swap it for the usual?")
+        self.assertEqual(ambiguous["status"], "needs_clarification")
+        self.assertTrue(ambiguous["questions"])
+        self.assertTrue(ambiguous["review"]["required"])
+        self.assertIsNone(ambiguous["order_id"])
 
     def test_unknown_item_asks_customer(self):
         r = self.evaluate("chicken_bowl", "add bacon")

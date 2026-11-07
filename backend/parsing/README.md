@@ -167,6 +167,15 @@ Scoring against the real model (billable, needs the key) or offline:
 .venv/Scripts/python -m backend.parsing.run_manual_cases [--offline]
 ```
 
+To check the six demo orders with live Sonnet 5.5, run the following from the repo root.
+It makes six billable parser calls, bypasses both caches, and uses fresh demo inventory for
+each case. It prompts privately if the key is absent and verifies the model in each response.
+Use `-k vegetarian` to rerun just the vegetarian case with one live call.
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.parsing.run_demo_cases
+```
+
 ### Offline mode limitations
 
 Offline reaches the expected inventory status on 28/30 fixture cases (35/40 including

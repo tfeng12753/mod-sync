@@ -178,6 +178,9 @@ Return strict JSON according to the provided schema.
   Do not claim that any dish is allergen-free, vegan, vegetarian, halal, or kosher.
   If both dietary review and clarification are needed, include the questions too;
   staff must resolve them before the order proceeds.
+  A standalone declaration such as "I'm vegetarian" or "I'm vegan" is complete.
+  Return the restriction and staff notes with no changes or questions. Inventory
+  will find and rank possible changes for the customer to choose.
 - When clarification history is supplied, reinterpret the ORIGINAL instructions
   plus the answers. Output the FULL FINAL list of changes, not merely new changes.
   Process answers in order. A revised request replaces the unresolved change it answers;
@@ -508,9 +511,19 @@ def validate_result(request: ParseRequest, result: ParseResult) -> ParseResult:
             status = "needs_staff_review"
         notes = list(dict.fromkeys([*notes, *forced]))
 
+    # A plain diet declaration gives the engine enough information to rank alternatives.
+    # Leave mixed requests and follow-ups alone because they can contain real ambiguity.
+    declaration = re.fullmatch(
+        r"(?:(?:i'm|i am) (?:a )?)?(vegetarian|vegan)(?: please)?[.!]*",
+        " ".join(request.instructions.lower().replace("’", "'").split()),
+    )
+    diet_only = not request.clarifications and declaration and any(
+        r.kind == "diet" and r.value == declaration[1] for r in restrictions
+    )
     result = ParseResult(
-        status=status, changes=result.changes, questions=result.questions, staff_notes=notes,
-        restrictions=restrictions, unknown_items=unknown, safety_flags=safety_flags,
+        status=status, changes=[] if diet_only else result.changes,
+        questions=[] if diet_only else result.questions, staff_notes=notes,
+        restrictions=restrictions, unknown_items=[] if diet_only else unknown, safety_flags=safety_flags,
     )
 
     if result.status == "ready" and (result.questions or result.staff_notes):
