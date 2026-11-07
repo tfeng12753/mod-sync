@@ -101,8 +101,8 @@
       "dish": "chicken_bowl", "qty": 1,
       "text": "no cilantro",
       "expected": {"ops": [{"op": "remove", "ingredient": "unknown:cilantro"}], "flags": null},
-      "inventory_status": "needs_clarification",
-      "why": "We don't track cilantro, so staff confirm rather than the system promising anything."
+      "inventory_status": "ready",
+      "why": "Explicit removal of an unlisted item needs no recipe change; allergy/diet concerns still require staff review."
     },
     {
       "id": "not-representable",
@@ -116,9 +116,9 @@
       "id": "conflict",
       "dish": "chicken_bowl", "qty": 1,
       "text": "no avocado. actually extra avocado",
-      "expected": {"ops": [{"op": "remove", "ingredient": "avocado"}, {"op": "add", "ingredient": "avocado", "qty": 1}], "flags": null},
-      "inventory_status": "needs_clarification",
-      "why": "Parser passes both through; inventory flags the conflict. (A smarter parser could keep only the correction.)"
+      "expected": {"ops": [{"op": "add", "ingredient": "avocado", "qty": 1}], "flags": null},
+      "inventory_status": "ready",
+      "why": "'Actually' corrects the earlier instruction, so only the correction is kept. Inventory still flags remove+add conflicts if both arrive."
     },
     {
       "id": "extra-not-offered",

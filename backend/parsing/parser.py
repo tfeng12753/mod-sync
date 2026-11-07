@@ -131,7 +131,15 @@ Return strict JSON according to the provided schema.
 - Prefer the most specific thing the customer named: a part (e.g. a sauce) when they name the
   part, an ingredient when they name an ingredient (e.g. "no garlic" -> the garlic ingredient,
   even if it is inside a made-ahead sauce; inventory decides what is possible).
+  If the word is a vocabulary alias of a part in this dish, use that part even when an
+  ingredient has the same name (e.g. "no tahini" -> tahini_sauce, whose aliases include "tahini").
+- A later correction replaces the earlier instruction for the same item ("no avocado. actually
+  extra avocado" -> only the add); do not output both.
 - remove X / no X / without X / hold X -> {operation: remove, quantity: 0}.
+  If X is absent from the recipe, keep the explicit removal; do not ask for clarification
+  solely because it is absent. For an unlisted X, report unknown_items with operation remove
+  and return ready without a staff note unless there is another concern. Inventory checks
+  whether a change is needed. This never overrides allergy/dietary review.
 - extra X / double X / more X -> {operation: add, quantity: 1} (one extra portion), unless
   another amount is explicit ("3 extra X" -> quantity 3).
 - N total X / make it N X -> {operation: set, quantity: N}.
@@ -151,6 +159,7 @@ Return strict JSON according to the provided schema.
   allowed_ingredient_ids (e.g. an ingredient we don't stock, or "make it spicy"), put it in
   unknown_items {cart_item_id, word (the customer's word, e.g. "bacon"), operation}, keep the
   other clear changes, and return needs_staff_review with a specific staff note.
+  Explicit removals of absent items use the ready exception above.
 - restrictions: list every allergy or intolerance as {kind: allergy, value} and every diet as
   {kind: diet, value}, using the canonical allergen/diet IDs from the vocabulary (apply the
   aliases, e.g. gluten/celiac -> wheat). An allergen we don't list (e.g. dairy) is still listed,
@@ -173,7 +182,8 @@ Return strict JSON according to the provided schema.
   represented must be flagged for clarification or staff review.
 - Do not output the same (cart_item_id, ingredient_id) more than once. Consolidate
   repeated instructions into the final action, or ask if still ambiguous.
-- For ready, questions, staff_notes, restrictions and unknown_items must be empty.
+- For ready, questions, staff_notes and restrictions must be empty; unknown_items may
+  contain explicit removals only.
 - For needs_clarification, questions must have at least one useful question.
 - For needs_staff_review, staff_notes must have at least one useful explanation.
 """.strip()
@@ -481,11 +491,12 @@ def validate_result(request: ParseRequest, result: ParseResult) -> ParseResult:
     forced += [f"Customer mentioned an allergy to {r.value}; staff must review the dish."
                for r in restrictions if r.kind == "allergy"]
     forced += [f"Customer requires a {r.value} dish; staff must review the dish." for r in restrictions if r.kind == "diet"]
-    if unknown and not notes:
+    unresolved_unknown = [u for u in unknown if u.operation != "remove"]
+    if unresolved_unknown and not notes:
         forced.append("Customer asked about items we don't track: "
-                      + ", ".join(sorted({u.word for u in unknown})) + ".")
+                      + ", ".join(sorted({u.word for u in unresolved_unknown})) + ".")
     status = result.status
-    if forced or unknown or restrictions:
+    if forced or unresolved_unknown or restrictions:
         if status != "needs_clarification" or forced or restrictions:
             status = "needs_staff_review"
         notes = list(dict.fromkeys([*notes, *forced]))
@@ -568,6 +579,11 @@ def parse_modifications(request: ParseRequest, client=None) -> ParseResult:
             raise ValueError("No model content")
         raw = json.loads(content)
         raw.pop("safety_flags", None)  # deterministic only; never taken from the model
+        for change in raw.get("changes") or []:
+            # Quantity carries no meaning for these ops; a stray 1 shouldn't fail the whole request.
+            # (remove stays strict: "remove 1" could mean "one fewer", which is ambiguous.)
+            if isinstance(change, dict) and change.get("operation") in ("on_side", "less", "substitute"):
+                change["quantity"] = 0
         result = ParseResult.model_validate(raw)
     except Exception as exc:
         raise ParserValidationError("Model returned invalid structured JSON") from exc

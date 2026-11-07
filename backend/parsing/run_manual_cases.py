@@ -20,6 +20,26 @@ def _key(op):
     return (op["op"], op["ingredient"])
 
 
+def matches(case, parsed, ev) -> bool:
+    """Exact expected ops, or different IDs that give the kitchen the same result
+    (e.g. rice -> mixed_greens vs rice_base -> greens_base), with the same status and safety level."""
+    if "expected" not in case:
+        return parsed.status == case["expected_status"]
+    if ev.status != case["inventory_status"]:
+        return False
+    got, want = parsed.parser_output, case["expected"]
+    if sorted(got["ops"], key=_key) == sorted(want["ops"], key=_key):
+        return True
+    want_flags = want["flags"] or {"level": None, "allergens": [], "diets": []}
+    if (got["flags"]["level"] != want_flags["level"]
+            or sorted(got["flags"]["allergens"]) != sorted(want_flags["allergens"])):
+        return False
+    inv = load_inventory()
+    expected_ev = inv.evaluate_request({**got, "ops": want["ops"], "flags": want_flags})
+    return (ev.check.ok and expected_ev.check.ok
+            and ev.check.kitchen_instructions == expected_ev.check.kitchen_instructions)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--offline", action="store_true", help="use the rule-based parser (no API calls)")
@@ -38,12 +58,10 @@ def main(argv=None):
             print(f"\nERROR {case['id']}: {case['text']!r}\n  {type(exc).__name__}: {str(exc)[:200]}")
             continue
         ev = inv.evaluate_request(parsed.parser_output)
+        ok = matches(case, parsed, ev)
         if "expected" in case:
-            ok = (sorted(parsed.parser_output["ops"], key=_key) == sorted(case["expected"]["ops"], key=_key)
-                  and ev.status == case["inventory_status"])
             expected = f"ops={case['expected']['ops']} inventory={case['inventory_status']}"
         else:
-            ok = parsed.status == case["expected_status"]
             expected = f"parser={case['expected_status']} ({case['expected_summary']})"
         passed += ok
         print(f"\n{'PASS ' if ok else 'CHECK'} {case['id']}: {case['text']!r}")

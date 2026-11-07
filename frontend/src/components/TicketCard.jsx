@@ -100,7 +100,7 @@ function ReviewControls({ order, dispatch }) {
         <div className="row">
           <button className="btn primary grow" disabled={busy || (current == null && !e.as_requested?.feasible)}
             onClick={() => run(`approved ${current ?? 'as requested'}`, () => api.approve(order.order_id, current))}>
-            Approve: {currentLabel ?? current}
+            Approve for customer confirmation: {currentLabel ?? current}
           </button>
           <button className="btn danger-btn" disabled={busy} onClick={() => setRejecting(true)}>Reject</button>
         </div>

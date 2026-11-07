@@ -54,6 +54,30 @@ class OfflineExtras(unittest.TestCase):
     def setUp(self):
         self.inv = load_inventory()
 
+    def test_none_of_is_an_explicit_removal(self):
+        parsed = offline(self.inv, "chicken_bowl", "none of the avocado")
+        self.assertEqual(parsed.status, "ready")
+        self.assertEqual(parsed.parser_output["ops"], [{"op": "remove", "ingredient": "avocado"}])
+
+    def test_substitute_keeps_named_replacement(self):
+        parsed = offline(self.inv, "chicken_bowl", "substitute chicken for tofu")
+        self.assertEqual(parsed.parser_output["ops"], [{"op": "substitute", "ingredient": "chicken", "with": "tofu"}])
+
+    def test_quantity_before_or_after_extra(self):
+        for text in ["2 extra avocado", "extra 2 avocado", "extra two avocado", "add two avocado"]:
+            with self.subTest(text=text):
+                parsed = offline(self.inv, "chicken_bowl", text)
+                self.assertEqual(parsed.parser_output["ops"], [{"op": "add", "ingredient": "avocado", "qty": 2}])
+
+    def test_absent_removal_is_ready_but_allergy_still_requires_review(self):
+        parsed = offline(self.inv, "chicken_bowl", "no cilantro")
+        self.assertEqual(parsed.status, "ready")
+        self.assertEqual(parsed.questions, [])
+        self.assertEqual(self.inv.evaluate_request(parsed.parser_output).status, "ready")
+        parsed = offline(self.inv, "chicken_bowl", "cilantro allergy, no cilantro")
+        self.assertEqual(parsed.status, "needs_staff_review")
+        self.assertTrue(parsed.staff_notes)
+
     def test_correction_keeps_final_intent(self):
         parsed = offline(self.inv, "chicken_bowl", "no avocado. actually extra avocado")
         self.assertEqual(parsed.status, "ready")

@@ -91,8 +91,7 @@ class EvaluateRequestTests(unittest.TestCase):
         self.assertEqual([changes(o) for o in e.options], [
             [("crushed_peanuts", None), ("peanut_sauce", "sesame_dressing")],
             [("crushed_peanuts", None), ("peanut_sauce", "garlic_sauce")],
-            [("crushed_peanuts", None), ("peanut_sauce", None)],
-        ])
+        ])  # no "leave off the peanut sauce": it defines the dish
         for o in e.options:
             self.assertNotIn("peanut", o.check.evidence["allergens_present"])
             self.assertTrue(o.check.requires_staff_review)

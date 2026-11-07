@@ -21,6 +21,7 @@ export default function StaffView() {
   return (
     <div className="layout">
       <section>
+        <h1 className="page-title">Kitchen</h1>
         {ordersError && <div className="error">{ordersError}</div>}
 
         <h2>Needs staff review <span className="count">{queue.length} waiting</span></h2>

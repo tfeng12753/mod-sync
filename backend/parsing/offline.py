@@ -42,14 +42,14 @@ _STOP = {
 # Words that are restrictions, not items ("no meat", "without gluten"): the backstop handles them.
 _RESTRICTION_WORDS = {w for t in [*DEFAULT_ALLERGEN_TERMS, *DEFAULT_DIET_TERMS] for w in t.split()} | {"meat", "pork"}
 
-_SUB_SWAP = re.compile(r"\b(?:swap|switch|replace|sub|change)\s+(?:out\s+)?(?P<old>.+?)\s+(?:for|with|to)\s+(?P<new>.+)")
+_SUB_SWAP = re.compile(r"\b(?:swap|switch|replace|substitute|sub|change)\s+(?:out\s+)?(?P<old>.+?)\s+(?:for|with|to)\s+(?P<new>.+)")
 _SUB_INSTEAD = re.compile(r"(?P<new>.+?)\s+(?:instead\s+of|in\s+place\s+of|rather\s+than)\s+(?P<old>.+)")
 _SUB_BARE = re.compile(r"\b(?:swap|switch|replace|sub|substitute|change)\s+(?:out\s+)?(?P<old>.+)")  # "swap the chicken"
 _SOMETHING_ELSE = re.compile(r"\b(?:something|anything)\s+else\b|\binstead\b|\bsubstitute\b|\breplace\s+it\b")
 _ON_SIDE = re.compile(r"(?P<item>.+?)\s+on\s+the\s+side\b")
 _LESS = re.compile(r"\b(?:go\s+)?(?:light|lite|less|easy|half)\b(?:\s+(?:on|of))?\s+(?P<item>.+)")
-_REMOVE = re.compile(r"\b(?:no|without|hold|remove|skip|minus|leave\s+(?:off|out)|take\s+(?:off|out))\b\s+(?P<item>.+)")
-_ADD = re.compile(r"\b(?:(?P<n>\d+|one|two|three|four|five)\s+)?(?:extra|double|add|more|additional)\b\s+(?P<item>.+)")
+_REMOVE = re.compile(r"\b(?:no|none\s+of|without|hold|remove|skip|minus|leave\s+(?:off|out)|take\s+(?:off|out))\b\s+(?P<item>.+)")
+_ADD = re.compile(r"\b(?:(?P<n>\d+|one|two|three|four|five)\s+)?(?:extra|double|add|more|additional)\b\s+(?:(?P<after>\d+|one|two|three|four|five)\s+)?(?P<item>.+)")
 _SPLIT = re.compile(r"[,.;!?\n]+|\b(?:and|but|also|plus|then)\b")
 
 
@@ -106,7 +106,7 @@ def offline_parse(inv, request: ParseRequest, dish_id: str) -> ParseResult:
         return _parse_text(inv, request.model_copy(update={"instructions": text, "clarifications": []}), dish_id)
 
     def unresolved(result):
-        if result.unknown_items or result.status == "needs_clarification":
+        if any(u.operation != "remove" for u in result.unknown_items) or result.status == "needs_clarification":
             return True
         # Known catalog items can still be unapproved extras/swaps on this particular dish.
         # This read only identifies the clause to revise; the complete order is checked again later.
@@ -233,7 +233,7 @@ def _parse_text(inv, request: ParseRequest, dish_id: str) -> ParseResult:
             elif m := _REMOVE.search(clause):
                 item(m.group("item"), "remove", correction)
             elif m := _ADD.search(clause):
-                n = m.group("n")
+                n = m.group("n") or m.group("after")
                 qty = int(n) if n and n.isdigit() else _NUMBERS.get(n or "", 1)
                 item(m.group("item"), "add", correction, max(qty, 1))
 

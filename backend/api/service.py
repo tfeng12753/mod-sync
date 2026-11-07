@@ -83,7 +83,9 @@ class OrderService:
             "clarification_limit": MAX_CLARIFICATION_REPLIES, "clarification_exhausted": False,
         }
 
-        if parsed.status == "needs_clarification":
+        if parsed.status == "needs_clarification" or parsed.questions:
+            base["review"] = {"required": parsed.status == "needs_staff_review" or bool(parsed.restrictions),
+                              "reasons": [], "staff_notes": list(parsed.staff_notes), "evidence": {}}
             return self._final(base, "needs_clarification", questions=list(parsed.questions),
                                message="We need a little more detail about your request.")
 
@@ -112,13 +114,13 @@ class OrderService:
             return self._final(base, "unavailable", message=_unavailable_message(reasons),
                                unavailable=[{"label": "As requested", "reasons": reasons}])
 
-        # Forecast engine routing (customer vs staff, scores, prices). Fall back to inventory order on failure.
+        # Never bypass the combined-score cutoff when forecast routing fails.
         try:
             routing = await self.route_fn(inv, evaluation)
         except Exception as exc:
             logger.exception("engine routing failed")
-            routing = None
-            base["warnings"].append(f"Forecast routing unavailable ({type(exc).__name__}); inventory ranking used.")
+            base["warnings"].append(f"Forecast routing unavailable ({type(exc).__name__}).")
+            return self._final(base, "unavailable", message="We can't check the available options right now. Please try again or ask staff.")
 
         requirements_by_choice: dict[str, dict[str, int]] = {}
         if evaluation.check.ok:
@@ -136,20 +138,22 @@ class OrderService:
 
         if evaluation.check.ok:
             needs_review = review_required or as_requested_route == "staff"
-            status = "needs_staff_review" if needs_review else "ready"
+            status = "ready"
             selected = None
         elif options:
             selected = options[0]["option_id"]
             needs_review = review_required or options[0]["route"] == "staff"
-            status = "needs_staff_review" if needs_review else "needs_customer_approval"
+            status = "needs_customer_approval"
         else:
             msg = routing.customer_message if routing is not None else UNAVAILABLE_MESSAGE
             return self._final(base, "unavailable", message=msg)
 
-        if status == "needs_staff_review" and not base["review"]["reasons"]:
+        if needs_review and not base["review"]["reasons"]:
             base["review"]["reasons"] = ["forecast engine routed this option to staff"]
-        base["review"]["required"] = status == "needs_staff_review"
+        base["review"]["required"] = needs_review
         base["recommended_option_id"] = selected
+        evidence_by_choice = {"as_requested": evaluation.check.evidence,
+                              **{o["option_id"]: o.get("_evidence", {}) for o in options}}
         if selected:
             chosen = options[0]
             base["review"]["evidence"] = chosen.pop("_evidence", base["review"]["evidence"])
@@ -167,14 +171,23 @@ class OrderService:
                                                                  "Please try again.")
             now = utcnow()
             evaluation_out = self._final(base, status, message=_customer_message(status, options, selected))
+            if needs_review:
+                evaluation_out["customer_message"] = (
+                    "Please review the proposed ingredients and price before sending your request to staff. "
+                    "Staff must review allergy and dietary requests; AI cannot certify a dish as safe or allergen-free."
+                )
+            absent = [r.message for r in evaluation.check.reasons if r.code == "NOT_IN_DISH"]
+            if absent:
+                evaluation_out["customer_message"] += " " + " ".join(absent)
             evaluation_out["order_id"] = order_id
             evaluation_out["expires_at"] = (now + timedelta(seconds=HOLD_SECONDS)).isoformat()
             order = Order(
                 order_id=order_id,
-                status="awaiting_staff" if status == "needs_staff_review" else "awaiting_customer",
+                status="awaiting_customer",
                 created_at=now, expires_at=now + timedelta(seconds=HOLD_SECONDS), channel=channel,
                 customer_name=customer_name, dish=dish, qty=qty, original_text=text, evaluation=evaluation_out,
                 selected_option_id=selected, requirements_by_choice=requirements_by_choice,
+                evidence_by_choice=evidence_by_choice,
             )
             order.log("created", status)
             self.orders.add(order)
@@ -255,16 +268,21 @@ class OrderService:
             choice = order.choice(option_id)
             if choice is None:
                 raise ApiError(400, "Unknown option, or the request can't be made as asked.")
-            order.selected_option_id = option_id
             key = option_id or "as_requested"
+            if order.staff_approved_choice is not None and key != order.staff_approved_choice:
+                raise ApiError(409, "Please confirm the option approved by staff, or submit a new request.")
             needs_staff = order.evaluation["review"]["required"] or (option_id and choice.get("route") == "staff")
-            if needs_staff:
+            if needs_staff and order.staff_approved_choice is None:
                 self._rehold(order, key)
                 order.status = "awaiting_staff"
+                order.evaluation["status"] = "needs_staff_review"
+                order.evaluation["customer_message"] = "Staff are reviewing the option you chose. You'll confirm the final option and price after their review."
                 order.log("accepted", "waiting for staff review")
             else:
                 self._confirm(order, key)
                 order.log("accepted", "confirmed")
+            order.selected_option_id = option_id
+            order.evaluation["review"]["evidence"] = order.evidence_by_choice.get(key, {})
             return order.to_dict()
 
     def review(self, order_id: str, action: str, option_id: str | None = None, note: str = "") -> dict[str, Any]:
@@ -277,13 +295,24 @@ class OrderService:
                 self.inv.release(order_id)
                 order.status = "rejected"
                 order.staff_note = note or None
+                order.evaluation["status"] = "unavailable"
+                order.evaluation["customer_message"] = (
+                    "The kitchen couldn't approve this request" + (f": {note.rstrip('.')}." if note else ".")
+                    + " You won't be charged. Would you like something else instead?")
                 order.log("rejected", note)
             elif action in ("approve", "edit"):
                 target = option_id if (action == "edit" or option_id is not None) else order.selected_option_id
                 if order.choice(target) is None:
                     raise ApiError(400, "Unknown option, or the request can't be made as asked.")
+                self._rehold(order, target or "as_requested")
                 order.selected_option_id = target
-                self._confirm(order, target or "as_requested")
+                order.staff_approved_choice = target or "as_requested"
+                order.evaluation["staff_approved_choice"] = order.staff_approved_choice
+                order.status = "awaiting_customer"
+                order.evaluation["status"] = "ready" if target is None else "needs_customer_approval"
+                order.evaluation["recommended_option_id"] = target
+                order.evaluation["review"]["evidence"] = order.evidence_by_choice.get(target or "as_requested", {})
+                order.evaluation["customer_message"] = "Staff have reviewed your request. Are you happy with this final option and price? Confirm to place the order."
                 order.log("edited" if action == "edit" else "approved", note)
             else:
                 raise ApiError(400, "action must be approve, edit or reject.")
