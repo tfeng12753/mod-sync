@@ -9,6 +9,10 @@ nonnegative extra and swap upcharges for the whole order, with dish quantity app
 Cheaper swaps and removals give no discount and cannot offset other upcharges. Null still means
 staff must set a price; recipe cost savings are separate from customer prices.
 
+`parsed.source` reports `menu` for exact catalog commands, `openrouter` for a model call,
+`openrouter_cache` for a repeated validated model interpretation, or `offline` without a key.
+Only parsing is cached; stock, pricing, forecasts and approval are evaluated fresh every time.
+
 ## Order lifecycle
 
 ```text

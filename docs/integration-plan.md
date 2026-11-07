@@ -5,6 +5,15 @@ Parsing failures return safe 502 diagnostics for provider auth/credits/model/rat
 connection/timeouts, or invalid structured responses; the frontend displays the provided detail.
 Raw provider responses and credentials are not exposed.
 
+Parser usage reduction: default key-backed requests use the existing catalog alias index for
+fully matched, unambiguous menu commands. Complex requests use a 256-entry, 10-minute validated
+parse cache keyed by exact text/history, menu/dish/quantity/recipe, model, prompt/schema and
+credential scope. Safety/dialogue/unmatched wording bypasses the menu shortcut. Cache hits still
+run validation plus the full inventory/forecast/pricing/approval workflow; errors are not cached.
+Concurrent identical misses share one provider call. No LLM-generated aliases or paid startup
+warmup. `parsed.source` distinguishes `menu`, `openrouter`, `openrouter_cache`, and `offline`.
+The environment flags are documented in `.env.example`; forced model benchmarks remain uncached.
+
 Deployment addition: `Dockerfile` + `render.yaml` run the integrated UI/API as one Render web
 service. The frontend defaults to same-origin requests in production, and FastAPI serves the
 compiled UI when `FRONTEND_DIST` is set. One worker/instance preserves the in-memory demo state.

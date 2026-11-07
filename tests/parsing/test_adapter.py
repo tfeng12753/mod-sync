@@ -337,7 +337,7 @@ class Modes(unittest.TestCase):
         self.assertEqual(parsed.source, "offline")
         self.assertEqual(parsed.parser_output["ops"], [{"op": "remove", "ingredient": "avocado"}])
 
-    def test_default_mode_with_client_or_key_is_openrouter(self):
+    def test_default_mode_with_client_is_openrouter_and_key_uses_menu_shortcut(self):
         out = model_output(changes=[change("chicken_bowl", "avocado", "remove")])
         parsed = parse_request(self.inv, "chicken_bowl", 1, "no avocado", client=FakeClient(out))
         self.assertEqual(parsed.source, "openrouter")
@@ -346,8 +346,8 @@ class Modes(unittest.TestCase):
             with mock.patch("backend.parsing.parser.httpx.Client") as http:
                 http.return_value.__enter__.return_value = client
                 parsed = parse_request(self.inv, "chicken_bowl", 1, "no avocado")
-        self.assertEqual(parsed.source, "openrouter")
-        self.assertEqual(len(client.calls), 1)
+        self.assertEqual(parsed.source, "menu")
+        self.assertEqual(len(client.calls), 0)
 
     def test_openrouter_without_key_or_client_fails(self):
         with mock.patch.dict(os.environ, {}, clear=False):

@@ -4,6 +4,15 @@ OpenRouter parsing defaults to `anthropic/claude-sonnet-5.5`; `OPENROUTER_MODEL`
 Parser 502 responses distinguish provider authentication, credit, model/settings, rate-limit,
 connection/timeout, and invalid structured-output errors. Never log keys or raw provider bodies.
 
+Default parsing first matches complete, unambiguous menu commands against the catalog's alias
+index (`source: menu`), without a model call. Other requests use the configured model and a
+256-entry, 10-minute in-memory parse cache (`openrouter` / `openrouter_cache`). Cache identity
+includes exact text, complete clarification history, dish/quantity/recipe/vocabulary, model,
+prompt/schema, and credential scope. Cached parses are copied and revalidated; inventory,
+prices, forecasts, holds and staff/customer approval always run fresh. No paid startup warmup.
+`PARSER_FAST_PATH_ENABLED=0` and `PARSER_CACHE_ENABLED=0` disable the respective optimizations.
+Explicit `mode="openrouter"` and injected clients bypass both for model benchmarks/tests.
+
 Deployment: root `Dockerfile` and `render.yaml` host the React build and Python API as one Render
 web service. See [docs/render-deploy.md](docs/render-deploy.md). Production frontend calls use
 the same origin; development still uses localhost:8000. `FRONTEND_DIST` enables static serving

@@ -10,6 +10,8 @@ OpenRouter for parsing. Menu data is the inventory catalog (`backend/data/`, SYN
 | `parser.py` | Core parser: request/result models, prompt, strict JSON schema, `validate_result`, keyword allergy/diet backstop, `parse_modifications()` (OpenRouter) |
 | `adapter.py` | **`parse_request()`** — the one call the API makes: catalog → parser request → inventory input |
 | `offline.py` | Deterministic rule-based fallback (no key, no network) |
+| `menu_phrases.py` | Exact, fully consumed menu commands using the prebuilt catalog alias index |
+| `cache.py` | Bounded model-parse cache with expiry and one provider call for concurrent identical requests |
 | `server.py` | Standalone `POST /parse` service (Person 2's original API) |
 | `run_manual_cases.py`, `manual_cases.json` | Score the real (or offline) parser on the shared cases |
 
@@ -33,12 +35,37 @@ evaluation = inv.evaluate_request(parsed.parser_output)
 | `parser_output` | `{"dish", "qty", "original_text", "ops": [...], "flags": {"level", "allergens", "diets"}}` (CLAUDE.md "Contracts") |
 | `questions`, `staff_notes` | from the parser (merge with inventory's reasons) |
 | `restrictions` | `[{"kind": "allergy" \| "diet", "value": "<canonical id>"}]` |
-| `source` | `"openrouter"` or `"offline"` |
+| `source` | `"menu"`, `"openrouter"`, `"openrouter_cache"`, or `"offline"` |
 
 Errors: `ParserValidationError` = the model output was unsafe/invalid → API answers **502**
 (never treat as approved). `KeyError` = unknown dish, `ValueError` = bad qty or mode,
 `RuntimeError` = `mode="openrouter"` without a key or client. Empty text → `ready`, no ops, no
 model call.
+
+## Reducing model usage
+
+With a key set and no forced mode/client, complete commands such as `no onions`, `extra avo`,
+`add 2 avocado`, `sauce on the side`, or `swap chicken for tofu` use the catalog's existing
+names/aliases index. It is built when inventory loads; no paid startup call or generated aliases
+are needed. Every clause and ingredient must match exactly and unambiguously. Any unmatched text,
+contradiction, unknown ingredient, allergy/diet context, or clarification history goes to the model.
+These shortcuts interpret the request only: they never approve an extra or substitution.
+
+Other requests cache only the validated model interpretation, up to 256 entries for 10 minutes
+per process. Cache keys include the full original text and ordered clarification history, dish,
+quantity, recipe, menu vocabulary/aliases, model, prompt, output schema, and hashed credential
+scope. Changing any of those causes a new model call. Results are copied and revalidated on hits;
+provider failures and invalid output are not cached. Identical concurrent misses share one call,
+while different requests can proceed independently. Redeploy/restart clears this in-memory cache.
+
+Inventory, prices, demand forecasts, restrictions, stock holds, confirmation and staff/customer
+approval are evaluated on every request. A cached parse is not an inventory availability promise.
+The default model remains controlled by `OPENROUTER_MODEL`; no model choice is hardcoded in cache
+entries. The API exposes the parser path through `parsed.source` for verifying saved calls.
+
+Both optimizations are enabled by default. Set `PARSER_FAST_PATH_ENABLED=0` or
+`PARSER_CACHE_ENABLED=0` to disable one. Explicit `mode="openrouter"` and injected clients keep
+existing direct model tests/benchmarks uncached and bypass the menu shortcut.
 
 ### Modes
 

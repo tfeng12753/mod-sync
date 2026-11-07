@@ -29,6 +29,13 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 load_dotenv()
 
+DEFAULT_MODEL = "anthropic/claude-sonnet-5.5"
+
+
+def configured_model() -> str:
+    return os.getenv("OPENROUTER_MODEL", DEFAULT_MODEL)
+
+
 OPERATIONS = ("add", "remove", "set", "on_side", "less", "substitute")
 UNKNOWN_OPERATIONS = ("add", "remove", "on_side", "less", "substitute")
 
@@ -539,7 +546,7 @@ def parse_modifications(request: ParseRequest, client=None) -> ParseResult:
         raise RuntimeError("Set the OPENROUTER_API_KEY environment variable")
 
     body = {
-        "model": os.getenv("OPENROUTER_MODEL", "anthropic/claude-sonnet-5.5"),
+        "model": configured_model(),
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": json.dumps(build_payload(request))},
