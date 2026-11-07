@@ -1,7 +1,7 @@
 # Inventory, feasibility & similarity — plan
 
-Owner: Siddharth. Branch: `inventory`. Status: **v1 implemented and tested (66 unit tests);
-contracts with Person 2 and Person 4 still to be agreed.**
+Owner: Siddharth. Branch: `inventory`. Status: **v1 implemented and tested (86 unit tests),
+including the one-call `evaluate_request()`; contracts with Person 2 and Person 4 still to be agreed.**
 
 Keep this file updated as tasks finish or decisions change (see `CLAUDE.md`).
 
@@ -9,9 +9,10 @@ Keep this file updated as tasks finish or decisions change (see `CLAUDE.md`).
 
 | File | What it does |
 | --- | --- |
-| `models.py` | Dataclasses: `Ingredient`, `Component`, `Dish`, `Reason`, `CheckResult`, `Candidate`, `StockResult` |
+| `models.py` | Dataclasses: `Ingredient`, `Component`, `Dish`, `Reason`, `CheckResult`, `Candidate`, `Option`, `RequestEvaluation`, `StockResult` |
 | `catalog.py` | Load + validate `backend/data/catalog.json` (`CatalogError` lists every problem) |
 | `feasibility.py` | Applies ops to a dish; prep-stage, extras, swaps, allergens, diet, stock; similarity scoring |
+| `request.py` | `evaluate_request()`: parser output in → status, alternatives (combinations of swaps / leave-offs), recommendation, requirements out |
 | `stock.py` | Thread-safe `StockStore`: available, hold (TTL), confirm (once), release, adjust, usage log |
 | `service.py` | `Inventory` facade + `load_inventory()` — the only thing other modules should import |
 | `demo.py` | `py -3 -m backend.inventory.demo` walks the scenarios; `--fixture` regenerates the shared fixture |
@@ -45,6 +46,8 @@ Proposal: I own the review *state* (hold/confirm/release/timeout); endpoints go 
   - `assembly`: built per order from raw ingredients: `uses {ingredient: qty}`, `main` ingredient.
     Removing the main ingredient drops the component; removing another ingredient drops just that usage.
   - `cross_contact[]` notes (e.g. "shared fryer").
+  - `can_leave_off` (sauces, toppings): the system may *suggest* dropping it as an alternative.
+    Bases, proteins and broths are never suggested for removal (customers can still ask).
 - **Dish** — `price_cents`, `components {component: servings}`,
   `extras {component: {max, price_cents}}`,
   `substitutions [{replace, with, similarity, price_delta_cents}]` (component level, chef-approved).
@@ -69,6 +72,7 @@ Each approved swap carries a `similarity` from 1–5 and a `similarity_source`. 
 from backend.inventory import load_inventory
 inv = load_inventory()                          # reads backend/data/*.json
 
+inv.evaluate_request(parser_output) -> RequestEvaluation   # START HERE: one call for the API
 inv.requirements(dish_id, ops, qty=1) -> dict[item_id, int]
 inv.check(dish_id, ops, qty=1, exclude_allergens=(), require_diet=()) -> CheckResult
 inv.substitute_candidates(dish_id, target, qty=1, exclude_allergens=(), require_diet=(),
@@ -85,7 +89,43 @@ inv.usage_log() / inv.deliveries()              # read-only, for forecast
 ```
 
 Example: [fixtures/allergy_request_example.json](../../fixtures/allergy_request_example.json)
-(parser output → inventory check → candidates → proposed forecast/review shapes).
+(parser output → `evaluate_request()` result → proposed forecast/review shapes).
+
+### `evaluate_request(parser_output)`
+
+Input (proposed parser shape):
+
+```python
+{"dish": "satay_noodles", "qty": 1, "original_text": "...",
+ "ops": [{"op": "remove", "ingredient": "peanuts"}, ...],
+ "flags": {"level": "allergy" | "diet" | "preference" | None,
+           "allergens": ["peanut"], "diets": ["vegan"]}}      # "diet": "vegan" also accepted
+```
+
+What it does:
+1. `check()` the request exactly as asked (allergens/diets from `flags`).
+2. If it fails, find the components causing it: unspecified or unapproved swap, ingredient locked in
+   a premade component, excluded allergen, diet conflict, out of stock / low stock. A customer's own
+   swap that ran out maps back to the original component.
+3. Try every combination (max 64) of chef-approved swaps for those components, plus "leave it off"
+   for `can_leave_off` components; keep the customer's other ops; fully `check()` each; keep passes.
+4. Sort options: highest weakest-swap similarity, then fewest leave-offs, then price, then cost.
+   Forecast may re-rank `options`.
+
+Output `RequestEvaluation`: `status`, `requires_staff_review`, `review_reasons`, `check` (as asked,
+so the UI can explain why), `options[]` (each: `changes [{replace, with|None, similarity, source}]`,
+`similarity`, price/cost deltas, `requirements`, `available`, full `check`), `reasons` (problems no
+option fixes), `recommended` (index into options or `None`), `requirements` (what to hold/confirm).
+
+| Status | When |
+| --- | --- |
+| `ready` | Works as asked, no allergy/diet flag |
+| `needs_staff_review` | Allergy/diet flagged (works as asked, or options exist) |
+| `needs_customer_approval` | Can't be made as asked, but approved alternatives exist |
+| `needs_clarification` | Unknown item/dish/op, conflicting ops, bad qty |
+| `unavailable` | Blocked with no fix (extra not offered, diet can't be met, nothing in stock) |
+
+If any problem has no possible fix, no options are offered (status from that problem).
 
 **CheckResult:** `status` (`ok | blocked | out_of_stock | needs_clarification`), `reasons`
 (`code, message, item, severity`), `requirements`, `price_delta_cents`, `cost_delta_cents`,
@@ -102,6 +142,8 @@ allergy protocol), `requires_staff_review` (true when allergy/diet constraints w
 ```
 
 Forecast returns the same candidates in final order (plus its own scores/reasons).
+`substitute_candidates()` handles one component; `evaluate_request()` options handle several at
+once (e.g. leave off crushed peanuts **and** swap the peanut sauce), so forecast should prefer `options`.
 
 ## Rules and edge cases
 
@@ -150,11 +192,15 @@ Status precedence: `needs_clarification` > `blocked` > `out_of_stock` > `ok`; al
 - [x] `substitute_candidates()` with similarity scores (chef + tag fallback)
 - [x] Stock store: available, hold, confirm, release, adjust, expiry, usage log (thread-safe)
 - [x] Kitchen instructions + staff-review evidence
-- [x] Unit tests for every row in the edge-case table (stdlib `unittest`, 66 tests)
+- [x] Unit tests for every row in the edge-case table (stdlib `unittest`)
 - [x] Demo scenarios: close substitute; blocked premade removal; forecast picks between two swaps;
       stock change forces re-evaluation before confirm
+- [x] `evaluate_request()` one-call entry point + `can_leave_off` catalog flag (20 more tests, 86 total)
+- [ ] Parser vocabulary / menu export (IDs, names, nicknames) for Person 2 and `GET /menu`
+- [ ] Synthetic usage history for forecast (`usage_log()` only covers live orders)
+- [ ] Use-by dates per stock batch + "expiring before T" query (surplus story)
+- [ ] Multi-dish orders: sum requirements across items into one hold
 - [ ] Hook up to the API / orchestration once someone owns it
-- [ ] Historical usage data for forecast (who generates it? `usage_log()` only covers live orders)
 
 ## Open questions
 

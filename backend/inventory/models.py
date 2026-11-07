@@ -41,6 +41,7 @@ class Component:
     cost_cents_per_unit: float = 0.0
     cross_contact: tuple[str, ...] = ()
     tags: tuple[str, ...] = ()
+    can_leave_off: bool = False  # the system may suggest dropping it (sauces, toppings), never bases/proteins
 
     @property
     def is_premade(self) -> bool:
@@ -140,6 +141,67 @@ class Candidate:
             "requirements": dict(self.requirements),
             "available": dict(self.available),
             "check": self.check.to_dict(),
+        }
+
+
+@dataclass
+class Option:
+    """One complete way to make the dish: zero or more swaps/removals applied on top of the
+    customer's request. Produced by ``evaluate_request`` for forecast to rank."""
+
+    changes: list[dict[str, Any]]  # [{"replace", "with" (None = leave it off), "similarity", "source"}]
+    similarity: int  # weakest swap's similarity (1-5); 1 if the option only leaves things off
+    price_delta_cents: int
+    cost_delta_cents: int
+    requirements: dict[str, int]
+    available: dict[str, int]
+    check: CheckResult
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "changes": [dict(c) for c in self.changes],
+            "similarity": self.similarity,
+            "price_delta_cents": self.price_delta_cents,
+            "cost_delta_cents": self.cost_delta_cents,
+            "requirements": dict(self.requirements),
+            "available": dict(self.available),
+            "check": self.check.to_dict(),
+        }
+
+
+# evaluate_request statuses
+REQUEST_STATUSES = ("ready", "needs_customer_approval", "needs_staff_review", "needs_clarification", "unavailable")
+
+
+@dataclass
+class RequestEvaluation:
+    """Everything the API/UI needs for one parsed request, in one object."""
+
+    status: str
+    dish: str | None
+    qty: int
+    original_text: str
+    requires_staff_review: bool
+    review_reasons: list[str]
+    check: CheckResult  # the request exactly as the customer asked
+    options: list[Option]  # alternatives when the request can't be made as asked
+    reasons: list[Reason]  # problems that options could not fix
+    recommended: int | None  # index into options, or None (use the request as asked / nothing possible)
+    requirements: dict[str, int]  # what to hold/confirm if the recommendation is accepted
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "dish": self.dish,
+            "qty": self.qty,
+            "original_text": self.original_text,
+            "requires_staff_review": self.requires_staff_review,
+            "review_reasons": list(self.review_reasons),
+            "check": self.check.to_dict(),
+            "options": [o.to_dict() for o in self.options],
+            "reasons": [r.to_dict() for r in self.reasons],
+            "recommended": self.recommended,
+            "requirements": dict(self.requirements),
         }
 
 

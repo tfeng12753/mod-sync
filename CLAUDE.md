@@ -52,8 +52,10 @@ Parser → inventory: a list of ops, ingredient/component IDs from `backend/data
  "with": "<id>|None"} # substitute only; None = "suggest something"
 ```
 
-Inventory public API and the inventory → forecast candidate format: see
-[backend/inventory/plan.md](backend/inventory/plan.md#public-api).
+Inventory entry point for the API: `inv.evaluate_request(parser_output)` returns the status
+(`ready | needs_customer_approval | needs_staff_review | needs_clarification | unavailable`),
+ranked alternative `options`, a recommendation, and the stock to hold. Full API and the
+inventory → forecast format: [backend/inventory/plan.md](backend/inventory/plan.md#public-api).
 
 ## Commands
 

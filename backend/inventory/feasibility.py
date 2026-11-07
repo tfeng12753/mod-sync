@@ -410,14 +410,17 @@ def _allergen_sources(catalog: Catalog, ingredients: list[tuple[str, str]]) -> d
 def _component_evidence(catalog: Catalog, p: Part, qty: int) -> dict[str, Any]:
     comp = catalog.components[p.component]
     contents = [i for i in comp.ingredient_ids() if i not in p.removed]
+    diet_sets = [set(catalog.ingredients[i].diet) for i in contents]
     return {
         "id": comp.id,
         "name": comp.name,
         "prep": comp.prep,
         "servings": float(p.servings * p.factor * qty),
+        "ingredient_ids": contents,
         "contents": [catalog.name_of(i) for i in contents],
         "removed": [catalog.name_of(i) for i in sorted(p.removed)],
         "allergens": sorted({a for i in contents for a in catalog.ingredients[i].allergens}),
+        "diet": sorted(set.intersection(*diet_sets)) if diet_sets else [],
         "cross_contact": list(comp.cross_contact),
         "on_side": p.on_side,
         "replaced_from": p.replaced_from,

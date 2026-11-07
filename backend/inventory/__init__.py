@@ -6,7 +6,7 @@
 """
 
 from .catalog import Catalog, CatalogError, load_catalog, parse_catalog
-from .models import Candidate, CheckResult, Reason, StockResult
+from .models import Candidate, CheckResult, Option, Reason, RequestEvaluation, StockResult
 from .service import Inventory, load_inventory
 from .stock import StockStore, load_stock
 
@@ -16,7 +16,9 @@ __all__ = [
     "CatalogError",
     "CheckResult",
     "Inventory",
+    "Option",
     "Reason",
+    "RequestEvaluation",
     "StockResult",
     "StockStore",
     "load_catalog",

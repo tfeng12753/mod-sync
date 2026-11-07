@@ -76,6 +76,7 @@ def _parse_component(cid: str, d: dict[str, Any]) -> Component:
         prep=prep,
         cross_contact=tuple(d.get("cross_contact", ())),
         tags=tuple(d.get("tags", ())),
+        can_leave_off=bool(d.get("can_leave_off", False)),
     )
     if prep == "assembly":
         return Component(**common, uses={k: int(v) for k, v in d["uses"].items()}, main=d["main"])

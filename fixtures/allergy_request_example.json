@@ -27,169 +27,192 @@
       ]
     }
   },
-  "inventory_check": {
-    "status": "needs_clarification",
+  "inventory_evaluation": {
+    "status": "needs_staff_review",
     "dish": "satay_noodles",
     "qty": 1,
-    "reasons": [
-      {
-        "code": "SUBSTITUTE_TARGET_MISSING",
-        "message": "Customer wants to swap Peanut sauce but didn't say for what; offer candidates.",
-        "status": "needs_clarification",
-        "item": "peanut_sauce"
-      },
-      {
-        "code": "ALLERGEN_PRESENT",
-        "message": "Contains peanut: Peanut butter (in Peanut sauce).",
-        "status": "blocked",
-        "item": "peanut"
-      }
+    "original_text": "satay noodles but no peanuts at all, I have a severe peanut allergy",
+    "requires_staff_review": true,
+    "review_reasons": [
+      "allergy: peanut"
     ],
-    "requirements": {
-      "wheat_noodles": 180,
-      "chicken": 150,
-      "oil": 5,
-      "peanut_sauce": 60,
-      "scallion": 10
-    },
-    "price_delta_cents": 0,
-    "cost_delta_cents": -15,
-    "kitchen_instructions": [
-      "ALLERGY: peanut",
-      "Wash hands and change gloves before starting this order.",
-      "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
-      "Do not use shared fryer oil or shared garnish containers.",
-      "Pack and seal this order separately and label it with the allergy.",
-      "NO Crushed peanuts"
-    ],
-    "evidence": {
-      "components": [
+    "check": {
+      "status": "needs_clarification",
+      "dish": "satay_noodles",
+      "qty": 1,
+      "reasons": [
         {
-          "id": "noodles_base",
-          "name": "Wheat noodles",
-          "prep": "assembly",
-          "servings": 1.0,
-          "contents": [
-            "Wheat noodles"
-          ],
-          "removed": [],
-          "allergens": [
-            "wheat"
-          ],
-          "cross_contact": [
-            "Cooked in a shared wok also used for peanut sauce dishes."
-          ],
-          "on_side": false,
-          "replaced_from": null
+          "code": "SUBSTITUTE_TARGET_MISSING",
+          "message": "Customer wants to swap Peanut sauce but didn't say for what; offer candidates.",
+          "status": "needs_clarification",
+          "item": "peanut_sauce"
         },
         {
-          "id": "grilled_chicken",
-          "name": "Grilled chicken",
-          "prep": "assembly",
-          "servings": 1.0,
-          "contents": [
-            "Chicken thigh",
-            "Canola oil"
-          ],
-          "removed": [],
-          "allergens": [],
-          "cross_contact": [],
-          "on_side": false,
-          "replaced_from": null
-        },
-        {
-          "id": "peanut_sauce",
-          "name": "Peanut sauce",
-          "prep": "premade",
-          "servings": 1.0,
-          "contents": [
-            "Peanut butter",
-            "Soy sauce",
-            "Coconut milk",
-            "Lemon juice"
-          ],
-          "removed": [],
-          "allergens": [
-            "peanut",
-            "soy",
-            "wheat"
-          ],
-          "cross_contact": [],
-          "on_side": false,
-          "replaced_from": null
-        },
-        {
-          "id": "scallions",
-          "name": "Scallions",
-          "prep": "assembly",
-          "servings": 1.0,
-          "contents": [
-            "Scallion"
-          ],
-          "removed": [],
-          "allergens": [],
-          "cross_contact": [],
-          "on_side": false,
-          "replaced_from": null
+          "code": "ALLERGEN_PRESENT",
+          "message": "Contains peanut: Peanut butter (in Peanut sauce).",
+          "status": "blocked",
+          "item": "peanut"
         }
       ],
-      "allergens_present": {
-        "peanut": [
-          "Peanut butter (in Peanut sauce)"
-        ],
-        "soy": [
-          "Soy sauce (in Peanut sauce)"
-        ],
-        "wheat": [
-          "Wheat noodles (in Wheat noodles)",
-          "Soy sauce (in Peanut sauce)"
-        ]
-      },
-      "cross_contact": [
-        "Wheat noodles: Cooked in a shared wok also used for peanut sauce dishes."
-      ],
-      "excluded_allergens": [
-        "peanut"
-      ],
-      "required_diet": [],
-      "allergy_protocol": [
-        "Wash hands and change gloves before starting this order.",
-        "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
-        "Do not use shared fryer oil or shared garnish containers.",
-        "Pack and seal this order separately and label it with the allergy."
-      ],
-      "note": "Checked against listed ingredients only. Cross-contact is not verified by the system; staff must confirm before this is approved."
-    },
-    "requires_staff_review": true
-  },
-  "inventory_candidates": [
-    {
-      "dish": "satay_noodles",
-      "replace": "peanut_sauce",
-      "with": "sesame_dressing",
-      "similarity": 3,
-      "similarity_source": "chef",
-      "price_delta_cents": 0,
-      "cost_delta_cents": -33,
       "requirements": {
         "wheat_noodles": 180,
         "chicken": 150,
         "oil": 5,
-        "sesame_dressing": 40,
+        "peanut_sauce": 60,
         "scallion": 10
       },
-      "available": {
-        "wheat_noodles": 3000,
-        "chicken": 3000,
-        "oil": 2000,
-        "sesame_dressing": 800,
-        "scallion": 400
+      "price_delta_cents": 0,
+      "cost_delta_cents": -15,
+      "kitchen_instructions": [
+        "ALLERGY: peanut",
+        "Wash hands and change gloves before starting this order.",
+        "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
+        "Do not use shared fryer oil or shared garnish containers.",
+        "Pack and seal this order separately and label it with the allergy.",
+        "NO Crushed peanuts"
+      ],
+      "evidence": {
+        "components": [
+          {
+            "id": "noodles_base",
+            "name": "Wheat noodles",
+            "prep": "assembly",
+            "servings": 1.0,
+            "ingredient_ids": [
+              "wheat_noodles"
+            ],
+            "contents": [
+              "Wheat noodles"
+            ],
+            "removed": [],
+            "allergens": [
+              "wheat"
+            ],
+            "diet": [
+              "vegan",
+              "vegetarian"
+            ],
+            "cross_contact": [
+              "Cooked in a shared wok also used for peanut sauce dishes."
+            ],
+            "on_side": false,
+            "replaced_from": null
+          },
+          {
+            "id": "grilled_chicken",
+            "name": "Grilled chicken",
+            "prep": "assembly",
+            "servings": 1.0,
+            "ingredient_ids": [
+              "chicken",
+              "oil"
+            ],
+            "contents": [
+              "Chicken thigh",
+              "Canola oil"
+            ],
+            "removed": [],
+            "allergens": [],
+            "diet": [],
+            "cross_contact": [],
+            "on_side": false,
+            "replaced_from": null
+          },
+          {
+            "id": "peanut_sauce",
+            "name": "Peanut sauce",
+            "prep": "premade",
+            "servings": 1.0,
+            "ingredient_ids": [
+              "peanut_butter",
+              "soy_sauce",
+              "coconut_milk",
+              "lemon"
+            ],
+            "contents": [
+              "Peanut butter",
+              "Soy sauce",
+              "Coconut milk",
+              "Lemon juice"
+            ],
+            "removed": [],
+            "allergens": [
+              "peanut",
+              "soy",
+              "wheat"
+            ],
+            "diet": [
+              "vegan",
+              "vegetarian"
+            ],
+            "cross_contact": [],
+            "on_side": false,
+            "replaced_from": null
+          },
+          {
+            "id": "scallions",
+            "name": "Scallions",
+            "prep": "assembly",
+            "servings": 1.0,
+            "ingredient_ids": [
+              "scallion"
+            ],
+            "contents": [
+              "Scallion"
+            ],
+            "removed": [],
+            "allergens": [],
+            "diet": [
+              "vegan",
+              "vegetarian"
+            ],
+            "cross_contact": [],
+            "on_side": false,
+            "replaced_from": null
+          }
+        ],
+        "allergens_present": {
+          "peanut": [
+            "Peanut butter (in Peanut sauce)"
+          ],
+          "soy": [
+            "Soy sauce (in Peanut sauce)"
+          ],
+          "wheat": [
+            "Wheat noodles (in Wheat noodles)",
+            "Soy sauce (in Peanut sauce)"
+          ]
+        },
+        "cross_contact": [
+          "Wheat noodles: Cooked in a shared wok also used for peanut sauce dishes."
+        ],
+        "excluded_allergens": [
+          "peanut"
+        ],
+        "required_diet": [],
+        "allergy_protocol": [
+          "Wash hands and change gloves before starting this order.",
+          "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
+          "Do not use shared fryer oil or shared garnish containers.",
+          "Pack and seal this order separately and label it with the allergy."
+        ],
+        "note": "Checked against listed ingredients only. Cross-contact is not verified by the system; staff must confirm before this is approved."
       },
-      "check": {
-        "status": "ok",
-        "dish": "satay_noodles",
-        "qty": 1,
-        "reasons": [],
+      "requires_staff_review": true
+    },
+    "options": [
+      {
+        "changes": [
+          {
+            "replace": "peanut_sauce",
+            "with": "sesame_dressing",
+            "similarity": 3,
+            "source": "chef"
+          }
+        ],
+        "similarity": 3,
+        "price_delta_cents": 0,
+        "cost_delta_cents": -33,
         "requirements": {
           "wheat_noodles": 180,
           "chicken": 150,
@@ -197,144 +220,176 @@
           "sesame_dressing": 40,
           "scallion": 10
         },
-        "price_delta_cents": 0,
-        "cost_delta_cents": -33,
-        "kitchen_instructions": [
-          "ALLERGY: peanut",
-          "Wash hands and change gloves before starting this order.",
-          "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
-          "Do not use shared fryer oil or shared garnish containers.",
-          "Pack and seal this order separately and label it with the allergy.",
-          "NO Crushed peanuts",
-          "SUB Sesame dressing for Peanut sauce"
-        ],
-        "evidence": {
-          "components": [
-            {
-              "id": "noodles_base",
-              "name": "Wheat noodles",
-              "prep": "assembly",
-              "servings": 1.0,
-              "contents": [
-                "Wheat noodles"
-              ],
-              "removed": [],
-              "allergens": [
-                "wheat"
-              ],
-              "cross_contact": [
-                "Cooked in a shared wok also used for peanut sauce dishes."
-              ],
-              "on_side": false,
-              "replaced_from": null
-            },
-            {
-              "id": "grilled_chicken",
-              "name": "Grilled chicken",
-              "prep": "assembly",
-              "servings": 1.0,
-              "contents": [
-                "Chicken thigh",
-                "Canola oil"
-              ],
-              "removed": [],
-              "allergens": [],
-              "cross_contact": [],
-              "on_side": false,
-              "replaced_from": null
-            },
-            {
-              "id": "sesame_dressing",
-              "name": "Sesame dressing",
-              "prep": "premade",
-              "servings": 1.0,
-              "contents": [
-                "Sesame oil",
-                "Soy sauce",
-                "Rice vinegar"
-              ],
-              "removed": [],
-              "allergens": [
-                "sesame",
-                "soy",
-                "wheat"
-              ],
-              "cross_contact": [],
-              "on_side": false,
-              "replaced_from": "peanut_sauce"
-            },
-            {
-              "id": "scallions",
-              "name": "Scallions",
-              "prep": "assembly",
-              "servings": 1.0,
-              "contents": [
-                "Scallion"
-              ],
-              "removed": [],
-              "allergens": [],
-              "cross_contact": [],
-              "on_side": false,
-              "replaced_from": null
-            }
-          ],
-          "allergens_present": {
-            "sesame": [
-              "Sesame oil (in Sesame dressing)"
-            ],
-            "soy": [
-              "Soy sauce (in Sesame dressing)"
-            ],
-            "wheat": [
-              "Wheat noodles (in Wheat noodles)",
-              "Soy sauce (in Sesame dressing)"
-            ]
+        "available": {
+          "wheat_noodles": 3000,
+          "chicken": 3000,
+          "oil": 2000,
+          "sesame_dressing": 800,
+          "scallion": 400
+        },
+        "check": {
+          "status": "ok",
+          "dish": "satay_noodles",
+          "qty": 1,
+          "reasons": [],
+          "requirements": {
+            "wheat_noodles": 180,
+            "chicken": 150,
+            "oil": 5,
+            "sesame_dressing": 40,
+            "scallion": 10
           },
-          "cross_contact": [
-            "Wheat noodles: Cooked in a shared wok also used for peanut sauce dishes."
-          ],
-          "excluded_allergens": [
-            "peanut"
-          ],
-          "required_diet": [],
-          "allergy_protocol": [
+          "price_delta_cents": 0,
+          "cost_delta_cents": -33,
+          "kitchen_instructions": [
+            "ALLERGY: peanut",
             "Wash hands and change gloves before starting this order.",
             "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
             "Do not use shared fryer oil or shared garnish containers.",
-            "Pack and seal this order separately and label it with the allergy."
+            "Pack and seal this order separately and label it with the allergy.",
+            "NO Crushed peanuts",
+            "SUB Sesame dressing for Peanut sauce"
           ],
-          "note": "Checked against listed ingredients only. Cross-contact is not verified by the system; staff must confirm before this is approved."
-        },
-        "requires_staff_review": true
-      }
-    },
-    {
-      "dish": "satay_noodles",
-      "replace": "peanut_sauce",
-      "with": "garlic_sauce",
-      "similarity": 2,
-      "similarity_source": "chef",
-      "price_delta_cents": 0,
-      "cost_delta_cents": -41,
-      "requirements": {
-        "wheat_noodles": 180,
-        "chicken": 150,
-        "oil": 5,
-        "garlic_sauce": 40,
-        "scallion": 10
+          "evidence": {
+            "components": [
+              {
+                "id": "noodles_base",
+                "name": "Wheat noodles",
+                "prep": "assembly",
+                "servings": 1.0,
+                "ingredient_ids": [
+                  "wheat_noodles"
+                ],
+                "contents": [
+                  "Wheat noodles"
+                ],
+                "removed": [],
+                "allergens": [
+                  "wheat"
+                ],
+                "diet": [
+                  "vegan",
+                  "vegetarian"
+                ],
+                "cross_contact": [
+                  "Cooked in a shared wok also used for peanut sauce dishes."
+                ],
+                "on_side": false,
+                "replaced_from": null
+              },
+              {
+                "id": "grilled_chicken",
+                "name": "Grilled chicken",
+                "prep": "assembly",
+                "servings": 1.0,
+                "ingredient_ids": [
+                  "chicken",
+                  "oil"
+                ],
+                "contents": [
+                  "Chicken thigh",
+                  "Canola oil"
+                ],
+                "removed": [],
+                "allergens": [],
+                "diet": [],
+                "cross_contact": [],
+                "on_side": false,
+                "replaced_from": null
+              },
+              {
+                "id": "sesame_dressing",
+                "name": "Sesame dressing",
+                "prep": "premade",
+                "servings": 1.0,
+                "ingredient_ids": [
+                  "sesame_oil",
+                  "soy_sauce",
+                  "rice_vinegar"
+                ],
+                "contents": [
+                  "Sesame oil",
+                  "Soy sauce",
+                  "Rice vinegar"
+                ],
+                "removed": [],
+                "allergens": [
+                  "sesame",
+                  "soy",
+                  "wheat"
+                ],
+                "diet": [
+                  "vegan",
+                  "vegetarian"
+                ],
+                "cross_contact": [],
+                "on_side": false,
+                "replaced_from": "peanut_sauce"
+              },
+              {
+                "id": "scallions",
+                "name": "Scallions",
+                "prep": "assembly",
+                "servings": 1.0,
+                "ingredient_ids": [
+                  "scallion"
+                ],
+                "contents": [
+                  "Scallion"
+                ],
+                "removed": [],
+                "allergens": [],
+                "diet": [
+                  "vegan",
+                  "vegetarian"
+                ],
+                "cross_contact": [],
+                "on_side": false,
+                "replaced_from": null
+              }
+            ],
+            "allergens_present": {
+              "sesame": [
+                "Sesame oil (in Sesame dressing)"
+              ],
+              "soy": [
+                "Soy sauce (in Sesame dressing)"
+              ],
+              "wheat": [
+                "Wheat noodles (in Wheat noodles)",
+                "Soy sauce (in Sesame dressing)"
+              ]
+            },
+            "cross_contact": [
+              "Wheat noodles: Cooked in a shared wok also used for peanut sauce dishes."
+            ],
+            "excluded_allergens": [
+              "peanut"
+            ],
+            "required_diet": [],
+            "allergy_protocol": [
+              "Wash hands and change gloves before starting this order.",
+              "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
+              "Do not use shared fryer oil or shared garnish containers.",
+              "Pack and seal this order separately and label it with the allergy."
+            ],
+            "note": "Checked against listed ingredients only. Cross-contact is not verified by the system; staff must confirm before this is approved."
+          },
+          "requires_staff_review": true
+        }
       },
-      "available": {
-        "wheat_noodles": 3000,
-        "chicken": 3000,
-        "oil": 2000,
-        "garlic_sauce": 1200,
-        "scallion": 400
-      },
-      "check": {
-        "status": "ok",
-        "dish": "satay_noodles",
-        "qty": 1,
-        "reasons": [],
+      {
+        "changes": [
+          {
+            "replace": "peanut_sauce",
+            "with": "garlic_sauce",
+            "similarity": 2,
+            "source": "chef"
+          }
+        ],
+        "similarity": 2,
+        "price_delta_cents": 0,
+        "cost_delta_cents": -41,
         "requirements": {
           "wheat_noodles": 180,
           "chicken": 150,
@@ -342,122 +397,345 @@
           "garlic_sauce": 40,
           "scallion": 10
         },
-        "price_delta_cents": 0,
-        "cost_delta_cents": -41,
-        "kitchen_instructions": [
-          "ALLERGY: peanut",
-          "Wash hands and change gloves before starting this order.",
-          "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
-          "Do not use shared fryer oil or shared garnish containers.",
-          "Pack and seal this order separately and label it with the allergy.",
-          "NO Crushed peanuts",
-          "SUB Garlic sauce for Peanut sauce"
-        ],
-        "evidence": {
-          "components": [
-            {
-              "id": "noodles_base",
-              "name": "Wheat noodles",
-              "prep": "assembly",
-              "servings": 1.0,
-              "contents": [
-                "Wheat noodles"
-              ],
-              "removed": [],
-              "allergens": [
-                "wheat"
-              ],
-              "cross_contact": [
-                "Cooked in a shared wok also used for peanut sauce dishes."
-              ],
-              "on_side": false,
-              "replaced_from": null
-            },
-            {
-              "id": "grilled_chicken",
-              "name": "Grilled chicken",
-              "prep": "assembly",
-              "servings": 1.0,
-              "contents": [
-                "Chicken thigh",
-                "Canola oil"
-              ],
-              "removed": [],
-              "allergens": [],
-              "cross_contact": [],
-              "on_side": false,
-              "replaced_from": null
-            },
-            {
-              "id": "garlic_sauce",
-              "name": "Garlic sauce",
-              "prep": "premade",
-              "servings": 1.0,
-              "contents": [
-                "Garlic",
-                "Mayonnaise",
-                "Lemon juice"
-              ],
-              "removed": [],
-              "allergens": [
-                "egg"
-              ],
-              "cross_contact": [],
-              "on_side": false,
-              "replaced_from": "peanut_sauce"
-            },
-            {
-              "id": "scallions",
-              "name": "Scallions",
-              "prep": "assembly",
-              "servings": 1.0,
-              "contents": [
-                "Scallion"
-              ],
-              "removed": [],
-              "allergens": [],
-              "cross_contact": [],
-              "on_side": false,
-              "replaced_from": null
-            }
-          ],
-          "allergens_present": {
-            "egg": [
-              "Mayonnaise (in Garlic sauce)"
-            ],
-            "wheat": [
-              "Wheat noodles (in Wheat noodles)"
-            ]
+        "available": {
+          "wheat_noodles": 3000,
+          "chicken": 3000,
+          "oil": 2000,
+          "garlic_sauce": 1200,
+          "scallion": 400
+        },
+        "check": {
+          "status": "ok",
+          "dish": "satay_noodles",
+          "qty": 1,
+          "reasons": [],
+          "requirements": {
+            "wheat_noodles": 180,
+            "chicken": 150,
+            "oil": 5,
+            "garlic_sauce": 40,
+            "scallion": 10
           },
-          "cross_contact": [
-            "Wheat noodles: Cooked in a shared wok also used for peanut sauce dishes."
-          ],
-          "excluded_allergens": [
-            "peanut"
-          ],
-          "required_diet": [],
-          "allergy_protocol": [
+          "price_delta_cents": 0,
+          "cost_delta_cents": -41,
+          "kitchen_instructions": [
+            "ALLERGY: peanut",
             "Wash hands and change gloves before starting this order.",
             "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
             "Do not use shared fryer oil or shared garnish containers.",
-            "Pack and seal this order separately and label it with the allergy."
+            "Pack and seal this order separately and label it with the allergy.",
+            "NO Crushed peanuts",
+            "SUB Garlic sauce for Peanut sauce"
           ],
-          "note": "Checked against listed ingredients only. Cross-contact is not verified by the system; staff must confirm before this is approved."
+          "evidence": {
+            "components": [
+              {
+                "id": "noodles_base",
+                "name": "Wheat noodles",
+                "prep": "assembly",
+                "servings": 1.0,
+                "ingredient_ids": [
+                  "wheat_noodles"
+                ],
+                "contents": [
+                  "Wheat noodles"
+                ],
+                "removed": [],
+                "allergens": [
+                  "wheat"
+                ],
+                "diet": [
+                  "vegan",
+                  "vegetarian"
+                ],
+                "cross_contact": [
+                  "Cooked in a shared wok also used for peanut sauce dishes."
+                ],
+                "on_side": false,
+                "replaced_from": null
+              },
+              {
+                "id": "grilled_chicken",
+                "name": "Grilled chicken",
+                "prep": "assembly",
+                "servings": 1.0,
+                "ingredient_ids": [
+                  "chicken",
+                  "oil"
+                ],
+                "contents": [
+                  "Chicken thigh",
+                  "Canola oil"
+                ],
+                "removed": [],
+                "allergens": [],
+                "diet": [],
+                "cross_contact": [],
+                "on_side": false,
+                "replaced_from": null
+              },
+              {
+                "id": "garlic_sauce",
+                "name": "Garlic sauce",
+                "prep": "premade",
+                "servings": 1.0,
+                "ingredient_ids": [
+                  "garlic",
+                  "mayonnaise",
+                  "lemon"
+                ],
+                "contents": [
+                  "Garlic",
+                  "Mayonnaise",
+                  "Lemon juice"
+                ],
+                "removed": [],
+                "allergens": [
+                  "egg"
+                ],
+                "diet": [
+                  "vegetarian"
+                ],
+                "cross_contact": [],
+                "on_side": false,
+                "replaced_from": "peanut_sauce"
+              },
+              {
+                "id": "scallions",
+                "name": "Scallions",
+                "prep": "assembly",
+                "servings": 1.0,
+                "ingredient_ids": [
+                  "scallion"
+                ],
+                "contents": [
+                  "Scallion"
+                ],
+                "removed": [],
+                "allergens": [],
+                "diet": [
+                  "vegan",
+                  "vegetarian"
+                ],
+                "cross_contact": [],
+                "on_side": false,
+                "replaced_from": null
+              }
+            ],
+            "allergens_present": {
+              "egg": [
+                "Mayonnaise (in Garlic sauce)"
+              ],
+              "wheat": [
+                "Wheat noodles (in Wheat noodles)"
+              ]
+            },
+            "cross_contact": [
+              "Wheat noodles: Cooked in a shared wok also used for peanut sauce dishes."
+            ],
+            "excluded_allergens": [
+              "peanut"
+            ],
+            "required_diet": [],
+            "allergy_protocol": [
+              "Wash hands and change gloves before starting this order.",
+              "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
+              "Do not use shared fryer oil or shared garnish containers.",
+              "Pack and seal this order separately and label it with the allergy."
+            ],
+            "note": "Checked against listed ingredients only. Cross-contact is not verified by the system; staff must confirm before this is approved."
+          },
+          "requires_staff_review": true
+        }
+      },
+      {
+        "changes": [
+          {
+            "replace": "peanut_sauce",
+            "with": null,
+            "similarity": 1,
+            "source": "leave_off"
+          }
+        ],
+        "similarity": 1,
+        "price_delta_cents": 0,
+        "cost_delta_cents": -81,
+        "requirements": {
+          "wheat_noodles": 180,
+          "chicken": 150,
+          "oil": 5,
+          "scallion": 10
         },
-        "requires_staff_review": true
+        "available": {
+          "wheat_noodles": 3000,
+          "chicken": 3000,
+          "oil": 2000,
+          "scallion": 400
+        },
+        "check": {
+          "status": "ok",
+          "dish": "satay_noodles",
+          "qty": 1,
+          "reasons": [],
+          "requirements": {
+            "wheat_noodles": 180,
+            "chicken": 150,
+            "oil": 5,
+            "scallion": 10
+          },
+          "price_delta_cents": 0,
+          "cost_delta_cents": -81,
+          "kitchen_instructions": [
+            "ALLERGY: peanut",
+            "Wash hands and change gloves before starting this order.",
+            "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
+            "Do not use shared fryer oil or shared garnish containers.",
+            "Pack and seal this order separately and label it with the allergy.",
+            "NO Crushed peanuts",
+            "NO Peanut sauce"
+          ],
+          "evidence": {
+            "components": [
+              {
+                "id": "noodles_base",
+                "name": "Wheat noodles",
+                "prep": "assembly",
+                "servings": 1.0,
+                "ingredient_ids": [
+                  "wheat_noodles"
+                ],
+                "contents": [
+                  "Wheat noodles"
+                ],
+                "removed": [],
+                "allergens": [
+                  "wheat"
+                ],
+                "diet": [
+                  "vegan",
+                  "vegetarian"
+                ],
+                "cross_contact": [
+                  "Cooked in a shared wok also used for peanut sauce dishes."
+                ],
+                "on_side": false,
+                "replaced_from": null
+              },
+              {
+                "id": "grilled_chicken",
+                "name": "Grilled chicken",
+                "prep": "assembly",
+                "servings": 1.0,
+                "ingredient_ids": [
+                  "chicken",
+                  "oil"
+                ],
+                "contents": [
+                  "Chicken thigh",
+                  "Canola oil"
+                ],
+                "removed": [],
+                "allergens": [],
+                "diet": [],
+                "cross_contact": [],
+                "on_side": false,
+                "replaced_from": null
+              },
+              {
+                "id": "scallions",
+                "name": "Scallions",
+                "prep": "assembly",
+                "servings": 1.0,
+                "ingredient_ids": [
+                  "scallion"
+                ],
+                "contents": [
+                  "Scallion"
+                ],
+                "removed": [],
+                "allergens": [],
+                "diet": [
+                  "vegan",
+                  "vegetarian"
+                ],
+                "cross_contact": [],
+                "on_side": false,
+                "replaced_from": null
+              }
+            ],
+            "allergens_present": {
+              "wheat": [
+                "Wheat noodles (in Wheat noodles)"
+              ]
+            },
+            "cross_contact": [
+              "Wheat noodles: Cooked in a shared wok also used for peanut sauce dishes."
+            ],
+            "excluded_allergens": [
+              "peanut"
+            ],
+            "required_diet": [],
+            "allergy_protocol": [
+              "Wash hands and change gloves before starting this order.",
+              "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
+              "Do not use shared fryer oil or shared garnish containers.",
+              "Pack and seal this order separately and label it with the allergy."
+            ],
+            "note": "Checked against listed ingredients only. Cross-contact is not verified by the system; staff must confirm before this is approved."
+          },
+          "requires_staff_review": true
+        }
       }
+    ],
+    "reasons": [],
+    "recommended": 0,
+    "requirements": {
+      "wheat_noodles": 180,
+      "chicken": 150,
+      "oil": 5,
+      "sesame_dressing": 40,
+      "scallion": 10
     }
-  ],
+  },
   "forecast_output_proposed": {
     "ranked": [
       {
-        "with": "sesame_dressing",
+        "option_index": 0,
+        "changes": [
+          {
+            "replace": "peanut_sauce",
+            "with": "sesame_dressing",
+            "similarity": 3,
+            "source": "chef"
+          }
+        ],
         "rank": 1,
         "forecast_reason": "<from forecast>"
       },
       {
-        "with": "garlic_sauce",
+        "option_index": 1,
+        "changes": [
+          {
+            "replace": "peanut_sauce",
+            "with": "garlic_sauce",
+            "similarity": 2,
+            "source": "chef"
+          }
+        ],
         "rank": 2,
+        "forecast_reason": "<from forecast>"
+      },
+      {
+        "option_index": 2,
+        "changes": [
+          {
+            "replace": "peanut_sauce",
+            "with": null,
+            "similarity": 1,
+            "source": "leave_off"
+          }
+        ],
+        "rank": 3,
         "forecast_reason": "<from forecast>"
       }
     ]
@@ -467,7 +745,7 @@
     "review_reasons": [
       "allergy: peanut"
     ],
-    "recommended": "sesame_dressing",
+    "recommended_option": 0,
     "hold": {
       "order_id": "order-123",
       "requirements": {

@@ -8,7 +8,8 @@ from typing import Any, Iterable
 
 from .catalog import Catalog, load_catalog
 from .feasibility import evaluate, similarity
-from .models import Candidate, CheckResult, StockResult
+from .models import Candidate, CheckResult, RequestEvaluation, StockResult
+from .request import evaluate_request
 from .stock import Clock, StockStore, load_stock
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
@@ -20,6 +21,11 @@ class Inventory:
         self.stock = stock
 
     # ----- feasibility -------------------------------------------------------------------------
+
+    def evaluate_request(self, parser_output: dict[str, Any]) -> RequestEvaluation:
+        """One call for the API: check the request, build alternatives if needed, pick a status.
+        See ``request.py``."""
+        return evaluate_request(self, parser_output)
 
     def check(
         self,
