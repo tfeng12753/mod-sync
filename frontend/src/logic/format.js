@@ -81,13 +81,20 @@ export const ORDER_STATUS = {
   cancelled: ['Cancelled', 'bad'],
 }
 
-// Pack-check list (client-side only) built from the kitchen instructions the API returns.
+// Keep the kitchen display focused on recipe changes; restrictions have their own banner.
+function isOrderChange(line) {
+  return /^(NO|EXTRA|SUB|LIGHT)\b|\bON THE SIDE$/i.test(line)
+}
+
+export function orderChanges(lines = []) {
+  return lines.filter(isOrderChange)
+}
+
+// Only actual order changes require a kitchen check, not routine preparation or packing.
 export function packChecklist(order) {
-  const items = (order.kitchen_instructions ?? []).map((line, i) => ({
+  return (order.kitchen_instructions ?? []).map((line, i) => ({
     key: `ki-${i}`,
     label: line,
-    kind: /^(ALLERGY|DIET)\b/i.test(line) ? 'allergen' : /^(NO|EXTRA|SUB|LIGHT)\b|ON THE SIDE/i.test(line) ? 'mod' : 'general',
-  }))
-  items.push({ key: 'bag', label: 'Bag sealed and labelled with order # and name', kind: 'general' })
-  return items
+    kind: 'mod',
+  })).filter((item) => isOrderChange(item.label))
 }

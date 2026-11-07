@@ -21,6 +21,10 @@ Integration status and decisions: [docs/integration-plan.md](docs/integration-pl
 Demo-control orders are linked to **Customer app → Your orders** in the same browser session;
 **Review options** opens the original ticket for customer acceptance.
 
+Kitchen checklists and staff option instructions show only actual order changes (remove, extra,
+swap, light, on the side). Allergy/diet banners remain visible; routine preparation and bagging
+reminders are omitted from these lists.
+
 Only edit another area's folder after agreeing with its owner.
 
 ### Request flow

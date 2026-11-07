@@ -1,11 +1,12 @@
 import ModChip from './ModChip.jsx'
-import { describeChange, priceChange } from '../logic/format.js'
+import { describeChange, orderChanges, priceChange } from '../logic/format.js'
 
 // One alternative ("option") from the API Evaluation.
 // audience "customer": friendly card with a choose button.
 // audience "staff": adds route / score / similarity / staff notes and instructions.
 export default function SubstitutionCard({ option, recommended, selected, audience, onChoose, chooseLabel, busy }) {
   const staff = audience === 'staff'
+  const instructions = orderChanges(option.kitchen_instructions ?? [])
   return (
     <div className={`sub ${selected ? 'sub-selected' : ''} ${recommended ? 'sub-pending' : 'sub-done'}`}>
       <div className="row between">
@@ -38,10 +39,10 @@ export default function SubstitutionCard({ option, recommended, selected, audien
         <ul className="why-list notes">{option.staff_notes.map((r, i) => <li key={i}>{r}</li>)}</ul>
       )}
 
-      {staff && option.kitchen_instructions?.length > 0 && (
+      {staff && instructions.length > 0 && (
         <details>
           <summary>Kitchen instructions</summary>
-          <ul className="instructions">{option.kitchen_instructions.map((l, i) => <li key={i}>{l}</li>)}</ul>
+          <ul className="instructions">{instructions.map((l, i) => <li key={i}>{l}</li>)}</ul>
         </details>
       )}
 

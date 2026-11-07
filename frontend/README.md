@@ -70,4 +70,7 @@ The mock is only bundled when `VITE_USE_MOCK=1`; a normal build never loads it.
 | `src/components/DemoControls.jsx` | Sample orders, stock "mark out", demo reset. |
 | `src/logic/format.js` | Pure display helpers (money, chips, pack checklist from kitchen instructions). |
 
-Pack checks and "hand off to courier" are UI-only; the backend doesn't track them.
+Kitchen checklists and staff option instruction lists show only order changes: removals, extras,
+substitutions, light portions, and items on the side. Allergy/diet labels remain on the ticket;
+routine hygiene and packaging reminders are not checklist items. An unchanged order has no checks.
+Order-change checks and "hand off to courier" are UI-only; the backend doesn't track them.

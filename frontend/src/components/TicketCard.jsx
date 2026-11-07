@@ -177,7 +177,7 @@ export default function TicketCard({ order, dish, now, dispatch, packed = {}, ha
 
       {confirmed && !handedOff && (
         <>
-          <h5>Kitchen instructions / pack check</h5>
+          <h5>Order changes</h5>
           <div className="checklist">
             {checklist.map((c) => (
               <label key={c.key} className={`check check-${c.kind}`}>
@@ -186,10 +186,11 @@ export default function TicketCard({ order, dish, now, dispatch, packed = {}, ha
               </label>
             ))}
           </div>
+          {checklist.length === 0 && <p className="muted">No changes to this order.</p>}
           <button className="btn primary block" disabled={open > 0} onClick={() => dispatch({ type: 'HAND_OFF', orderId: order.order_id })}>
             {open ? 'Not ready for handoff' : 'Hand off to courier'}
           </button>
-          {open > 0 && <ul className="stops"><li>{open} pack check{open > 1 ? 's' : ''} still open</li></ul>}
+          {open > 0 && <ul className="stops"><li>{open} order change{open > 1 ? 's' : ''} to check</li></ul>}
         </>
       )}
       {confirmed && handedOff && <div className="muted">✓ Handed off</div>}

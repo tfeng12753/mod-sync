@@ -10,6 +10,10 @@ Demo-control orders also appear under **Customer app → Your orders** in the sa
 **Review options** restores the ticket's dish, quantity, request, and customer details; accepting
 an option updates that same kitchen ticket.
 
+Kitchen checklists and staff option instruction lists display only recipe changes. Allergy/diet
+labels remain on tickets, while routine hygiene and packaging reminders are omitted from the lists.
+Only recipe-change checks gate the existing handoff action.
+
 ### Still open
 - Revoke the leaked OpenRouter key; test the parser once with a real key (`backend/parsing/run_manual_cases.py`).
 - Team review: Person 2 (parser changes), Person 4 (one engine change, below), Jacob (UI rewrite).
