@@ -206,13 +206,23 @@ class CandidateTests(unittest.TestCase):
         cands = self.inv.substitute_candidates("chicken_bowl", "chicken")
         self.assertEqual([c.with_ for c in cands], ["crispy_tofu", "roasted_mushrooms"])
         self.assertEqual([c.similarity_source for c in cands], ["chef", "chef"])
+        self.assertEqual([c.similarity for c in cands], [0.8, 0.65])
         self.assertTrue(all(c.feasible for c in cands))
 
     def test_tag_similarity_fallback(self):
         cands = self.inv.substitute_candidates("chicken_bowl", "rice_base")
         self.assertEqual(len(cands), 1)
         self.assertEqual(cands[0].similarity_source, "tags")
-        self.assertTrue(1 <= cands[0].similarity <= 5)
+        # rice_base {base, grain, mild, soft} vs greens_base {base, fresh, mild, crisp}: Jaccard 2/6
+        self.assertEqual(cands[0].similarity, round(0.2 + 0.8 * 2 / 6, 2))
+        self.assertTrue(0.2 <= cands[0].similarity <= 1)
+
+    def test_tag_similarity_bounds(self):
+        from backend.inventory.feasibility import similarity
+        cat = self.inv.catalog
+        self.assertEqual(similarity(cat, "crispy_tofu", "crispy_tofu", None), (1.0, "tags"))
+        self.assertEqual(similarity(cat, "rice_base", "crushed_peanuts", None), (0.2, "tags"))
+        self.assertEqual(similarity(cat, "rice_base", "greens_base", 0.9), (0.9, "chef"))
 
     def test_infeasible_candidates_filtered(self):
         self.inv.set_on_hand("tofu", 0, "test")

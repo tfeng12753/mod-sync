@@ -163,3 +163,54 @@ Person 4 (no logic changes expected; similarity/threshold agreement; dependency 
 Jacob (swap mocks for API calls; don't delete the project doc).
 Bigger moves needing a yes first: moving Person 2's files, changing the similarity scale, choosing
 not to use `decide_modification` yet, and replacing the UI's mock logic.
+
+## Engine changes
+
+Made by the engine-adapter work (`backend/integration/engine_adapter.py`), 2026-11-07. One change,
+backward compatible (default off); all original engine tests still pass. Tests:
+`tests/integration/test_engine_changes.py`.
+
+**`ModificationOffer.removed_requirements_verified: bool = False`** (`backend/engine/decisions.py`).
+
+- Why: the engine models a removal as "remove the stock items that contain the target". Inventory
+  dish components are built from shared raw ingredients, so replacing `grilled_chicken`
+  (chicken 150 g + oil 5 ml) with `crispy_tofu` (tofu 150 g + cornstarch 10 g + oil 10 ml) must remove
+  5 ml of oil, which does not "contain chicken"; and a combined allergy option (leave off
+  `crushed_peanuts` **and** swap `peanut_sauce` → `sesame_dressing`) removes two components while the
+  engine has one `target_ingredient_id`. Without the flag the engine blocks both as "removes an
+  unrelated ingredient".
+- What: when an offer supplies explicit `removed_requirements` and sets the flag, inventory (the
+  recipe source of truth) attests those quantities belong to the replaced/omitted components, so a
+  removed item that does not itself contain the target is accepted. Every other check is unchanged:
+  removal cannot exceed the original recipe, the final recipe must equal
+  original − removed + portion requirements exactly, the target must be absent from the final recipe
+  (unless `exclude_target: false`), restrictions/profiles, cutoff, pricing and routing all apply.
+- Guard rails: the flag requires non-empty `removed_requirements` (validation error otherwise), and
+  at least one removed item must still contain the target, else the option is blocked.
+- `contracts/modification_request.schema.json` regenerated (`python -m backend.engine.export_contracts`);
+  no other contract changed.
+
+How the adapter uses the engine (no other engine changes):
+
+- One engine candidate per inventory option (`option_id = "opt-<index>"`); options sharing
+  `(action, target, exclude_target)` share one `decide_modification` call.
+- `action`: `substitute` if the option has any swap, else `omit` (leave-offs: no similarity question).
+  The primary change (weakest swap, or first leave-off) gives `target_ingredient_id` (premade
+  component → its stock id, assembly component → its main ingredient) and `offered_item_id`.
+- `removed_requirements` / `portion_requirements` come from inventory: original recipe vs the recipe
+  with the changed components removed vs the option's recipe; `removed_requirements_verified` is set.
+  Menu price = sum of the catalog swaps' `price_delta_cents`, reference
+  `catalog:<dish>:<replace>-><with>`; leave-off-only options use the engine's omission policy (0).
+- `changes` given to the inventory functions: `{"ops", "qty", "exclude_allergens", "require_diet"}`
+  (a bare ops list also works); `requirements` returns per-dish quantities.
+- Catalog items: every stocked item (`in_inventory`) and every dish component (`on_menu`), composition
+  verified from the catalog. Allergy/diet flags → `restrictions` + catalog-generated
+  `ingredient_profiles` (`verified: true`); they always route to staff with the safety note.
+- Forecast: synthetic history (`backend/data/usage_history.json`), window
+  `[now, min(now + 3 h, use-by, next delivery))`, `now` defaulting to the demo time
+  2026-11-07T17:00-05:00; active holds are passed as `committed_in_horizon`. A window shorter than
+  the 3 h history periods gets no forecast, so the engine fails closed. `decide_modification` takes
+  no explainer; an explainer passed to `route_options` is only used for the as-asked outlook.
+- A request that works as asked (no options) uses `forecast_inventory` + `assess_extra` for extras
+  (the whole order's quantity of the extra item: conservative, since this order isn't committed yet).
+  Reserve risk on a plain request is informational; an extra that eats the reserve goes to staff.

@@ -39,6 +39,12 @@ class ModificationOffer(Contract):
     # Optional explicit quantities removed per dish by an approved swap.
     # Without this map, remove the whole target-containing component(s).
     removed_requirements: dict[str, float] | None = None
+    # Inventory (the recipe source of truth) attests that every quantity in
+    # removed_requirements belongs to the replaced/omitted component(s), e.g. the
+    # cooking oil of a replaced protein or a second leave-off in the same option.
+    # Only then may a removed ingredient that does not itself contain the target be
+    # accepted. At least one removed item must still contain the target.
+    removed_requirements_verified: bool = False
     # Menu-approved price delta for one extra/replacement portion. Zero is explicit.
     menu_price_change_cents: int | None = None
     menu_price_reference: str | None = None
@@ -48,6 +54,8 @@ class ModificationOffer(Contract):
         if any(q <= 0 for q in list(self.portion_requirements.values()) +
                list((self.removed_requirements or {}).values())):
             raise ValueError("portion requirements must be positive")
+        if self.removed_requirements_verified and not self.removed_requirements:
+            raise ValueError("verified removals require explicit removed_requirements")
         if self.menu_price_change_cents is not None and not (self.menu_price_reference or "").strip():
             raise ValueError("menu price requires an authoritative menu/rule reference")
         return self
@@ -327,16 +335,23 @@ async def decide_modification(request: ModificationRequest, gateway: InventoryGa
             removed = ({i: q * request.evaluation.qty for i, q in offer.removed_requirements.items()}
                        if offer.removed_requirements is not None else
                        {i: q for i, q in baseline.items() if contains_target(i) is True})
+            verified_removal = offer.removed_requirements is not None and offer.removed_requirements_verified
             for ingredient_id, q in removed.items():
                 if ingredient_id not in baseline or q > baseline.get(ingredient_id, 0):
                     blocked = True
                     reasons.append("The proposed removal exceeds the original recipe quantity.")
+                if verified_removal:
+                    # Inventory attested these quantities belong to the removed component(s).
+                    continue
                 if contains_target(ingredient_id) is False:
                     blocked = True
                     reasons.append("The modification would remove an unrelated ingredient.")
                 elif contains_target(ingredient_id) is None:
                     uncertain = True
                     notes.append("Staff must verify the removed component contains the targeted ingredient.")
+            if verified_removal and removed and not any(contains_target(i) is True for i in removed):
+                blocked = True
+                reasons.append("The verified removal does not remove the targeted ingredient.")
             if request.action == "substitute" and not removed:
                 blocked = True
                 reasons.append("The substitution does not replace a target ingredient in the original recipe.")

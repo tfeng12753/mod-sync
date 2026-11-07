@@ -39,9 +39,27 @@ class CatalogTests(unittest.TestCase):
 
     def test_similarity_out_of_range_rejected(self):
         raw = copy.deepcopy(sample())
-        raw["dishes"]["chicken_bowl"]["substitutions"][0]["similarity"] = 9
-        with self.assertRaisesRegex(CatalogError, "similarity must be 1-5"):
+        raw["dishes"]["chicken_bowl"]["substitutions"][0]["similarity"] = 4  # old 1-5 scale
+        with self.assertRaisesRegex(CatalogError, "similarity must be between 0 and 1"):
             parse_catalog(raw)
+
+    def test_negative_similarity_rejected(self):
+        raw = copy.deepcopy(sample())
+        raw["dishes"]["chicken_bowl"]["substitutions"][0]["similarity"] = -0.1
+        with self.assertRaisesRegex(CatalogError, "similarity must be between 0 and 1"):
+            parse_catalog(raw)
+
+    def test_non_numeric_similarity_rejected(self):
+        raw = copy.deepcopy(sample())
+        raw["dishes"]["chicken_bowl"]["substitutions"][0]["similarity"] = "high"
+        with self.assertRaisesRegex(CatalogError, "similarity must be a number"):
+            parse_catalog(raw)
+
+    def test_sample_similarities_are_on_unit_scale(self):
+        cat = parse_catalog(sample())
+        scores = [s.similarity for d in cat.dishes.values() for s in d.substitutions if s.similarity is not None]
+        self.assertTrue(scores)
+        self.assertTrue(all(0 <= s <= 1 for s in scores))
 
     def test_bad_prep_rejected(self):
         raw = sample()

@@ -1,8 +1,10 @@
 # Inventory, feasibility & similarity — plan
 
-Owner: Siddharth. Branch: `inventory` (merged to `main`). Status: **v1 implemented and tested
-(102 unit tests): `evaluate_request()`, parser vocabulary + menu export, and a 30-case starter
-parser test set. Contracts with Person 2 and Person 4 still to be agreed.**
+Owner: Siddharth. Branch: `inventory` (merged to `main`), now developed on `integration`. Status:
+**v1 implemented and tested: `evaluate_request()`, parser vocabulary + menu export, a 30-case starter
+parser test set, similarity on a 0–1 scale (decision D3), synthetic usage history and use-by dates
+for the forecast engine. Inventory options are routed through Person 4's `decide_modification` by
+`backend/integration/engine_adapter.py`.**
 
 Keep this file updated as tasks finish or decisions change (see `CLAUDE.md`).
 
@@ -19,7 +21,10 @@ Keep this file updated as tasks finish or decisions change (see `CLAUDE.md`).
 | `export.py` | `py -3 -m backend.inventory.export` writes `fixtures/parser_vocabulary.json` + `fixtures/menu.json` |
 | `service.py` | `Inventory` facade + `load_inventory()` — the only thing other modules should import |
 | `demo.py` | `py -3 -m backend.inventory.demo` walks the scenarios; `--fixture` regenerates the shared fixture |
+| `history.py` | `py -3 -m backend.inventory.history` regenerates the **synthetic** usage history; `load_usage_history()` |
 | `backend/data/aliases.json` | Customer nicknames → IDs (items, dishes, allergens, diets) |
+| `backend/data/usage_history.json` | Synthetic dinner usage per stock item (engine `UsageRecord` format), generated |
+| `backend/data/stock.json` | On hand, safety buffers, `usable_until` (use-by per item), deliveries (ETAs with offsets) |
 | `fixtures/parser_cases.json` | Starter parser test set: text → expected parser output → expected inventory status |
 | `tests/inventory/` | Edge cases, stock/hold flows, staff review, demo scenarios, vocabulary, parser test set |
 
@@ -76,7 +81,9 @@ Proposal: I own the review *state* (hold/confirm/release/timeout); endpoints go 
   `extras {component: {max, price_cents}}`,
   `substitutions [{replace, with, similarity, price_delta_cents}]` (component level, chef-approved).
 - **Stock** — `on_hand {item: qty}` for raw ingredients and premade components, `safety_buffer`,
-  `deliveries [{item, qty, eta}]`, active `holds`, confirmed orders, `usage_log`.
+  `usable_until {item: ISO datetime with offset}` (use-by of the batch on hand),
+  `deliveries [{item, qty, eta}]` (ETA with offset), active `holds`, confirmed orders, `usage_log`.
+  Naive datetimes are rejected at load (fail closed).
 - Quantities are integers in the item's unit; "less" = half, rounded up. Money is integer cents.
 
 Sample data: `backend/data/catalog.json`, `backend/data/stock.json` — one restaurant, ~5 dishes,
@@ -84,11 +91,47 @@ Sample data: `backend/data/catalog.json`, `backend/data/stock.json` — one rest
 
 ## Similarity scores
 
-Each approved swap carries a `similarity` from 1–5 and a `similarity_source`. Implemented:
-1. **Chef-entered** score on the approved swap (`"similarity": 4`) → source `"chef"`.
-2. **Tag fallback** when a swap has no score: overlap of the two components' `tags`
-   (Jaccard mapped to 1–5) → source `"tags"`. Example: `rice_base → greens_base` in `chicken_bowl`.
-3. Optional stretch (not built): an LLM proposes swaps + scores **offline** for chef approval. Never at request time.
+Each approved swap carries a `similarity` on a **0–1 scale** (culinary fit; decision D3, matching
+the engine's contract) and a `similarity_source`. Deterministic, no LLM call. Implemented:
+1. **Chef-entered** score on the approved swap (`"similarity": 0.8`) → source `"chef"`. The catalog
+   validates 0 ≤ score ≤ 1 (the old 1–5 values are rejected).
+2. **Tag fallback** when a swap has no score: Jaccard overlap of the two components' `tags` mapped
+   onto [0.2, 1.0] (`0.2 + 0.8 × J`, 2 decimals; no tags → 0.2) → source `"tags"`.
+   Example: `rice_base → greens_base` in `chicken_bowl` = 0.47.
+3. **Leave-offs** (`with: None`) have **no** similarity (`None`, source `"leave_off"`): removing a
+   sauce isn't a culinary match, so no score is faked. The engine treats them as omissions.
+4. Optional stretch (not built): an LLM proposes swaps + scores **offline** for chef approval. Never at request time.
+
+Demo values (synthetic, picked for the engine's 0.75 combined cutoff = 0.55 similarity + 0.35
+forecast reserve + 0.10 cost):
+
+| Dish | Swap | Similarity |
+| --- | --- | --- |
+| chicken_bowl, satay_noodles | grilled_chicken → crispy_tofu / roasted_mushrooms | 0.8 / 0.65 |
+| chicken_bowl | garlic_sauce → sesame_dressing | 0.7 |
+| chicken_bowl | rice_base → greens_base | tags (0.47) |
+| tofu_bowl | crispy_tofu → roasted_mushrooms; sesame_dressing → garlic_sauce; rice_base → greens_base | 0.75; 0.6; 0.6 |
+| satay_noodles | peanut_sauce → sesame_dressing / garlic_sauce | 0.7 / 0.55 |
+| falafel_wrap | tortilla → greens_base; tahini_sauce → garlic_sauce | 0.4; 0.7 |
+
+Mushrooms (0.65) only qualify when the forecast shows surplus (reserve factor ≈ 1): 0.55×0.65 +
+0.35×1 + 0.10×0.53 ≈ 0.76. Tofu (0.8) falls below the cutoff when dinner demand eats its reserve.
+
+## Synthetic usage history and use-by (forecast inputs)
+
+- `backend/data/usage_history.json` (generated by `py -3 -m backend.inventory.history`, seed fixed):
+  12 prior Saturday dinners (17:00–20:00 America/New_York, DST-correct offsets) before the demo
+  evaluation time **2026-11-07T17:00:00-05:00** (`history.DEMO_EVALUATION_TIME`), one record per
+  stocked item per dinner (zeros explicit), in the engine's `UsageRecord` format
+  (`ingredient_id, unit, start, end, daypart: "dinner", quantity, source: "measured", stockout,
+  complete`). Quantities = noisy synthetic dish sales (`SALES_MIX`) × catalog recipes × portion noise.
+  Tofu is in high demand (dinner forecast ≈860 g vs 900 g on hand → swapping chicken for tofu eats
+  the reserve); mushrooms are rarely used (forecast ≈160 g vs 2500 g → surplus). Labeled SYNTHETIC; "measured" is only the
+  engine's contract label. A test fails if the file is stale.
+- `stock.json` `usable_until` per item; `inv.usable_until(item_ids=None) -> {item: datetime}`.
+- `inv.horizon_end(item_ids, start, latest)` = earliest of `latest`, the items' use-by, and their
+  next delivery after `start` — the engine requires a horizon that spans no expiry or replenishment.
+- `inv.stocked_items()`, `inv.unit_of(item)`, `inv.usage_history()` feed the engine adapter.
 
 ## Public API
 
@@ -113,7 +156,14 @@ inv.expired_holds() -> list[str]                # timed-out orders since last ca
 inv.adjust(item_id, delta, reason) -> int       # deliveries, waste; never below zero
 inv.set_on_hand(item_id, qty, reason) -> int    # e.g. "out of avocado" -> 0
 inv.usage_log() / inv.deliveries()              # read-only, for forecast
+inv.stocked_items() / inv.unit_of(item_id)      # forecast ingredient list + canonical units
+inv.usable_until(item_ids=None) -> {item: datetime}            # use-by per batch on hand
+inv.horizon_end(item_ids, start, latest) -> datetime           # min(latest, use-by, next delivery)
+inv.usage_history() -> list[dict]               # synthetic engine UsageRecords (history.py)
 ```
+
+Engine routing of `evaluate_request()` options: `backend/integration/engine_adapter.py`
+(`await route_options(inv, evaluation)`), see [docs/integration-plan.md](../../docs/integration-plan.md#engine-changes).
 
 Example: [fixtures/allergy_request_example.json](../../fixtures/allergy_request_example.json)
 (parser output → `evaluate_request()` result → proposed forecast/review shapes).
@@ -136,13 +186,16 @@ What it does:
    swap that ran out maps back to the original component.
 3. Try every combination (max 64) of chef-approved swaps for those components, plus "leave it off"
    for `can_leave_off` components; keep the customer's other ops; fully `check()` each; keep passes.
-4. Sort options: highest weakest-swap similarity, then fewest leave-offs, then price, then cost.
+4. Sort options: options with a swap first (highest weakest-swap similarity), then fewest
+   leave-offs, then price, then cost; options that only leave things off come last.
    Forecast may re-rank `options`.
 
 Output `RequestEvaluation`: `status`, `requires_staff_review`, `review_reasons`, `check` (as asked,
-so the UI can explain why), `options[]` (each: `changes [{replace, with|None, similarity, source}]`,
-`similarity`, price/cost deltas, `requirements`, `available`, full `check`), `reasons` (problems no
-option fixes), `recommended` (index into options or `None`), `requirements` (what to hold/confirm).
+so the UI can explain why), `options[]` (each: `changes [{replace, with|None, similarity (0–1, None
+for a leave-off), source}]`, `similarity` (weakest swap, None if only leave-offs), price/cost deltas,
+`requirements`, `available`, full `check`, `ops` = the full inventory ops that make this option),
+`reasons` (problems no option fixes), `recommended` (index into options or `None`), `requirements`
+(what to hold/confirm), `base_ops` (the customer's ops every option keeps).
 
 | Status | When |
 | --- | --- |
@@ -163,7 +216,7 @@ allergy protocol), `requires_staff_review` (true when allergy/diet constraints w
 
 ```python
 {"dish": "chicken_bowl", "replace": "grilled_chicken", "with": "crispy_tofu",
- "similarity": 4, "price_delta_cents": 0, "cost_delta_cents": -35,
+ "similarity": 0.8, "similarity_source": "chef", "price_delta_cents": 0, "cost_delta_cents": -56,
  "requirements": {"tofu": 120, "rice": 200, ...},
  "available": {"tofu": 900, ...}, "check": <CheckResult>}
 ```
@@ -226,8 +279,11 @@ Status precedence: `needs_clarification` > `blocked` > `out_of_stock` > `ok`; al
 - [x] Parser vocabulary / menu export (IDs, names, nicknames) for Person 2 and `GET /menu`
 - [x] Starter parser test set (30 cases) checked against `evaluate_request()`
 - [ ] Person 2 reviews/extends `fixtures/parser_cases.json` and `aliases.json`
-- [ ] Synthetic usage history for forecast (`usage_log()` only covers live orders)
-- [ ] Use-by dates per stock batch + "expiring before T" query (surplus story)
+- [x] Similarity on a 0–1 scale (D3): chef values + tag fallback mapped to [0.2, 1.0]; leave-offs unscored
+- [x] Synthetic usage history for forecast (`history.py`, `backend/data/usage_history.json`)
+- [x] Use-by per stocked item (`stock.json` `usable_until`) + `usable_until()` / `horizon_end()`
+- [x] Engine adapter (`backend/integration/engine_adapter.py`): options → `decide_modification`
+- [ ] Use-by per *batch* (several batches of one item with different dates); today one date per item
 - [ ] Multi-dish orders: sum requirements across items into one hold
 - [ ] Hook up to the API / orchestration once someone owns it
 

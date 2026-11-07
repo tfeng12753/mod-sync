@@ -105,12 +105,21 @@ def _parse_dish(did: str, d: dict[str, Any]) -> Dish:
             Substitution(
                 replace=s["replace"],
                 with_=s["with"],
-                similarity=None if s.get("similarity") is None else int(s["similarity"]),
+                similarity=_similarity_value(s.get("similarity")),
                 price_delta_cents=int(s.get("price_delta_cents", 0)),
             )
             for s in d.get("substitutions", ())
         ),
     )
+
+
+def _similarity_value(raw: Any) -> float | None:
+    """Chef-entered culinary similarity on a 0-1 scale (None = fall back to tag overlap)."""
+    if raw is None:
+        return None
+    if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+        raise ValueError(f"similarity must be a number between 0 and 1, got {raw!r}")
+    return float(raw)
 
 
 def _validate(cat: Catalog) -> None:
@@ -144,7 +153,7 @@ def _validate(cat: Catalog) -> None:
                     errors.append(f"dish {dish.id!r} substitution references unknown component {cid!r}")
             if s.replace not in dish.components:
                 errors.append(f"dish {dish.id!r} substitution replaces {s.replace!r}, which is not in the dish")
-            if s.similarity is not None and not 1 <= s.similarity <= 5:
-                errors.append(f"dish {dish.id!r} substitution {s.replace}->{s.with_}: similarity must be 1-5")
+            if s.similarity is not None and not 0 <= s.similarity <= 1:
+                errors.append(f"dish {dish.id!r} substitution {s.replace}->{s.with_}: similarity must be between 0 and 1")
     if errors:
         raise CatalogError("invalid catalog:\n  " + "\n  ".join(errors))

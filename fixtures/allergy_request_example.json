@@ -206,11 +206,11 @@
           {
             "replace": "peanut_sauce",
             "with": "sesame_dressing",
-            "similarity": 3,
+            "similarity": 0.7,
             "source": "chef"
           }
         ],
-        "similarity": 3,
+        "similarity": 0.7,
         "price_delta_cents": 0,
         "cost_delta_cents": -33,
         "requirements": {
@@ -376,18 +376,29 @@
             "note": "Checked against listed ingredients only. Cross-contact is not verified by the system; staff must confirm before this is approved."
           },
           "requires_staff_review": true
-        }
+        },
+        "ops": [
+          {
+            "op": "remove",
+            "ingredient": "peanuts"
+          },
+          {
+            "op": "substitute",
+            "ingredient": "peanut_sauce",
+            "with": "sesame_dressing"
+          }
+        ]
       },
       {
         "changes": [
           {
             "replace": "peanut_sauce",
             "with": "garlic_sauce",
-            "similarity": 2,
+            "similarity": 0.55,
             "source": "chef"
           }
         ],
-        "similarity": 2,
+        "similarity": 0.55,
         "price_delta_cents": 0,
         "cost_delta_cents": -41,
         "requirements": {
@@ -546,18 +557,29 @@
             "note": "Checked against listed ingredients only. Cross-contact is not verified by the system; staff must confirm before this is approved."
           },
           "requires_staff_review": true
-        }
+        },
+        "ops": [
+          {
+            "op": "remove",
+            "ingredient": "peanuts"
+          },
+          {
+            "op": "substitute",
+            "ingredient": "peanut_sauce",
+            "with": "garlic_sauce"
+          }
+        ]
       },
       {
         "changes": [
           {
             "replace": "peanut_sauce",
             "with": null,
-            "similarity": 1,
+            "similarity": null,
             "source": "leave_off"
           }
         ],
-        "similarity": 1,
+        "similarity": null,
         "price_delta_cents": 0,
         "cost_delta_cents": -81,
         "requirements": {
@@ -684,7 +706,17 @@
             "note": "Checked against listed ingredients only. Cross-contact is not verified by the system; staff must confirm before this is approved."
           },
           "requires_staff_review": true
-        }
+        },
+        "ops": [
+          {
+            "op": "remove",
+            "ingredient": "peanuts"
+          },
+          {
+            "op": "remove",
+            "ingredient": "peanut_sauce"
+          }
+        ]
       }
     ],
     "reasons": [],
@@ -695,7 +727,13 @@
       "oil": 5,
       "sesame_dressing": 40,
       "scallion": 10
-    }
+    },
+    "base_ops": [
+      {
+        "op": "remove",
+        "ingredient": "peanuts"
+      }
+    ]
   },
   "forecast_output_proposed": {
     "ranked": [
@@ -705,7 +743,7 @@
           {
             "replace": "peanut_sauce",
             "with": "sesame_dressing",
-            "similarity": 3,
+            "similarity": 0.7,
             "source": "chef"
           }
         ],
@@ -718,7 +756,7 @@
           {
             "replace": "peanut_sauce",
             "with": "garlic_sauce",
-            "similarity": 2,
+            "similarity": 0.55,
             "source": "chef"
           }
         ],
@@ -731,7 +769,7 @@
           {
             "replace": "peanut_sauce",
             "with": null,
-            "similarity": 1,
+            "similarity": null,
             "source": "leave_off"
           }
         ],

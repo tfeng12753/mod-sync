@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -127,6 +128,49 @@ class Inventory:
 
     def deliveries(self) -> list[dict[str, Any]]:
         return self.stock.deliveries()
+
+    # ----- forecast inputs (use-by, horizon, units, history) -----------------------------------
+
+    def stocked_items(self) -> list[str]:
+        """Every tracked stock item: raw ingredients and premade components."""
+        return self.stock.tracked_items()
+
+    def unit_of(self, item_id: str) -> str | None:
+        """Canonical unit (g/ml/each) of a stock item, from the catalog."""
+        # Raw ingredients first: an assembly component may share an ingredient's ID (lettuce).
+        if item_id in self.catalog.ingredients:
+            return self.catalog.ingredients[item_id].unit
+        comp = self.catalog.components.get(item_id)
+        return comp.unit if comp is not None and comp.is_premade else None
+
+    def usable_until(self, item_ids: Iterable[str] | None = None) -> dict[str, datetime]:
+        """Use-by of the batch on hand per item (timezone-aware). Items without a recorded
+        use-by are left out; callers must treat them as unknown, never as 'forever'."""
+        ids = self.stocked_items() if item_ids is None else list(item_ids)
+        out = {}
+        for item in ids:
+            when = self.stock.usable_until(item)
+            if when is not None:
+                out[item] = when
+        return out
+
+    def horizon_end(self, item_ids: Iterable[str], start: datetime, latest: datetime) -> datetime:
+        """End of a forecast horizon starting at ``start``: the earliest of ``latest``, any
+        item's use-by, and any item's next delivery after ``start`` (forecast horizons must
+        not span a replenishment or an expiry)."""
+        if start.utcoffset() is None or latest.utcoffset() is None:
+            raise ValueError("start and latest must include a UTC offset")
+        ends = [latest]
+        for item in item_ids:
+            for when in (self.stock.usable_until(item), self.stock.next_delivery(item, start)):
+                if when is not None:
+                    ends.append(when)
+        return min(ends)
+
+    def usage_history(self, path: str | Path | None = None) -> list[dict[str, Any]]:
+        """Synthetic usage history records for the forecast engine (see ``history.py``)."""
+        from .history import load_usage_history
+        return load_usage_history(path)
 
     # ----- internals ---------------------------------------------------------------------------
 

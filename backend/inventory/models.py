@@ -62,7 +62,7 @@ class Extra:
 class Substitution:
     replace: str
     with_: str
-    similarity: int | None  # chef-entered 1-5, or None to fall back to tag overlap
+    similarity: float | None  # chef-entered 0-1, or None to fall back to tag overlap
     price_delta_cents: int = 0
 
 
@@ -117,7 +117,7 @@ class Candidate:
     dish: str
     replace: str
     with_: str
-    similarity: int
+    similarity: float  # 0-1 culinary fit, deterministic (chef-entered or tag overlap)
     similarity_source: str  # "chef" | "tags"
     price_delta_cents: int
     cost_delta_cents: int
@@ -149,13 +149,15 @@ class Option:
     """One complete way to make the dish: zero or more swaps/removals applied on top of the
     customer's request. Produced by ``evaluate_request`` for forecast to rank."""
 
-    changes: list[dict[str, Any]]  # [{"replace", "with" (None = leave it off), "similarity", "source"}]
-    similarity: int  # weakest swap's similarity (1-5); 1 if the option only leaves things off
+    # [{"replace", "with" (None = leave it off), "similarity" (0-1; None for a leave-off), "source"}]
+    changes: list[dict[str, Any]]
+    similarity: float | None  # weakest swap's similarity (0-1); None if the option only leaves things off
     price_delta_cents: int
     cost_delta_cents: int
     requirements: dict[str, int]
     available: dict[str, int]
     check: CheckResult
+    ops: list[dict[str, Any]] = field(default_factory=list)  # full inventory ops that make this option
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -166,6 +168,7 @@ class Option:
             "requirements": dict(self.requirements),
             "available": dict(self.available),
             "check": self.check.to_dict(),
+            "ops": [dict(op) for op in self.ops],
         }
 
 
@@ -188,6 +191,8 @@ class RequestEvaluation:
     reasons: list[Reason]  # problems that options could not fix
     recommended: int | None  # index into options, or None (use the request as asked / nothing possible)
     requirements: dict[str, int]  # what to hold/confirm if the recommendation is accepted
+    # The customer's ops every option keeps (an option's ops = base_ops + its own changes).
+    base_ops: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -202,6 +207,7 @@ class RequestEvaluation:
             "reasons": [r.to_dict() for r in self.reasons],
             "recommended": self.recommended,
             "requirements": dict(self.requirements),
+            "base_ops": [dict(op) for op in self.base_ops],
         }
 
 

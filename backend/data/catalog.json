@@ -1,5 +1,6 @@
 {
   "_note": "SYNTHETIC demo data for the hackathon prototype. Not a real restaurant's recipes, prices, allergen info, or stock.",
+  "_similarity_note": "Swap similarity is a chef-entered culinary fit on a 0-1 scale (engine cutoff is a 0.75 combined score). Swaps without a score fall back to tag overlap mapped onto 0.2-1.0.",
   "restaurant": "Bowl & Co (synthetic)",
   "allergy_protocol": [
     "Wash hands and change gloves before starting this order.",
@@ -84,9 +85,9 @@
         "garlic_sauce":    {"max": 1, "price_cents": 75}
       },
       "substitutions": [
-        {"replace": "grilled_chicken", "with": "crispy_tofu",       "similarity": 4, "price_delta_cents": 0},
-        {"replace": "grilled_chicken", "with": "roasted_mushrooms", "similarity": 3, "price_delta_cents": -100},
-        {"replace": "garlic_sauce",    "with": "sesame_dressing",   "similarity": 3, "price_delta_cents": 0},
+        {"replace": "grilled_chicken", "with": "crispy_tofu",       "similarity": 0.8, "price_delta_cents": 0},
+        {"replace": "grilled_chicken", "with": "roasted_mushrooms", "similarity": 0.65, "price_delta_cents": -100},
+        {"replace": "garlic_sauce",    "with": "sesame_dressing",   "similarity": 0.7, "price_delta_cents": 0},
         {"replace": "rice_base",       "with": "greens_base",                        "price_delta_cents": 0}
       ]
     },
@@ -100,9 +101,9 @@
         "grilled_chicken":{"max": 1, "price_cents": 350}
       },
       "substitutions": [
-        {"replace": "crispy_tofu",     "with": "roasted_mushrooms", "similarity": 4, "price_delta_cents": -100},
-        {"replace": "sesame_dressing", "with": "garlic_sauce",      "similarity": 3, "price_delta_cents": 0},
-        {"replace": "rice_base",       "with": "greens_base",       "similarity": 3, "price_delta_cents": 0}
+        {"replace": "crispy_tofu",     "with": "roasted_mushrooms", "similarity": 0.75, "price_delta_cents": -100},
+        {"replace": "sesame_dressing", "with": "garlic_sauce",      "similarity": 0.6, "price_delta_cents": 0},
+        {"replace": "rice_base",       "with": "greens_base",       "similarity": 0.6, "price_delta_cents": 0}
       ]
     },
     "satay_noodles": {
@@ -114,10 +115,10 @@
         "grilled_chicken": {"max": 1, "price_cents": 350}
       },
       "substitutions": [
-        {"replace": "grilled_chicken", "with": "crispy_tofu",       "similarity": 4, "price_delta_cents": 0},
-        {"replace": "grilled_chicken", "with": "roasted_mushrooms", "similarity": 3, "price_delta_cents": -100},
-        {"replace": "peanut_sauce",    "with": "sesame_dressing",   "similarity": 3, "price_delta_cents": 0},
-        {"replace": "peanut_sauce",    "with": "garlic_sauce",      "similarity": 2, "price_delta_cents": 0}
+        {"replace": "grilled_chicken", "with": "crispy_tofu",       "similarity": 0.8, "price_delta_cents": 0},
+        {"replace": "grilled_chicken", "with": "roasted_mushrooms", "similarity": 0.65, "price_delta_cents": -100},
+        {"replace": "peanut_sauce",    "with": "sesame_dressing",   "similarity": 0.7, "price_delta_cents": 0},
+        {"replace": "peanut_sauce",    "with": "garlic_sauce",      "similarity": 0.55, "price_delta_cents": 0}
       ]
     },
     "falafel_wrap": {
@@ -129,8 +130,8 @@
         "sliced_avocado": {"max": 1, "price_cents": 200}
       },
       "substitutions": [
-        {"replace": "tortilla",     "with": "greens_base",  "similarity": 2, "price_delta_cents": 0},
-        {"replace": "tahini_sauce", "with": "garlic_sauce", "similarity": 3, "price_delta_cents": 0}
+        {"replace": "tortilla",     "with": "greens_base",  "similarity": 0.4, "price_delta_cents": 0},
+        {"replace": "tahini_sauce", "with": "garlic_sauce", "similarity": 0.7, "price_delta_cents": 0}
       ]
     },
     "miso_soup": {

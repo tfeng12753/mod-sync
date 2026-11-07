@@ -646,6 +646,11 @@
           "default": null,
           "title": "Removed Requirements"
         },
+        "removed_requirements_verified": {
+          "default": false,
+          "title": "Removed Requirements Verified",
+          "type": "boolean"
+        },
         "menu_price_change_cents": {
           "anyOf": [
             {

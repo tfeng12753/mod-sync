@@ -39,6 +39,24 @@ class EvaluateRequestTests(unittest.TestCase):
         self.assertEqual(e.status, "needs_customer_approval")
         self.assertEqual([changes(o) for o in e.options],
                          [[("garlic_sauce", "sesame_dressing")], [("garlic_sauce", None)]])
+        swap, leave_off = e.options
+        self.assertEqual(swap.similarity, 0.7)
+        self.assertEqual(swap.changes[0]["source"], "chef")
+        # Leaving the sauce off has no culinary score; it is not faked as a perfect match.
+        self.assertIsNone(leave_off.similarity)
+        self.assertEqual(leave_off.changes[0], {"replace": "garlic_sauce", "with": None,
+                                                "similarity": None, "source": "leave_off"})
+
+    def test_options_carry_their_full_ops(self):
+        e = self.ev("chicken_bowl", [{"op": "remove", "ingredient": "garlic"},
+                                     {"op": "add", "ingredient": "avocado"}])
+        self.assertEqual(e.base_ops, [{"op": "add", "ingredient": "avocado"}])
+        self.assertEqual(e.options[0].ops, [{"op": "add", "ingredient": "avocado"},
+                                            {"op": "substitute", "ingredient": "garlic_sauce",
+                                             "with": "sesame_dressing"}])
+        self.assertEqual(e.options[1].ops[-1], {"op": "remove", "ingredient": "garlic_sauce"})
+        for o in e.options:
+            self.assertEqual(self.inv.check("chicken_bowl", o.ops).requirements, o.requirements)
 
     def test_unapproved_swap_offers_approved_ones(self):
         e = self.ev("chicken_bowl", [{"op": "substitute", "ingredient": "chicken", "with": "falafel"}])
