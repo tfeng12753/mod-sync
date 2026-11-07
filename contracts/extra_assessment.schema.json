@@ -1,0 +1,90 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "ingredient_id": {
+      "minLength": 1,
+      "title": "Ingredient Id",
+      "type": "string"
+    },
+    "unit": {
+      "enum": [
+        "g",
+        "ml",
+        "each"
+      ],
+      "title": "Unit",
+      "type": "string"
+    },
+    "quantity": {
+      "title": "Quantity",
+      "type": "number"
+    },
+    "available_now": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Available Now"
+    },
+    "preserves_reserve": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Preserves Reserve"
+    },
+    "extra_portions_within_reserve": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Extra Portions Within Reserve"
+    },
+    "decision": {
+      "enum": [
+        "supported",
+        "reserve_at_risk",
+        "unavailable",
+        "needs_staff_review"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "reason": {
+      "title": "Reason",
+      "type": "string"
+    },
+    "staff_review_notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Staff Review Notes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "ingredient_id",
+    "unit",
+    "quantity",
+    "available_now",
+    "preserves_reserve",
+    "extra_portions_within_reserve",
+    "decision",
+    "reason"
+  ],
+  "title": "ExtraAssessment",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

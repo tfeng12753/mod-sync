@@ -1,0 +1,85 @@
+{
+  "$defs": {
+    "InventoryPosition": {
+      "additionalProperties": false,
+      "properties": {
+        "ingredient_id": {
+          "minLength": 1,
+          "title": "Ingredient Id",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "each"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "available_now": {
+          "minimum": 0,
+          "title": "Available Now",
+          "type": "number"
+        },
+        "committed_in_horizon": {
+          "minimum": 0,
+          "title": "Committed In Horizon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "ingredient_id",
+        "unit",
+        "available_now",
+        "committed_in_horizon"
+      ],
+      "title": "InventoryPosition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "minLength": 1,
+      "title": "Version",
+      "type": "string"
+    },
+    "as_of": {
+      "format": "date-time",
+      "title": "As Of",
+      "type": "string"
+    },
+    "valid_until": {
+      "format": "date-time",
+      "title": "Valid Until",
+      "type": "string"
+    },
+    "positions": {
+      "items": {
+        "$ref": "#/$defs/InventoryPosition"
+      },
+      "title": "Positions",
+      "type": "array"
+    },
+    "commitments_known": {
+      "default": true,
+      "title": "Commitments Known",
+      "type": "boolean"
+    },
+    "version_is_authoritative": {
+      "default": true,
+      "title": "Version Is Authoritative",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "version",
+    "as_of",
+    "valid_until",
+    "positions"
+  ],
+  "title": "InventorySnapshot",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

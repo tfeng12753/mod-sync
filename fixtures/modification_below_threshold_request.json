@@ -1,0 +1,509 @@
+{
+  "action": "extra",
+  "dish_id": "bowl",
+  "target_ingredient_id": "avocado",
+  "original_changes": {
+    "recipe": {
+      "rice": 200
+    }
+  },
+  "evaluation": {
+    "evaluated_at": "2026-11-07T17:00:00-05:00",
+    "forecast": {
+      "start": "2026-11-07T17:00:00-05:00",
+      "end": "2026-11-07T20:00:00-05:00",
+      "time_zone": "America/New_York",
+      "daypart": "dinner",
+      "ingredients": [
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g"
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g"
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g"
+        }
+      ],
+      "history": [
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-08-15T17:00:00-04:00",
+          "end": "2026-08-15T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-08-15T17:00:00-04:00",
+          "end": "2026-08-15T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-08-15T17:00:00-04:00",
+          "end": "2026-08-15T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 4900,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-08-22T17:00:00-04:00",
+          "end": "2026-08-22T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-08-22T17:00:00-04:00",
+          "end": "2026-08-22T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-08-22T17:00:00-04:00",
+          "end": "2026-08-22T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 5100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-08-29T17:00:00-04:00",
+          "end": "2026-08-29T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-08-29T17:00:00-04:00",
+          "end": "2026-08-29T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-08-29T17:00:00-04:00",
+          "end": "2026-08-29T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 5000,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-09-05T17:00:00-04:00",
+          "end": "2026-09-05T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-09-05T17:00:00-04:00",
+          "end": "2026-09-05T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-09-05T17:00:00-04:00",
+          "end": "2026-09-05T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 4900,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-09-12T17:00:00-04:00",
+          "end": "2026-09-12T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-09-12T17:00:00-04:00",
+          "end": "2026-09-12T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-09-12T17:00:00-04:00",
+          "end": "2026-09-12T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 5100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-09-19T17:00:00-04:00",
+          "end": "2026-09-19T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-09-19T17:00:00-04:00",
+          "end": "2026-09-19T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-09-19T17:00:00-04:00",
+          "end": "2026-09-19T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 5000,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-09-26T17:00:00-04:00",
+          "end": "2026-09-26T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-09-26T17:00:00-04:00",
+          "end": "2026-09-26T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-09-26T17:00:00-04:00",
+          "end": "2026-09-26T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 4900,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-10-03T17:00:00-04:00",
+          "end": "2026-10-03T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-10-03T17:00:00-04:00",
+          "end": "2026-10-03T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-10-03T17:00:00-04:00",
+          "end": "2026-10-03T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 5100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-10-10T17:00:00-04:00",
+          "end": "2026-10-10T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-10-10T17:00:00-04:00",
+          "end": "2026-10-10T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-10-10T17:00:00-04:00",
+          "end": "2026-10-10T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 5000,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-10-17T17:00:00-04:00",
+          "end": "2026-10-17T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-10-17T17:00:00-04:00",
+          "end": "2026-10-17T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-10-17T17:00:00-04:00",
+          "end": "2026-10-17T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 4900,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-10-24T17:00:00-04:00",
+          "end": "2026-10-24T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-10-24T17:00:00-04:00",
+          "end": "2026-10-24T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-10-24T17:00:00-04:00",
+          "end": "2026-10-24T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 5100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "guacamole",
+          "unit": "g",
+          "start": "2026-10-31T17:00:00-04:00",
+          "end": "2026-10-31T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "beans",
+          "unit": "g",
+          "start": "2026-10-31T17:00:00-04:00",
+          "end": "2026-10-31T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 100,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "start": "2026-10-31T17:00:00-04:00",
+          "end": "2026-10-31T20:00:00-04:00",
+          "daypart": "dinner",
+          "quantity": 5000,
+          "source": "measured",
+          "stockout": false,
+          "complete": true
+        }
+      ],
+      "source": "measured",
+      "model": "historical"
+    },
+    "usable_until": "2026-11-07T20:00:00-05:00",
+    "candidates": [
+      {
+        "option_id": "extra_guac",
+        "label": "Extra guacamole instead of avocado",
+        "dish_id": "bowl",
+        "changes": {
+          "recipe": {
+            "rice": 200,
+            "guacamole": 60
+          }
+        },
+        "approved": true,
+        "customer_constraints_met": true,
+        "preparation_feasible": true,
+        "similarity": 0.6,
+        "similarity_source": "inventory",
+        "ingredient_cost_change_cents": 0,
+        "additional_labor_cents": 0,
+        "price_change_cents": 999
+      }
+    ]
+  },
+  "catalog": [
+    {
+      "item_id": "guacamole",
+      "in_inventory": true,
+      "on_menu": true,
+      "composition_verified": true,
+      "contains_ingredients": [
+        "avocado",
+        "onion"
+      ],
+      "can_serve_separately": true
+    },
+    {
+      "item_id": "rice",
+      "in_inventory": true,
+      "composition_verified": true,
+      "contains_ingredients": [
+        "rice"
+      ],
+      "can_serve_separately": true
+    },
+    {
+      "item_id": "beans",
+      "in_inventory": true,
+      "composition_verified": true,
+      "contains_ingredients": [
+        "beans"
+      ],
+      "can_serve_separately": true
+    },
+    {
+      "item_id": "avocado",
+      "on_menu": true,
+      "composition_verified": true,
+      "contains_ingredients": [
+        "avocado"
+      ],
+      "can_serve_separately": false
+    }
+  ],
+  "offers": [
+    {
+      "option_id": "extra_guac",
+      "offered_item_id": "guacamole",
+      "approved_for_dish": true,
+      "portion_quantity": 60,
+      "portion_unit": "g",
+      "portion_requirements": {
+        "guacamole": 60
+      },
+      "menu_price_change_cents": 150,
+      "menu_price_reference": "menu-extra-guac-v1"
+    }
+  ]
+}

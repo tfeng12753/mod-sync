@@ -1,0 +1,498 @@
+{
+  "evaluated_at": "2026-11-07T17:00:00-05:00",
+  "forecast": {
+    "start": "2026-11-07T17:00:00-05:00",
+    "end": "2026-11-07T20:00:00-05:00",
+    "time_zone": "America/New_York",
+    "daypart": "dinner",
+    "ingredients": [
+      {
+        "ingredient_id": "tofu",
+        "unit": "g"
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g"
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g"
+      }
+    ],
+    "history": [
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-08-15T17:00:00-04:00",
+        "end": "2026-08-15T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1460,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-08-15T17:00:00-04:00",
+        "end": "2026-08-15T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 285,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-08-15T17:00:00-04:00",
+        "end": "2026-08-15T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 4900,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-08-22T17:00:00-04:00",
+        "end": "2026-08-22T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1540,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-08-22T17:00:00-04:00",
+        "end": "2026-08-22T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 315,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-08-22T17:00:00-04:00",
+        "end": "2026-08-22T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 5100,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-08-29T17:00:00-04:00",
+        "end": "2026-08-29T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1500,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-08-29T17:00:00-04:00",
+        "end": "2026-08-29T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 300,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-08-29T17:00:00-04:00",
+        "end": "2026-08-29T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 5000,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-09-05T17:00:00-04:00",
+        "end": "2026-09-05T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1460,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-09-05T17:00:00-04:00",
+        "end": "2026-09-05T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 285,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-09-05T17:00:00-04:00",
+        "end": "2026-09-05T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 4900,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-09-12T17:00:00-04:00",
+        "end": "2026-09-12T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1540,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-09-12T17:00:00-04:00",
+        "end": "2026-09-12T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 315,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-09-12T17:00:00-04:00",
+        "end": "2026-09-12T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 5100,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-09-19T17:00:00-04:00",
+        "end": "2026-09-19T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1500,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-09-19T17:00:00-04:00",
+        "end": "2026-09-19T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 300,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-09-19T17:00:00-04:00",
+        "end": "2026-09-19T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 5000,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-09-26T17:00:00-04:00",
+        "end": "2026-09-26T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1460,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-09-26T17:00:00-04:00",
+        "end": "2026-09-26T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 285,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-09-26T17:00:00-04:00",
+        "end": "2026-09-26T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 4900,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-10-03T17:00:00-04:00",
+        "end": "2026-10-03T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1540,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-10-03T17:00:00-04:00",
+        "end": "2026-10-03T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 315,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-10-03T17:00:00-04:00",
+        "end": "2026-10-03T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 5100,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-10-10T17:00:00-04:00",
+        "end": "2026-10-10T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1500,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-10-10T17:00:00-04:00",
+        "end": "2026-10-10T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 300,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-10-10T17:00:00-04:00",
+        "end": "2026-10-10T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 5000,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-10-17T17:00:00-04:00",
+        "end": "2026-10-17T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1460,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-10-17T17:00:00-04:00",
+        "end": "2026-10-17T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 285,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-10-17T17:00:00-04:00",
+        "end": "2026-10-17T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 4900,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-10-24T17:00:00-04:00",
+        "end": "2026-10-24T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1540,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-10-24T17:00:00-04:00",
+        "end": "2026-10-24T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 315,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-10-24T17:00:00-04:00",
+        "end": "2026-10-24T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 5100,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "start": "2026-10-31T17:00:00-04:00",
+        "end": "2026-10-31T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 1500,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "start": "2026-10-31T17:00:00-04:00",
+        "end": "2026-10-31T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 300,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "start": "2026-10-31T17:00:00-04:00",
+        "end": "2026-10-31T20:00:00-04:00",
+        "daypart": "dinner",
+        "quantity": 5000,
+        "source": "measured",
+        "stockout": false,
+        "complete": true
+      }
+    ],
+    "source": "measured",
+    "model": "autoets"
+  },
+  "candidates": [
+    {
+      "option_id": "mushroom_bowl",
+      "label": "Mushroom Bowl",
+      "approved": true,
+      "customer_constraints_met": true,
+      "preparation_feasible": true,
+      "requires_staff_review": false,
+      "similarity": 0.9,
+      "ingredient_cost_change_cents": -40,
+      "additional_labor_cents": 20,
+      "price_change_cents": 0,
+      "culinary_description": "Approved mushroom replacement, savory and tender, served over rice.",
+      "dish_id": "bowl",
+      "changes": {
+        "replacement": "mushrooms"
+      }
+    },
+    {
+      "option_id": "tofu_bowl",
+      "label": "Tofu Bowl",
+      "approved": true,
+      "customer_constraints_met": true,
+      "preparation_feasible": true,
+      "requires_staff_review": false,
+      "similarity": 0.95,
+      "ingredient_cost_change_cents": -10,
+      "additional_labor_cents": 0,
+      "price_change_cents": 0,
+      "culinary_description": "Approved tofu replacement, mild and tender, served over rice.",
+      "dish_id": "bowl",
+      "changes": {
+        "replacement": "tofu"
+      }
+    }
+  ],
+  "restrictions": [
+    {
+      "kind": "allergy",
+      "value": "soy",
+      "staff_review_note": "Person 2: soy allergy request. Staff must review ingredients and preparation."
+    }
+  ],
+  "ingredient_profiles": [
+    {
+      "ingredient_id": "tofu",
+      "unit": "g",
+      "verified": true,
+      "allergen_status": {
+        "soy": true
+      },
+      "dietary_status": {}
+    },
+    {
+      "ingredient_id": "mushrooms",
+      "unit": "g",
+      "verified": true,
+      "allergen_status": {
+        "soy": false
+      },
+      "dietary_status": {}
+    },
+    {
+      "ingredient_id": "rice",
+      "unit": "g",
+      "verified": true,
+      "allergen_status": {
+        "soy": false
+      },
+      "dietary_status": {}
+    }
+  ],
+  "culinary_context": "A savory chicken bowl: replace the protein component while preserving its role and texture.",
+  "usable_until": "2026-11-07T20:00:00-05:00",
+  "qty": 1
+}

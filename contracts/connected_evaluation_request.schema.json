@@ -1,0 +1,611 @@
+{
+  "$defs": {
+    "Candidate": {
+      "additionalProperties": false,
+      "properties": {
+        "option_id": {
+          "minLength": 1,
+          "title": "Option Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "requirements": {
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "approved": {
+          "title": "Approved",
+          "type": "boolean"
+        },
+        "customer_constraints_met": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Customer Constraints Met"
+        },
+        "preparation_feasible": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Preparation Feasible"
+        },
+        "requires_staff_review": {
+          "default": false,
+          "title": "Requires Staff Review",
+          "type": "boolean"
+        },
+        "similarity": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Similarity"
+        },
+        "similarity_source": {
+          "default": "inventory",
+          "enum": [
+            "inventory",
+            "supplied",
+            "not_applicable",
+            "unavailable"
+          ],
+          "title": "Similarity Source",
+          "type": "string"
+        },
+        "similarity_rationale": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Similarity Rationale"
+        },
+        "culinary_description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Culinary Description"
+        },
+        "dish_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dish Id"
+        },
+        "changes": {
+          "additionalProperties": true,
+          "title": "Changes",
+          "type": "object"
+        },
+        "inventory_check_passed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": true,
+          "title": "Inventory Check Passed"
+        },
+        "inventory_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Inventory Reasons",
+          "type": "array"
+        },
+        "staff_review_notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Staff Review Notes",
+          "type": "array"
+        },
+        "ingredient_cost_change_cents": {
+          "title": "Ingredient Cost Change Cents",
+          "type": "integer"
+        },
+        "additional_labor_cents": {
+          "minimum": 0,
+          "title": "Additional Labor Cents",
+          "type": "integer"
+        },
+        "price_change_cents": {
+          "title": "Price Change Cents",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "option_id",
+        "label",
+        "approved",
+        "customer_constraints_met",
+        "preparation_feasible",
+        "ingredient_cost_change_cents",
+        "additional_labor_cents",
+        "price_change_cents"
+      ],
+      "title": "Candidate",
+      "type": "object"
+    },
+    "ForecastRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "format": "date-time",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "format": "date-time",
+          "title": "End",
+          "type": "string"
+        },
+        "time_zone": {
+          "title": "Time Zone",
+          "type": "string"
+        },
+        "daypart": {
+          "minLength": 1,
+          "title": "Daypart",
+          "type": "string"
+        },
+        "ingredients": {
+          "items": {
+            "$ref": "#/$defs/Ingredient"
+          },
+          "minItems": 1,
+          "title": "Ingredients",
+          "type": "array"
+        },
+        "history": {
+          "items": {
+            "$ref": "#/$defs/UsageRecord"
+          },
+          "title": "History",
+          "type": "array"
+        },
+        "source": {
+          "default": "measured",
+          "enum": [
+            "measured",
+            "recipe_estimated"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "lookback_days": {
+          "default": 90,
+          "maximum": 730,
+          "minimum": 1,
+          "title": "Lookback Days",
+          "type": "integer"
+        },
+        "half_life_days": {
+          "default": 28,
+          "exclusiveMinimum": 0,
+          "title": "Half Life Days",
+          "type": "number"
+        },
+        "minimum_comparable_periods": {
+          "default": 3,
+          "minimum": 2,
+          "title": "Minimum Comparable Periods",
+          "type": "integer"
+        },
+        "model": {
+          "default": "autoets",
+          "enum": [
+            "autoets",
+            "historical"
+          ],
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "time_zone",
+        "daypart",
+        "ingredients",
+        "history"
+      ],
+      "title": "ForecastRequest",
+      "type": "object"
+    },
+    "Ingredient": {
+      "additionalProperties": false,
+      "properties": {
+        "ingredient_id": {
+          "minLength": 1,
+          "title": "Ingredient Id",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "each"
+          ],
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ingredient_id",
+        "unit"
+      ],
+      "title": "Ingredient",
+      "type": "object"
+    },
+    "IngredientProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "ingredient_id": {
+          "minLength": 1,
+          "title": "Ingredient Id",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "each"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "verified": {
+          "default": false,
+          "title": "Verified",
+          "type": "boolean"
+        },
+        "allergen_status": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Allergen Status",
+          "type": "object"
+        },
+        "dietary_status": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Dietary Status",
+          "type": "object"
+        }
+      },
+      "required": [
+        "ingredient_id",
+        "unit"
+      ],
+      "title": "IngredientProfile",
+      "type": "object"
+    },
+    "RankingPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "similarity_weight": {
+          "default": 0.55,
+          "minimum": 0,
+          "title": "Similarity Weight",
+          "type": "number"
+        },
+        "reserve_weight": {
+          "default": 0.35,
+          "minimum": 0,
+          "title": "Reserve Weight",
+          "type": "number"
+        },
+        "cost_weight": {
+          "default": 0.1,
+          "minimum": 0,
+          "title": "Cost Weight",
+          "type": "number"
+        },
+        "cost_scale_cents": {
+          "default": 500,
+          "exclusiveMinimum": 0,
+          "title": "Cost Scale Cents",
+          "type": "integer"
+        }
+      },
+      "title": "RankingPolicy",
+      "type": "object"
+    },
+    "Requirement": {
+      "additionalProperties": false,
+      "properties": {
+        "ingredient_id": {
+          "minLength": 1,
+          "title": "Ingredient Id",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "each"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "quantity": {
+          "exclusiveMinimum": 0,
+          "title": "Quantity",
+          "type": "number"
+        }
+      },
+      "required": [
+        "ingredient_id",
+        "unit",
+        "quantity"
+      ],
+      "title": "Requirement",
+      "type": "object"
+    },
+    "Restriction": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "allergy",
+            "dietary"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        },
+        "staff_review_note": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Staff Review Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "title": "Restriction",
+      "type": "object"
+    },
+    "UsageRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "ingredient_id": {
+          "minLength": 1,
+          "title": "Ingredient Id",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "each"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "start": {
+          "format": "date-time",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "format": "date-time",
+          "title": "End",
+          "type": "string"
+        },
+        "daypart": {
+          "minLength": 1,
+          "title": "Daypart",
+          "type": "string"
+        },
+        "quantity": {
+          "minimum": 0,
+          "title": "Quantity",
+          "type": "number"
+        },
+        "source": {
+          "enum": [
+            "measured",
+            "recipe_estimated"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "stockout": {
+          "default": false,
+          "title": "Stockout",
+          "type": "boolean"
+        },
+        "complete": {
+          "default": true,
+          "title": "Complete",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ingredient_id",
+        "unit",
+        "start",
+        "end",
+        "daypart",
+        "quantity",
+        "source"
+      ],
+      "title": "UsageRecord",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "evaluated_at": {
+      "format": "date-time",
+      "title": "Evaluated At",
+      "type": "string"
+    },
+    "forecast": {
+      "$ref": "#/$defs/ForecastRequest"
+    },
+    "usable_until": {
+      "format": "date-time",
+      "title": "Usable Until",
+      "type": "string"
+    },
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/Candidate"
+      },
+      "minItems": 1,
+      "title": "Candidates",
+      "type": "array"
+    },
+    "qty": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Qty",
+      "type": "integer"
+    },
+    "restrictions": {
+      "items": {
+        "$ref": "#/$defs/Restriction"
+      },
+      "title": "Restrictions",
+      "type": "array"
+    },
+    "ingredient_profiles": {
+      "items": {
+        "$ref": "#/$defs/IngredientProfile"
+      },
+      "title": "Ingredient Profiles",
+      "type": "array"
+    },
+    "staff_review_notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Staff Review Notes",
+      "type": "array"
+    },
+    "culinary_context": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Culinary Context"
+    },
+    "policy": {
+      "$ref": "#/$defs/RankingPolicy"
+    },
+    "committed_in_horizon": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Committed In Horizon"
+    },
+    "inventory_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Inventory Version"
+    },
+    "max_snapshot_age_seconds": {
+      "default": 300,
+      "minimum": 1,
+      "title": "Max Snapshot Age Seconds",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "evaluated_at",
+    "forecast",
+    "usable_until",
+    "candidates"
+  ],
+  "title": "ConnectedEvaluationRequest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

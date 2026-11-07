@@ -1,0 +1,182 @@
+{
+  "$defs": {
+    "Ingredient": {
+      "additionalProperties": false,
+      "properties": {
+        "ingredient_id": {
+          "minLength": 1,
+          "title": "Ingredient Id",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "each"
+          ],
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ingredient_id",
+        "unit"
+      ],
+      "title": "Ingredient",
+      "type": "object"
+    },
+    "UsageRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "ingredient_id": {
+          "minLength": 1,
+          "title": "Ingredient Id",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "each"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "start": {
+          "format": "date-time",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "format": "date-time",
+          "title": "End",
+          "type": "string"
+        },
+        "daypart": {
+          "minLength": 1,
+          "title": "Daypart",
+          "type": "string"
+        },
+        "quantity": {
+          "minimum": 0,
+          "title": "Quantity",
+          "type": "number"
+        },
+        "source": {
+          "enum": [
+            "measured",
+            "recipe_estimated"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "stockout": {
+          "default": false,
+          "title": "Stockout",
+          "type": "boolean"
+        },
+        "complete": {
+          "default": true,
+          "title": "Complete",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ingredient_id",
+        "unit",
+        "start",
+        "end",
+        "daypart",
+        "quantity",
+        "source"
+      ],
+      "title": "UsageRecord",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "start": {
+      "format": "date-time",
+      "title": "Start",
+      "type": "string"
+    },
+    "end": {
+      "format": "date-time",
+      "title": "End",
+      "type": "string"
+    },
+    "time_zone": {
+      "title": "Time Zone",
+      "type": "string"
+    },
+    "daypart": {
+      "minLength": 1,
+      "title": "Daypart",
+      "type": "string"
+    },
+    "ingredients": {
+      "items": {
+        "$ref": "#/$defs/Ingredient"
+      },
+      "minItems": 1,
+      "title": "Ingredients",
+      "type": "array"
+    },
+    "history": {
+      "items": {
+        "$ref": "#/$defs/UsageRecord"
+      },
+      "title": "History",
+      "type": "array"
+    },
+    "source": {
+      "default": "measured",
+      "enum": [
+        "measured",
+        "recipe_estimated"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "lookback_days": {
+      "default": 90,
+      "maximum": 730,
+      "minimum": 1,
+      "title": "Lookback Days",
+      "type": "integer"
+    },
+    "half_life_days": {
+      "default": 28,
+      "exclusiveMinimum": 0,
+      "title": "Half Life Days",
+      "type": "number"
+    },
+    "minimum_comparable_periods": {
+      "default": 3,
+      "minimum": 2,
+      "title": "Minimum Comparable Periods",
+      "type": "integer"
+    },
+    "model": {
+      "default": "autoets",
+      "enum": [
+        "autoets",
+        "historical"
+      ],
+      "title": "Model",
+      "type": "string"
+    }
+  },
+  "required": [
+    "start",
+    "end",
+    "time_zone",
+    "daypart",
+    "ingredients",
+    "history"
+  ],
+  "title": "ForecastRequest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
