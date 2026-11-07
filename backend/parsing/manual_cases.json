@@ -1,0 +1,12 @@
+[
+  {"instructions": "No onions on my burger.", "expected_status": "ready", "expected_summary": "Remove onion from burger-1", "cart_item_ids": ["burger-1"]},
+  {"instructions": "Make my burger double meat with extra cheese.", "expected_status": "ready", "expected_summary": "Set patty=2, add cheese=1", "cart_item_ids": ["burger-1"]},
+  {"instructions": "Take off onions and add avocado to my burger.", "expected_status": "ready", "expected_summary": "Remove onion, add avocado; inventory check is Person 3's job", "cart_item_ids": ["burger-1"]},
+  {"instructions": "No mayo on my chicken sandwich, sauce on the side.", "expected_status": "ready", "expected_summary": "Remove mayo and put existing sauce on the side", "cart_item_ids": ["chicken-1"]},
+  {"instructions": "First burger no cheese, second burger three patties.", "expected_status": "ready", "expected_summary": "Remove cheese from burger-1; set patty=3 on burger-2", "cart_item_ids": ["burger-1", "burger-2"]},
+  {"instructions": "I have two burgers. Make one without cheese.", "expected_status": "needs_clarification", "expected_summary": "Ask which burger", "cart_item_ids": ["burger-1", "burger-2"]},
+  {"instructions": "Make my burger plain.", "expected_status": "needs_clarification", "expected_summary": "Ask what plain means", "cart_item_ids": ["burger-1"]},
+  {"instructions": "No cheese on my burger, but also add extra cheese.", "expected_status": "needs_clarification", "expected_summary": "Ask whether no cheese or extra cheese", "cart_item_ids": ["burger-1"]},
+  {"instructions": "Add truffle oil to my burger.", "expected_status": "needs_staff_review", "expected_summary": "Unknown ingredient; flag for staff, don't invent ingredient ID", "cart_item_ids": ["burger-1"]},
+  {"instructions": "I'm allergic to dairy. Remove cheese from my burger.", "expected_status": "needs_staff_review", "expected_summary": "Remove cheese and note allergy for staff review", "cart_item_ids": ["burger-1"]}
+]

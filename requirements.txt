@@ -1,0 +1,8 @@
+# Backend (Python 3.12+; developed on 3.14). Install: py -3 -m pip install -r requirements.txt
+pydantic>=2.7,<3
+statsforecast>=2,<3
+fastapi>=0.110,<1
+uvicorn>=0.29,<1
+httpx>=0.26,<1
+python-dotenv>=1.0,<2
+pytest>=8,<10
