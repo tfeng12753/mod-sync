@@ -36,6 +36,10 @@ class LookupTests(unittest.TestCase):
         self.assertEqual(self.inv.lookup("tofu", "chicken_bowl"), ["tofu"])
         self.assertEqual(self.inv.lookup("greens", "chicken_bowl"), ["mixed_greens"])
 
+    def test_id_shared_by_component_and_ingredient(self):
+        self.assertEqual(self.inv.lookup("tomato", "falafel_wrap"), ["tomato"])
+        self.assertEqual(self.inv.lookup("lettuce", "falafel_wrap"), ["lettuce"])
+
     def test_unknown(self):
         self.assertEqual(self.inv.lookup("cilantro", "chicken_bowl"), [])
 

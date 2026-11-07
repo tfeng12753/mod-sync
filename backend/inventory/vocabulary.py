@@ -59,7 +59,8 @@ class Vocabulary:
                     break
         for cid in [m for m in matches if m in self.cat.components]:
             comp = self.cat.components[cid]
-            matches -= set(comp.ingredient_ids()) & matches
+            # A component can share its ID with its main ingredient (e.g. "tomato"); keep the component.
+            matches -= (set(comp.ingredient_ids()) - {cid}) & matches
         return sorted(matches)
 
     def lookup_dish(self, text: str) -> list[str]:
