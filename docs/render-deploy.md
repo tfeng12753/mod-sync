@@ -20,10 +20,10 @@ In Render → service → **Environment**, optionally add:
 
 ```text
 OPENROUTER_API_KEY=<new valid key entered directly in Render>
-OPENROUTER_MODEL=anthropic/claude-fable-5.1
+OPENROUTER_MODEL=anthropic/claude-sonnet-5.5
 ```
 
-The parser defaults to Claude Fable 5.1 as the selected higher-capability model; the Blueprint also sets this explicitly. On an existing Render service, replace any old `OPENROUTER_MODEL` value and save/redeploy. Environment overrides take precedence over the code default.
+The parser defaults to Claude Sonnet 5.5 as the selected higher-capability model; the Blueprint also sets this explicitly. On an existing Render service, replace any old `OPENROUTER_MODEL` value and save/redeploy. Environment overrides take precedence over the code default.
 
 Without a key, the existing offline parser works. Keys belong in backend runtime environment variables, never frontend `VITE_` variables or Docker build arguments. The integration notes identify an old committed key; use a new valid key. Docker excludes `.env` files and never references secret build arguments.
 

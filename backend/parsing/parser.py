@@ -523,7 +523,7 @@ def parse_modifications(request: ParseRequest, client=None) -> ParseResult:
         raise RuntimeError("Set the OPENROUTER_API_KEY environment variable")
 
     body = {
-        "model": os.getenv("OPENROUTER_MODEL", "anthropic/claude-fable-5.1"),
+        "model": os.getenv("OPENROUTER_MODEL", "anthropic/claude-sonnet-5.5"),
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": json.dumps(build_payload(request))},

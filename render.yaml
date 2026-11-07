@@ -12,4 +12,4 @@ services:
       - key: FRONTEND_DIST
         value: /app/frontend/dist
       - key: OPENROUTER_MODEL
-        value: anthropic/claude-fable-5.1
+        value: anthropic/claude-sonnet-5.5
