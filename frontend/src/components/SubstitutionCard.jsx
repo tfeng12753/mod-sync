@@ -1,79 +1,55 @@
-import { ingName } from '../logic/order.js'
+import ModChip from './ModChip.jsx'
+import { describeChange, priceChange } from '../logic/format.js'
 
-function secondsLeft(sub, now) {
-  return Math.max(0, Math.ceil((sub.deadline - now) / 1000))
-}
-
-const STATUS_TEXT = {
-  approved: 'Customer approved',
-  fallback: 'No reply: default swap applied',
-  declined: 'Customer declined: item left out, credit issued',
-  no_safe_option: 'No safe substitute: item left out, credit issued, staff to call',
-}
-
-export default function SubstitutionCard({ sub, order, now, audience, dispatch }) {
-  const pending = sub.status === 'pending'
-  const top = sub.options[0]
-  const title =
-    sub.reason === 'allergen'
-      ? `${ingName(sub.missing)} conflicts with the allergy`
-      : `${ingName(sub.missing)} is out of stock`
-
-  if (audience === 'customer') {
-    return (
-      <div className={`sub ${pending ? 'sub-pending' : 'sub-done'}`}>
-        <strong>{title}</strong>
-        {pending ? (
-          <>
-            <p>We suggest <b>{top.name}</b> - {top.reason}. No extra charge.</p>
-            <div className="row">
-              {sub.options.slice(0, 2).map((o, i) => (
-                <button key={o.id} className={i === 0 ? 'btn primary' : 'btn'}
-                  onClick={() => dispatch({ type: 'SUB_RESPOND', orderId: order.id, missing: sub.missing, response: 'approve', chosenId: o.id })}>
-                  Swap to {o.name}
-                </button>
-              ))}
-              <button className="btn ghost" onClick={() => dispatch({ type: 'SUB_RESPOND', orderId: order.id, missing: sub.missing, response: 'decline' })}>
-                No thanks, leave it out
-              </button>
-            </div>
-            <small>If we don't hear back in {secondsLeft(sub, now)}s we'll use {top.name}.</small>
-          </>
-        ) : (
-          <p>{sub.chosenId && ['approved', 'fallback'].includes(sub.status) ? `Swapped to ${ingName(sub.chosenId)}.` : 'Left out, you will be credited.'}</p>
-        )}
-      </div>
-    )
-  }
-
-  // staff
+// One alternative ("option") from the API Evaluation.
+// audience "customer": friendly card with a choose button.
+// audience "staff": adds route / score / similarity / staff notes and instructions.
+export default function SubstitutionCard({ option, recommended, selected, audience, onChoose, chooseLabel, busy }) {
+  const staff = audience === 'staff'
   return (
-    <div className={`sub ${pending ? 'sub-pending' : 'sub-done'}`}>
+    <div className={`sub ${selected ? 'sub-selected' : ''} ${recommended ? 'sub-pending' : 'sub-done'}`}>
       <div className="row between">
-        <strong>{title}</strong>
-        <span className={`pill pill-${sub.status}`}>{pending ? `waiting for customer · ${secondsLeft(sub, now)}s` : STATUS_TEXT[sub.status]}</span>
+        <strong>{option.label}</strong>
+        <span className="row tight">
+          {recommended && <span className="pill pill-recommended">Recommended</span>}
+          {selected && staff && <span className="pill pill-approved">Current</span>}
+        </span>
       </div>
-      {sub.options.length > 0 ? (
-        <ol className="options">
-          {sub.options.map((o, i) => (
-            <li key={o.id} className={i === 0 ? 'best' : ''}>
-              <b>{o.name}</b> <span className="score">score {o.score}</span>
-              <div className="why">{o.reason}</div>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <p className="danger">No safe substitute in stock.</p>
+
+      {option.changes?.length > 0 && (
+        <div className="chips">{option.changes.map((c, i) => <ModChip key={i} chip={describeChange(c)} />)}</div>
       )}
-      {sub.blocked.length > 0 && (
-        <ul className="blocked">
-          {sub.blocked.map((b) => <li key={b.id}>⛔ <b>{b.name}</b> blocked: {b.reason}</li>)}
-        </ul>
+
+      <div className={option.price_change_cents == null ? 'price danger' : 'price'}>{priceChange(option.price_change_cents)}</div>
+
+      {staff && (
+        <div className="meta">
+          <span className={`pill pill-route-${option.route}`}>route: {option.route}</span>
+          <span className="score">score {option.score == null ? '—' : option.score.toFixed(2)}</span>
+          <span className="score">similarity {option.similarity == null ? '—' : option.similarity}</span>
+        </div>
       )}
-      {pending && (
+
+      {option.reasons?.length > 0 && (
+        <ul className="why-list">{option.reasons.map((r, i) => <li key={i} className="why">{r}</li>)}</ul>
+      )}
+
+      {staff && option.staff_notes?.length > 0 && (
+        <ul className="why-list notes">{option.staff_notes.map((r, i) => <li key={i}>{r}</li>)}</ul>
+      )}
+
+      {staff && option.kitchen_instructions?.length > 0 && (
+        <details>
+          <summary>Kitchen instructions</summary>
+          <ul className="instructions">{option.kitchen_instructions.map((l, i) => <li key={i}>{l}</li>)}</ul>
+        </details>
+      )}
+
+      {onChoose && (
         <div className="row">
-          <button className="btn small" onClick={() => dispatch({ type: 'SUB_RESPOND', orderId: order.id, missing: sub.missing, response: 'approve' })}>Demo: customer approves</button>
-          <button className="btn small ghost" onClick={() => dispatch({ type: 'SUB_RESPOND', orderId: order.id, missing: sub.missing, response: 'decline' })}>Demo: customer declines</button>
+          <button className={recommended ? 'btn primary small' : 'btn small'} disabled={busy} onClick={() => onChoose(option.option_id)}>
+            {chooseLabel ?? 'Choose this'}
+          </button>
         </div>
       )}
     </div>
