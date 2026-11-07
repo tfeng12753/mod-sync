@@ -23,6 +23,7 @@ export default function DemoControls() {
 
   const send = (s) => run(`send-${s.label}`, async () => {
     const e = await api.evaluate(s)
+    if (e.order_id) dispatch({ type: 'MINE', orderId: e.order_id })
     dispatch({ type: 'LOG', text: `${e.order_id ?? 'no order'}: ${s.label} → ${e.status}` })
     await refreshOrders()
   })
@@ -52,6 +53,7 @@ export default function DemoControls() {
     <aside className="panel demo">
       <h4>Demo controls</h4>
       <p className="muted">Trigger each scenario on cue. All data is synthetic.</p>
+      <p className="muted">Open Customer app → Your orders to review and accept demo orders.</p>
       {error && <div className="error">{error}</div>}
 
       <h5>Send an order</h5>

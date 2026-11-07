@@ -114,6 +114,18 @@ export default function CustomerView() {
     setError(null)
   }
 
+  const reviewOrder = (order) => {
+    setDishId(order.dish.id)
+    setQty(order.qty)
+    setNote(order.original_text ?? '')
+    setChannel(order.channel ?? 'doordash')
+    setCustomerName(order.customer_name ?? '')
+    setAnswers({})
+    setError(null)
+    setFlash(null)
+    setEvaluation(order.evaluation)
+  }
+
   const total = dish ? dish.price_cents * qty : 0
   const questions = evaluation?.questions ?? []
   const allAnswered = questions.every((_, i) => (answers[i] ?? '').trim())
@@ -281,7 +293,7 @@ export default function CustomerView() {
             )}
             {o.status === 'cancelled' && <p className="muted">You cancelled this order. You won't be charged.</p>}
             {o.status === 'awaiting_customer' && evaluation?.order_id !== o.order_id && (
-              <div className="row"><button className="btn small" onClick={() => setEvaluation(o.evaluation)}>Review options</button></div>
+              <div className="row"><button className="btn small" onClick={() => reviewOrder(o)}>Review options</button></div>
             )}
             {o.status === 'confirmed' && <Instructions lines={o.kitchen_instructions} title="Your order as the kitchen will make it" />}
             {o.status === 'rejected' && <p className="danger">The kitchen couldn't make this safely{rejectNote ? `: ${rejectNote}` : '.'} You won't be charged.</p>}

@@ -18,6 +18,9 @@ Full concept: [docs/project-idea.md](docs/project-idea.md).
 
 Integration status and decisions: [docs/integration-plan.md](docs/integration-plan.md).
 
+Demo-control orders are linked to **Customer app → Your orders** in the same browser session;
+**Review options** opens the original ticket for customer acceptance.
+
 Only edit another area's folder after agreeing with its owner.
 
 ### Request flow

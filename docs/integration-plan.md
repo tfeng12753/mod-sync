@@ -6,6 +6,10 @@ engine `decide_modification` via `backend/integration/engine_adapter.py` → API
 React UI (`frontend/`). 306 Python tests pass (inventory, engine, parser, integration, API, e2e);
 frontend lints and builds; the demo flows were clicked through in a browser against the real API.
 
+Demo-control orders also appear under **Customer app → Your orders** in the same browser session.
+**Review options** restores the ticket's dish, quantity, request, and customer details; accepting
+an option updates that same kitchen ticket.
+
 ### Still open
 - Revoke the leaked OpenRouter key; test the parser once with a real key (`backend/parsing/run_manual_cases.py`).
 - Team review: Person 2 (parser changes), Person 4 (one engine change, below), Jacob (UI rewrite).
