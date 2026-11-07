@@ -1,5 +1,5 @@
 {
-  "_note": "SYNTHETIC demo stock levels. Raw ingredients used at assembly and premade components (stocked as made-ahead batches). Units match catalog.json.",
+  "_note": "SYNTHETIC demo stock levels. Raw ingredients used at assembly and premade components (stocked as made-ahead batches). Units match catalog.json. usable_until = synthetic use-by of the batch on hand (restaurant time, with UTC offset); deliveries are synthetic too.",
   "on_hand": {
     "rice": 8000,
     "mixed_greens": 1500,
@@ -29,9 +29,32 @@
     "chicken": 150,
     "falafel": 4
   },
+  "usable_until": {
+    "rice": "2026-11-21T23:00:00-05:00",
+    "mixed_greens": "2026-11-09T22:00:00-05:00",
+    "chicken": "2026-11-09T22:00:00-05:00",
+    "tofu": "2026-11-12T22:00:00-05:00",
+    "mushrooms": "2026-11-08T22:00:00-05:00",
+    "avocado": "2026-11-09T22:00:00-05:00",
+    "oil": "2027-02-01T23:00:00-05:00",
+    "cornstarch": "2027-06-01T23:00:00-04:00",
+    "wheat_noodles": "2026-12-15T23:00:00-05:00",
+    "peanuts": "2026-12-31T23:00:00-05:00",
+    "scallion": "2026-11-10T22:00:00-05:00",
+    "flour_tortilla": "2026-11-20T22:00:00-05:00",
+    "lettuce": "2026-11-10T22:00:00-05:00",
+    "tomato": "2026-11-11T22:00:00-05:00",
+    "garlic_sauce": "2026-11-09T22:00:00-05:00",
+    "sesame_dressing": "2026-11-14T22:00:00-05:00",
+    "peanut_sauce": "2026-11-10T22:00:00-05:00",
+    "tahini_sauce": "2026-11-12T22:00:00-05:00",
+    "falafel": "2026-11-08T22:00:00-05:00",
+    "miso_broth": "2026-11-09T22:00:00-05:00",
+    "pickled_onion": "2026-11-21T22:00:00-05:00"
+  },
   "deliveries": [
-    {"item": "tofu", "qty": 2000, "eta": "2026-11-08T10:00:00"},
-    {"item": "chicken", "qty": 5000, "eta": "2026-11-08T10:00:00"},
-    {"item": "avocado", "qty": 1500, "eta": "2026-11-09T10:00:00"}
+    {"item": "tofu", "qty": 2000, "eta": "2026-11-08T10:00:00-05:00"},
+    {"item": "chicken", "qty": 5000, "eta": "2026-11-08T10:00:00-05:00"},
+    {"item": "avocado", "qty": 1500, "eta": "2026-11-09T10:00:00-05:00"}
   ]
 }

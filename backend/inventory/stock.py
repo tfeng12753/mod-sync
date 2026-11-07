@@ -10,6 +10,7 @@ import json
 import threading
 import time
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
 
@@ -32,10 +33,15 @@ class StockStore:
         safety_buffer: dict[str, int] | None = None,
         deliveries: list[dict[str, Any]] | None = None,
         clock: Clock = time.time,
+        usable_until: dict[str, str] | None = None,
     ) -> None:
         self._on_hand = {k: int(v) for k, v in on_hand.items()}
         self._buffer = {k: int(v) for k, v in (safety_buffer or {}).items()}
         self._deliveries = list(deliveries or [])
+        self._usable_until = {k: _aware(v, f"usable_until[{k!r}]") for k, v in (usable_until or {}).items()}
+        for d in self._deliveries:
+            if d.get("eta") is not None:
+                _aware(d["eta"], f"delivery eta for {d.get('item')!r}")
         self._clock = clock
         self._holds: dict[str, Hold] = {}
         self._confirmed: dict[str, dict[str, int]] = {}
@@ -48,6 +54,10 @@ class StockStore:
 
     def is_tracked(self, item: str) -> bool:
         return item in self._on_hand
+
+    def tracked_items(self) -> list[str]:
+        with self._lock:
+            return list(self._on_hand)
 
     def on_hand(self, item: str) -> int:
         with self._lock:
@@ -91,6 +101,16 @@ class StockStore:
 
     def deliveries(self) -> list[dict[str, Any]]:
         return [dict(d) for d in self._deliveries]
+
+    def usable_until(self, item: str) -> datetime | None:
+        """Use-by of the batch on hand (timezone-aware), or None if not recorded."""
+        return self._usable_until.get(item)
+
+    def next_delivery(self, item: str, after: datetime) -> datetime | None:
+        """Earliest delivery ETA for ``item`` strictly after ``after``, or None."""
+        etas = [_aware(d["eta"], "eta") for d in self._deliveries if d.get("item") == item and d.get("eta")]
+        future = [eta for eta in etas if eta > after]
+        return min(future) if future else None
 
     # ----- writes ------------------------------------------------------------------------------
 
@@ -181,7 +201,16 @@ def _clean(requirements: dict[str, int]) -> dict[str, int]:
     return out
 
 
+def _aware(value: str | datetime, what: str) -> datetime:
+    """Parse an ISO datetime that must carry a UTC offset (fail closed on naive times)."""
+    dt = value if isinstance(value, datetime) else datetime.fromisoformat(value)
+    if dt.utcoffset() is None:
+        raise ValueError(f"{what} must include a UTC offset, got {value!r}")
+    return dt
+
+
 def load_stock(path: str | Path, clock: Clock = time.time) -> StockStore:
     with open(path, encoding="utf-8") as f:
         raw = json.load(f)
-    return StockStore(raw["on_hand"], raw.get("safety_buffer"), raw.get("deliveries"), clock=clock)
+    return StockStore(raw["on_hand"], raw.get("safety_buffer"), raw.get("deliveries"), clock=clock,
+                      usable_until=raw.get("usable_until"))

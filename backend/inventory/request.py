@@ -44,12 +44,13 @@ def evaluate_request(inv: "Inventory", parser_output: dict[str, Any]) -> Request
 
     first = inv.check(dish_id, ops, qty, exclude, diets)
 
-    def result(status, options=(), reasons=(), recommended=None, requirements=None):
+    def result(status, options=(), reasons=(), recommended=None, requirements=None, base=None):
         return RequestEvaluation(
             status=status, dish=dish_id, qty=first.qty, original_text=parser_output.get("original_text", ""),
             requires_staff_review=review, review_reasons=review_reasons, check=first, options=list(options),
             reasons=list(reasons), recommended=recommended,
             requirements=dict(requirements if requirements is not None else first.requirements),
+            base_ops=[dict(op) for op in (ops if base is None else base) if isinstance(op, dict)],
         )
 
     if first.ok:
@@ -79,10 +80,10 @@ def evaluate_request(inv: "Inventory", parser_output: dict[str, Any]) -> Request
         reason = Reason("NO_FEASIBLE_OPTION",
                         f"No approved alternative for {', '.join(inv.catalog.name_of(t) for t in sorted(targets))} works right now.",
                         "blocked")
-        return result("unavailable", reasons=problems + [reason], requirements={})
+        return result("unavailable", reasons=problems + [reason], requirements={}, base=base_ops)
 
     return result("needs_staff_review" if review else "needs_customer_approval",
-                  options=options, recommended=0, requirements=options[0].requirements)
+                  options=options, recommended=0, requirements=options[0].requirements, base=base_ops)
 
 
 # ----- helpers -----------------------------------------------------------------------------------
@@ -150,7 +151,8 @@ def _options(inv, dish, targets: list[str], base_ops, qty, exclude, diets) -> li
                 score, source = similarity(cat, s.replace, s.with_, s.similarity)
                 alts.append({"replace": t, "with": s.with_, "similarity": score, "source": source})
         if cat.components[t].can_leave_off:
-            alts.append({"replace": t, "with": None, "similarity": 1, "source": "leave_off"})
+            # Leaving something off has no culinary similarity; it is ranked after swaps.
+            alts.append({"replace": t, "with": None, "similarity": None, "source": "leave_off"})
         choices.append(alts)
 
     options = []
@@ -159,19 +161,23 @@ def _options(inv, dish, targets: list[str], base_ops, qty, exclude, diets) -> li
             break
         extra_ops = [{"op": "substitute", "ingredient": c["replace"], "with": c["with"]} if c["with"]
                      else {"op": "remove", "ingredient": c["replace"]} for c in combo]
-        res = inv.check(dish.id, list(base_ops) + extra_ops, qty, exclude, diets)
+        option_ops = [dict(op) for op in base_ops] + extra_ops
+        res = inv.check(dish.id, option_ops, qty, exclude, diets)
         if not res.ok:
             continue
         swaps = [c["similarity"] for c in combo if c["with"]]
         options.append(Option(
             changes=[dict(c) for c in combo],
-            similarity=min(swaps) if swaps else 1,  # weakest swap; leaving things off counted separately
+            similarity=min(swaps) if swaps else None,  # weakest swap; None = only leaves things off
             price_delta_cents=res.price_delta_cents,
             cost_delta_cents=res.cost_delta_cents,
             requirements=dict(res.requirements),
             available={item: inv.stock.available(item) for item in res.requirements},
             check=res,
+            ops=option_ops,
         ))
     leave_offs = lambda o: sum(c["with"] is None for c in o.changes)  # noqa: E731
-    options.sort(key=lambda o: (-o.similarity, leave_offs(o), o.price_delta_cents, o.cost_delta_cents))
+    # Options with a swap first (highest weakest-swap similarity), then leave-off-only options.
+    options.sort(key=lambda o: (o.similarity is None, -(o.similarity or 0.0), leave_offs(o),
+                                o.price_delta_cents, o.cost_delta_cents))
     return options

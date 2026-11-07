@@ -125,16 +125,23 @@ def evaluate(
     )
 
 
-def similarity(catalog: Catalog, replace: str, with_: str, chef_score: int | None) -> tuple[int, str]:
-    """Chef-entered score if present, else tag overlap mapped onto 1-5."""
+TAG_SIMILARITY_FLOOR = 0.2  # an approved swap with no shared tags still scores above zero
+
+
+def similarity(catalog: Catalog, replace: str, with_: str, chef_score: float | None) -> tuple[float, str]:
+    """Culinary fit on a 0-1 scale (deterministic, no LLM).
+
+    Chef-entered score if present (source "chef"), else the Jaccard overlap of the two
+    components' tags mapped onto [0.2, 1.0] and rounded to 2 decimals (source "tags").
+    """
     if chef_score is not None:
-        return chef_score, "chef"
+        return float(chef_score), "chef"
     a = set(catalog.components[replace].tags)
     b = set(catalog.components[with_].tags)
     if not a or not b:
-        return 1, "tags"
+        return TAG_SIMILARITY_FLOOR, "tags"
     jaccard = len(a & b) / len(a | b)
-    return max(1, min(5, round(1 + 4 * jaccard))), "tags"
+    return round(TAG_SIMILARITY_FLOOR + (1 - TAG_SIMILARITY_FLOOR) * jaccard, 2), "tags"
 
 
 # ----- op handling -------------------------------------------------------------------------------
