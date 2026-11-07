@@ -78,20 +78,21 @@ Use explicit, reproducible calculations for quantities, pricing, and stock updat
 
 | Person | Owned folders | Responsibilities |
 | --- | --- | --- |
-| 1 — Frontend | `frontend/` | Customer request flow, ranked alternatives and explanations, acceptance, and staff ticket view; begin with fixture responses. |
-| 2 — AI interpretation and culinary matching | `backend/ai/` | Structured request extraction, ambiguity handling, candidate similarity among approved substitutions, and grounded explanation generation. |
-| 3 — Forecasting and decision engine | `backend/engine/` | Historical-usage forecast, feasibility filtering, candidate ranking, inventory deltas, price/cost calculations, and explanations of decision factors. |
-| 4 — Data and API integration | `backend/api/`, `backend/data/` | Sample restaurant/history, validation, endpoints, orchestration, persistence, confirmations, and inventory updates. Maintain agreed contracts and shared backend setup. |
+| 1 — Customer & staff UI | `frontend/` | Customer request flow, ranked alternatives and explanations, acceptance, and staff ticket view; begin with fixture responses. |
+| 2 — Request parsing (LLM) | `backend/parsing/` | Turn free-text requests into structured modification ops using only ingredient/component IDs from the catalog; flag ambiguity, allergies, and anything it can't map for clarification or staff review. |
+| 3 — Inventory & feasibility (deterministic) | `backend/inventory/` | Ingredient/recipe/component catalog, stock levels, and reservations. Given a dish + structured ops: compute the full ingredient requirements, check preparation-stage rules (e.g. can't remove garlic from a premade sauce), check stock after commitments, and on confirmation recheck, reserve, and deduct exactly once. Builds feasible substitute candidates from chef-approved swaps and attaches similarity scores. |
+| 4 — Forecasting & substitution ranking | `backend/forecast/` | Historical-usage demand forecast by ingredient and daypart; takes inventory's feasible, similarity-scored candidates and returns the final ranked list of alternates using forecast shortage/surplus and cost. |
 
-This updates the earlier split to include forecasting explicitly. Person 3 has the largest analytical scope: use a simple forecast initially, then improve it once the full flow works. Person 4 prepares the historical dataset so forecasting can develop independently.
+The backend is Python. Only the parsing step (and optionally the final customer-facing explanation) calls an LLM via OpenRouter; inventory feasibility and substitution ranking are plain, testable code over the catalog and history data, and forecasting uses standard statistical methods. Integration contract between 2 and 3: structured ops such as `{"op": "add", "ingredient": "avocado", "qty": 1}` with ops limited to `remove`, `add`, `substitute`, `on_side`, and `less`.
 
 Proposed repository layout:
 
 ```text
 frontend/
 backend/
-  ai/
-  engine/
+  parsing/
+  inventory/
+  forecast/
   api/
   data/
 contracts/
