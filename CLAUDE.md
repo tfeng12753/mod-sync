@@ -9,10 +9,14 @@ Full concept: [docs/project-idea.md](docs/project-idea.md).
 
 | Area | Folder | Notes |
 | --- | --- | --- |
-| Customer & staff UI | `frontend/` (branch `UI`) | |
-| Request parsing (LLM) | `backend/parsing/` | Only place that calls OpenRouter at request time. |
-| Inventory, feasibility & substitute similarity | `backend/inventory/` | Deterministic. Plan: [backend/inventory/plan.md](backend/inventory/plan.md). |
-| Forecast & final substitute ranking | `backend/forecast/` | Never re-implements stock or feasibility rules. |
+| Customer & staff UI (Jacob) | `frontend/` (React + Vite) | Talks only to the API ([docs/api-contract.md](docs/api-contract.md)). |
+| Request parsing (Luksh) | `backend/parsing/` | Only place that calls OpenRouter for parsing. |
+| Inventory, feasibility & substitute similarity (Siddharth) | `backend/inventory/` | Deterministic. Plan: [backend/inventory/plan.md](backend/inventory/plan.md). |
+| Forecast & routing engine (Travis) | `backend/engine/` | AutoETS/baseline forecast, `decide_modification`. Contracts in `contracts/`. |
+| Engine ↔ inventory adapter | `backend/integration/` | Builds engine requests from inventory options. |
+| API + orchestration | `backend/api/` | FastAPI app wiring parser → inventory → engine. |
+
+Integration status and decisions: [docs/integration-plan.md](docs/integration-plan.md).
 
 Only edit another area's folder after agreeing with its owner.
 
@@ -28,7 +32,8 @@ Only edit another area's folder after agreeing with its owner.
 
 ## Ground rules
 
-- **Backend is Python** (3.11+; developed on 3.14). On Windows use `py -3`, not `python`.
+- **Backend is Python** (3.12+; developed on 3.14). Use the repo venv: `py -3 -m venv .venv` then
+  `.venv/Scripts/python -m pip install -r requirements.txt` (Windows; `.venv/bin/python` elsewhere).
 - **No LLM calls in `backend/inventory/`.** Feasibility, allergen checks, quantities, prices and stock
   updates are plain, reproducible code. The system never certifies a dish as "safe" or "allergen-free".
 - **Secrets:** the OpenRouter key is read from the `OPENROUTER_API_KEY` environment variable
@@ -69,7 +74,7 @@ inventory → forecast format: [backend/inventory/plan.md](backend/inventory/pla
 Run from the repo root (standard library only, no installs needed):
 
 ```bash
-py -3 -m unittest discover -s tests -t .      # all tests
+.venv/Scripts/python -m unittest discover -s tests -t .   # all tests (inventory + engine + ...)
 py -3 -m backend.inventory.demo               # walk through the demo scenarios
 py -3 -m backend.inventory.demo --fixture     # regenerate fixtures/allergy_request_example.json
 py -3 -m backend.inventory.export             # regenerate parser_vocabulary.json + menu.json
