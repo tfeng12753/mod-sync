@@ -44,7 +44,7 @@ model call.
 
 - `mode="openrouter"`: LLM via OpenRouter structured output. Needs the `OPENROUTER_API_KEY`
   **environment variable** (never a committed `.env`) unless a `client` is passed (tests pass a fake
-  with `.post()`). Model: `OPENROUTER_MODEL` (default `anthropic/claude-fable-5.1`; must support `json_schema`).
+  with `.post()`). Model: `OPENROUTER_MODEL` (default `anthropic/claude-sonnet-5.5`; must support `json_schema`).
 - `mode="offline"`: rule-based (`offline.py`): no/without/hold → remove, extra/double/add → add,
   "on the side" → on_side, light/less → less, "X instead of Y" / "swap Y for X" → substitute,
   "no Y, something else instead" → substitute with `null`, "actually ..." keeps the correction,

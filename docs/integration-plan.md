@@ -1,6 +1,6 @@
 # Integration plan — connecting the 4 parts
 
-OpenRouter parsing defaults to `anthropic/claude-fable-5.1`; `OPENROUTER_MODEL` overrides it.
+OpenRouter parsing defaults to `anthropic/claude-sonnet-5.5`; `OPENROUTER_MODEL` overrides it.
 
 Deployment addition: `Dockerfile` + `render.yaml` run the integrated UI/API as one Render web
 service. The frontend defaults to same-origin requests in production, and FastAPI serves the
