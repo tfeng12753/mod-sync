@@ -30,7 +30,8 @@ class EvaluateRequestTests(unittest.TestCase):
         e = self.ev("chicken_bowl", [{"op": "substitute", "ingredient": "chicken", "with": None}])
         self.assertEqual(e.status, "needs_customer_approval")
         self.assertEqual([changes(o) for o in e.options],
-                         [[("grilled_chicken", "crispy_tofu")], [("grilled_chicken", "roasted_mushrooms")]])
+                         [[("grilled_chicken", "crispy_tofu")], [("grilled_chicken", "roasted_mushrooms")],
+                          [("grilled_chicken", None)]])  # leaving it off is always a (last) choice
         self.assertEqual(e.recommended, 0)
         self.assertEqual(e.requirements, e.options[0].requirements)
 
@@ -62,13 +63,14 @@ class EvaluateRequestTests(unittest.TestCase):
         e = self.ev("chicken_bowl", [{"op": "substitute", "ingredient": "chicken", "with": "falafel"}])
         self.assertEqual(e.status, "needs_customer_approval")
         self.assertEqual(e.check.reasons[0].code, "SUBSTITUTE_NOT_APPROVED")  # UI can explain why
-        self.assertEqual(len(e.options), 2)
+        self.assertEqual(len(e.options), 3)  # tofu, mushrooms, or leave the chicken off
 
     def test_out_of_stock_choice_falls_back_to_other_swap(self):
         self.inv.set_on_hand("tofu", 0, "test")
         e = self.ev("chicken_bowl", [{"op": "substitute", "ingredient": "chicken", "with": "tofu"}])
         self.assertEqual(e.status, "needs_customer_approval")
-        self.assertEqual([changes(o) for o in e.options], [[("grilled_chicken", "roasted_mushrooms")]])
+        self.assertEqual([changes(o) for o in e.options],
+                         [[("grilled_chicken", "roasted_mushrooms")], [("grilled_chicken", None)]])
 
     def test_customer_other_ops_are_kept_in_options(self):
         e = self.ev("chicken_bowl", [{"op": "substitute", "ingredient": "chicken", "with": None},
@@ -91,7 +93,8 @@ class EvaluateRequestTests(unittest.TestCase):
         self.assertEqual([changes(o) for o in e.options], [
             [("crushed_peanuts", None), ("peanut_sauce", "sesame_dressing")],
             [("crushed_peanuts", None), ("peanut_sauce", "garlic_sauce")],
-        ])  # no "leave off the peanut sauce": it defines the dish
+            [("crushed_peanuts", None), ("peanut_sauce", None)],  # customer may leave it off; ranked last
+        ])
         for o in e.options:
             self.assertNotIn("peanut", o.check.evidence["allergens_present"])
             self.assertTrue(o.check.requires_staff_review)
@@ -139,12 +142,12 @@ class EvaluateRequestTests(unittest.TestCase):
         self.assertEqual(e.status, "needs_clarification")
         self.assertEqual(e.requirements, {})
 
-    def test_no_feasible_option(self):
+    def test_only_leave_off_when_no_swap_is_in_stock(self):
         self.inv.set_on_hand("tofu", 0, "test")
         self.inv.set_on_hand("mushrooms", 0, "test")
         e = self.ev("chicken_bowl", [{"op": "substitute", "ingredient": "chicken", "with": None}])
-        self.assertEqual(e.status, "unavailable")
-        self.assertEqual(e.reasons[-1].code, "NO_FEASIBLE_OPTION")
+        self.assertEqual(e.status, "needs_customer_approval")
+        self.assertEqual([changes(o) for o in e.options], [[("grilled_chicken", None)]])
 
     def test_unfixable_reason_blocks_options_even_if_others_fixable(self):
         e = self.ev("chicken_bowl", [{"op": "remove", "ingredient": "garlic"},

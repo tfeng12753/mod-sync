@@ -128,9 +128,21 @@ class OrderService:
             return self._final(base, "unavailable", message="We can't check the available options right now. Please try again or ask staff.")
 
         requirements_by_choice: dict[str, dict[str, int]] = {}
+        ops_by_choice: dict[str, list[dict[str, Any]]] = {}
         if evaluation.check.ok:
             requirements_by_choice["as_requested"] = dict(evaluation.check.requirements)
-        options, unavailable = self._options(evaluation, routing, review_required, requirements_by_choice)
+            ops_by_choice["as_requested"] = [dict(op) for op in parsed.parser_output.get("ops", [])]
+        options, unavailable = self._options(evaluation, routing, review_required, requirements_by_choice,
+                                             ops_by_choice)
+        # Extras are listed on their own so the customer can keep or drop each one; every option's
+        # price is split into its own change plus the extras it carries.
+        extras = _extras(inv, dish_id, qty, parsed.parser_output.get("ops", []))
+        extras_cents = sum(e["price_cents"] for e in extras)
+        base["extras"] = extras
+        for choice in [base["as_requested"], *options]:
+            price = choice.get("price_change_cents")
+            choice["extras_cents"] = extras_cents if extras else 0
+            choice["own_price_change_cents"] = price - extras_cents if price is not None and extras else price
         base["options"] = options
         base["unavailable_options"] = unavailable
         if routing is not None:
@@ -192,13 +204,14 @@ class OrderService:
                 created_at=now, expires_at=now + timedelta(seconds=HOLD_SECONDS), channel=channel,
                 customer_name=customer_name, dish=dish, qty=qty, original_text=text, evaluation=evaluation_out,
                 selected_option_id=selected, requirements_by_choice=requirements_by_choice,
-                evidence_by_choice=evidence_by_choice,
+                evidence_by_choice=evidence_by_choice, ops_by_choice=ops_by_choice,
+                check_args=_check_args(parsed.parser_output),
             )
             order.log("created", status)
             self.orders.add(order)
             return evaluation_out
 
-    def _options(self, evaluation, routing, review_required, requirements_by_choice):
+    def _options(self, evaluation, routing, review_required, requirements_by_choice, ops_by_choice):
         cat = self.inv.catalog
         ordered: list[tuple[int, Any]] = []
         unavailable: list[dict[str, Any]] = []
@@ -235,6 +248,7 @@ class OrderService:
                 "_evidence": opt.check.evidence,
             })
             requirements_by_choice[option_id] = dict(opt.requirements)
+            ops_by_choice[option_id] = [dict(op) for op in opt.ops]
         return options, unavailable
 
     @staticmethod
@@ -264,7 +278,8 @@ class OrderService:
 
     # ----- order actions -----------------------------------------------------------------------
 
-    def accept(self, order_id: str, option_id: str | None) -> dict[str, Any]:
+    def accept(self, order_id: str, option_id: str | None,
+               declined_extras: list[str] | None = None) -> dict[str, Any]:
         self.sweep()
         with self.orders.lock:
             order = self._order(order_id)
@@ -276,6 +291,10 @@ class OrderService:
             key = option_id or "as_requested"
             if order.staff_approved_choice is not None and key != order.staff_approved_choice:
                 raise ApiError(409, "Please confirm the option approved by staff, or submit a new request.")
+            if declined_extras:
+                if order.staff_approved_choice is not None:
+                    raise ApiError(409, "Staff approved this order with its extras; submit a new request to change them.")
+                self._decline_extras(order, key, choice, set(declined_extras))
             needs_staff = order.evaluation["review"]["required"] or (option_id and choice.get("route") == "staff")
             if needs_staff and order.staff_approved_choice is None:
                 self._rehold(order, key)
@@ -336,6 +355,30 @@ class OrderService:
             order.status = "cancelled"
             order.log("cancelled", "customer cancelled")
             return order.to_dict()
+
+    def _decline_extras(self, order: Order, key: str, choice: dict[str, Any], declined: set[str]) -> None:
+        """Drop the declined extras from this choice and re-check the exact remaining recipe."""
+        extras = {e["id"]: e for e in order.evaluation.get("extras", [])}
+        unknown = declined - set(extras)
+        if unknown:
+            raise ApiError(400, f"Not an extra on this order: {', '.join(sorted(unknown))}.")
+        dish_id = order.dish["id"]
+        ops = [op for op in order.ops_by_choice.get(key, [])
+               if not (op.get("op") == "add"
+                       and _as_dish_part(self.inv, dish_id, op)["ingredient"] in declined)]
+        exclude, diets = order.check_args
+        res = self.inv.check(dish_id, ops, order.qty, exclude, diets)
+        if not res.ok:
+            raise ApiError(409, "That combination can't be made; please submit a new request.")
+        order.ops_by_choice[key] = ops
+        order.requirements_by_choice[key] = dict(res.requirements)
+        dropped = sum(extras[i]["price_cents"] for i in declined)
+        choice["kitchen_instructions"] = list(res.kitchen_instructions)
+        if choice.get("price_change_cents") is not None:
+            choice["price_change_cents"] -= dropped
+        choice["extras_cents"] = choice.get("extras_cents", 0) - dropped
+        choice["declined_extras"] = sorted(declined)
+        order.log("extras", "declined " + ", ".join(extras[i]["name"] for i in sorted(declined)))
 
     def _rehold(self, order: Order, key: str) -> None:
         res = self.inv.hold(order.order_id, order.requirements_by_choice[key], ttl_seconds=HOLD_SECONDS)
@@ -401,6 +444,32 @@ class OrderService:
             self.inv = self._loader()
             self._initial = {i: self.inv.stock.on_hand(i) for i in self.inv.stock.items()}
             self.orders.clear()
+
+
+def _check_args(parser_output: dict[str, Any]) -> tuple[list[str], list[str]]:
+    """Allergens/diets exactly as inventory.evaluate_request reads them from the flags."""
+    flags = parser_output.get("flags") or {}
+    raw_diets = flags.get("diets", flags.get("diet")) or []
+    diets = [raw_diets] if isinstance(raw_diets, str) else list(raw_diets)
+    return [a.lower() for a in flags.get("allergens") or []], [d.lower() for d in diets]
+
+
+def _extras(inv: Inventory, dish_id: str, qty: int, ops: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Paid extras the customer asked for: one line each, priced from the dish's menu."""
+    dish = inv.catalog.dishes[dish_id]
+    out: dict[str, dict[str, Any]] = {}
+    for op in ops:
+        if op.get("op") != "add":
+            continue
+        part = _as_dish_part(inv, dish_id, op)["ingredient"]
+        extra = dish.extras.get(part)
+        if extra is None:
+            continue
+        line = out.setdefault(part, {"id": part, "name": inv.catalog.name_of(part), "qty": 0, "price_cents": 0})
+        portions = int(op.get("qty", 1) or 1)
+        line["qty"] += portions
+        line["price_cents"] += extra.price_cents * portions * qty
+    return list(out.values())
 
 
 def _as_dish_part(inv: Inventory, dish_id: str, op: dict[str, Any]) -> dict[str, Any]:

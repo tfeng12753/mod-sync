@@ -114,11 +114,20 @@ forecast reserve + 0.10 cost):
 | satay_noodles | peanut_sauce → sesame_dressing / garlic_sauce | 0.7 / 0.55 |
 | falafel_wrap | tortilla → greens_base; tahini_sauce → garlic_sauce | 0.6; 0.7 |
 
-Mushrooms (0.65) only qualify when the forecast shows surplus (reserve factor ≈ 1): 0.55×0.65 +
-0.35×1 + 0.10×0.53 ≈ 0.76. Tofu (0.8) falls below the cutoff when dinner demand eats its reserve.
-A swap can never pass below similarity ≈ 0.545 (0.55×s + 0.45 at best), so every chef-approved swap
-is at least 0.55. Peanut sauce is `can_leave_off: false`: it defines the satay noodles, so the system
-never suggests dropping it (a customer can still ask for no peanut sauce).
+The 0.75 cutoff **ranks, it never hides**: every chef-approved swap the kitchen can make (in stock,
+safe for the customer's restrictions) is offered. Options at or above 0.75 come first; ones below get
+a staff-visible note and are listed after. Only hard failures (out of stock, unsafe, not approved,
+missing data) make an option unavailable. Mushrooms (0.65) clear 0.75 when the forecast shows
+surplus (0.55×0.65 + 0.35×1 + 0.10×0.53 ≈ 0.76); tofu (0.8) drops below it when dinner demand eats
+its reserve, so it is listed after mushrooms (and goes to staff, since it uses forecast reserve).
+
+"Leave it off" is always offered for the part being changed, ranked after every swap, and only
+recommended when no swap works. `can_leave_off` now only marks parts the system treats as optional
+when deciding whether a request can be fixed at all.
+
+Paid extras are listed separately on the evaluation (`extras`), and each option carries
+`own_price_change_cents` + `extras_cents`. The customer can drop extras when accepting
+(`declined_extras`); the API re-checks the exact remaining recipe before holding stock.
 
 ## Synthetic usage history and use-by (forecast inputs)
 

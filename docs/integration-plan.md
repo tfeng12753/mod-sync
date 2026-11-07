@@ -75,7 +75,7 @@ the key is now in git history for everyone with access.
 | --- | --- | --- | --- |
 | `main` = `inventory` | Siddharth (inventory) | `backend/inventory/`: catalog (5 bowl dishes), `check()`, `evaluate_request()`, holds/confirm, parser vocabulary, 102 tests | stdlib only |
 | `person2` | Luksh (parser) | Root-level `parser.py` + FastAPI `main.py` (`POST /parse`), OpenRouter structured output, keyword allergy backstop | fastapi, httpx, pydantic, dotenv |
-| `forecasting-decisions` | Travis (forecast) | `backend/engine/`: AutoETS/baseline forecast, inventory outlook, ranking (55% similarity / 35% reserve / 10% cost, cutoff 0.75), `decide_modification`, `InventoryGateway` adapter, JSON-schema contracts, tests | pydantic, statsforecast |
+| `forecasting-decisions` | Travis (forecast) | `backend/engine/`: AutoETS/baseline forecast, inventory outlook, ranking (55% similarity / 35% reserve / 10% cost; 0.75 cutoff ranks, never hides a feasible swap), `decide_modification`, `InventoryGateway` adapter, JSON-schema contracts, tests | pydantic, statsforecast |
 | `UI` | Jacob (UI) | React/Vite app in `nova-mods/`: customer + staff views, **its own mock menu (burgers), mock parser, mock substitutions and stock** | node |
 
 None of the three teammates' branches has been merged; each was built against assumptions

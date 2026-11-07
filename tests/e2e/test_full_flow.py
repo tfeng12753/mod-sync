@@ -47,7 +47,9 @@ class FullFlowTests(unittest.TestCase):
         self.assertEqual(r["status"], "needs_customer_approval")
         self.assertEqual(r["options"][0]["changes"][0]["with"], "roasted_mushrooms")
         self.assertEqual(r["options"][0]["price_change_cents"], 0)
-        self.assertNotIn("crispy_tofu", [o["changes"][0]["with"] for o in r["options"]])  # tofu below cutoff
+        # Tofu scores below the cutoff tonight but is in stock, so it's still offered, ranked after.
+        swaps = [o["changes"][0]["with"] for o in r["options"]]
+        self.assertLess(swaps.index("roasted_mushrooms"), swaps.index("crispy_tofu"))
 
     def test_cheaper_swap_and_extra_keep_base_price_plus_full_upcharge(self):
         response = self.evaluate("chicken_bowl", "swap chicken for mushrooms, extra avocado", qty=2)
@@ -77,6 +79,32 @@ class FullFlowTests(unittest.TestCase):
                 self.assertEqual(r["as_requested"]["reasons"], [])
                 self.assertEqual(r["customer_message"], "We can make this as requested.")
 
+    def test_extras_are_listed_separately_and_can_be_declined(self):
+        r = self.evaluate("chicken_bowl", "no garlic, extra chicken, and double avocado")
+        self.assertEqual([(e["id"], e["price_cents"]) for e in r["extras"]],
+                         [("grilled_chicken", 350), ("sliced_avocado", 200)])
+        swap = r["options"][0]
+        self.assertEqual(swap["label"], "Sesame dressing instead of Garlic sauce")
+        self.assertEqual((swap["own_price_change_cents"], swap["extras_cents"], swap["price_change_cents"]), (0, 550, 550))
+        self.assertEqual(r["options"][-1]["label"], "Leave off Garlic sauce")
+        bad = self.client.post(f"/api/orders/{r['order_id']}/accept",
+                               json={"option_id": "opt-1", "declined_extras": ["bacon"]})
+        self.assertEqual(bad.status_code, 400)
+        order = self.client.post(f"/api/orders/{r['order_id']}/accept",
+                                 json={"option_id": "opt-1", "declined_extras": ["grilled_chicken"]}).json()
+        self.assertEqual(order["status"], "confirmed")
+        chosen = order["evaluation"]["options"][0]
+        self.assertEqual(chosen["price_change_cents"], 200)
+        self.assertEqual(order["kitchen_instructions"], ["EXTRA Sliced avocado x1", "SUB Sesame dressing for Garlic sauce"])
+
+    def test_vegetarian_offers_every_in_stock_swap_then_leave_off(self):
+        r = self.evaluate("chicken_bowl", "I'm vegetarian")
+        self.assertEqual(r["status"], "needs_customer_approval")
+        self.assertEqual([o["label"] for o in r["options"]],
+                         ["Roasted mushrooms instead of Grilled chicken", "Crispy tofu instead of Grilled chicken",
+                          "Leave off Grilled chicken"])
+        self.assertEqual(r["unavailable_options"], [])
+
     def test_extra_tofu_is_extra_crispy_tofu(self):
         for text in ["double tofu", "extra tofu"]:
             with self.subTest(text=text):
@@ -91,7 +119,9 @@ class FullFlowTests(unittest.TestCase):
         res = self.client.post(f"/api/orders/{r['order_id']}/accept", json={"option_id": "opt-1"})
         self.assertEqual(res.status_code, 409)
         again = self.evaluate("chicken_bowl", "no chicken, can you put something else instead")
-        self.assertEqual(again["status"], "unavailable")  # tofu alone is below the cutoff tonight
+        # Mushrooms are gone; tofu (below the cutoff, but in stock) becomes the recommendation.
+        self.assertNotIn("roasted_mushrooms", [o["changes"][0]["with"] for o in again["options"]])
+        self.assertEqual(again["options"][0]["changes"][0]["with"], "crispy_tofu")
 
     def test_peanut_allergy_staff_flow(self):
         r = self.evaluate("satay_noodles", "my kid is allergic to peanuts")

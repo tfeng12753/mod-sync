@@ -1,7 +1,7 @@
 """Route modifications using inventory similarity, catalog facts, and menu prices.
 
 Catalog/pricing data is trusted backend data, never model output or customer input.
-No below-threshold proposal is sent to staff as a way around the cutoff.
+The score cutoff ranks options: a feasible, chef-approved option below it is still offered\n(after higher scores). Only hard failures (stock, safety, approval, missing data) block one.
 """
 from __future__ import annotations
 
@@ -223,11 +223,14 @@ async def decide_modification(request: ModificationRequest, gateway: InventoryGa
         combined_score = _combined_score(option, request.evaluation.policy)
         threshold_value = (Decimal(str(similarity)) if similarity is not None else None
                            ) if request.policy.threshold_basis == "culinary" else combined_score
-        if not exact and (similarity is None or threshold_value is None or
-                          threshold_value < Decimal(str(request.policy.minimum_score))):
+        if not exact and (similarity is None or threshold_value is None):
             blocked = True
             reasons.append(f"We cannot accommodate this option: its {request.policy.threshold_basis} "
-                           f"score is missing or below {request.policy.minimum_score:.2f}.")
+                           f"score is missing.")
+        elif not exact and threshold_value < Decimal(str(request.policy.minimum_score)):
+            # The score ranks options; it never hides a chef-approved swap the kitchen can make.
+            reasons.append(f"Below the {request.policy.minimum_score:.2f} {request.policy.threshold_basis} "
+                           "score: still offered because it can be made, ranked after higher scores.")
         if not offer.approved_for_dish:
             blocked = True
             reasons.append("This option is not an approved modification for the dish.")

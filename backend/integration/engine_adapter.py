@@ -520,8 +520,9 @@ async def route_options(inv, evaluation, *, now: datetime | None = None, history
         ))
 
     def order(c: RoutedChoice):
+        # Swaps before "leave it off": leaving a part off is only recommended when no swap works.
         leave = c.score is None
-        return (c.route != "customer", leave, -(c.score or 0.0), c.option_index)
+        return (leave, c.route != "customer", -(c.score or 0.0), c.option_index)
 
     choices.sort(key=order)
     staff_notes = list(dict.fromkeys(n for _, d in decisions for n in d.staff_review_notes))

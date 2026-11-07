@@ -84,14 +84,14 @@ class DecisionTests(unittest.TestCase):
         self.assertTrue(option.requires_customer_acceptance)
         self.assertEqual(option.offered_item_id, "guacamole")
 
-    def test_below_combined_cutoff_is_unavailable_even_with_staff_note(self):
+    def test_below_combined_cutoff_is_still_offered_with_a_note(self):
         raw = raw_request()
         raw["evaluation"]["candidates"][0]["similarity"] = .60
-        raw["evaluation"]["staff_review_notes"] = ["Person 2: review this request."]
         result = decide(raw)
-        self.assertEqual(result.status, "unavailable")
-        self.assertFalse(result.customer_options or result.staff_options)
-        self.assertIn("cannot accommodate", result.customer_message)
+        self.assertEqual(result.unavailable_options, [])
+        [option] = result.customer_options + result.staff_options
+        self.assertLess(option.ranking_score, .75)
+        self.assertTrue(any("below the 0.75" in r.lower() for r in option.reasons))
 
     def test_exact_cutoff_is_inclusive(self):
         raw = raw_request()
@@ -255,8 +255,9 @@ class DecisionTests(unittest.TestCase):
         raw["evaluation"]["candidates"][0]["similarity"] = .5999998
         raw["evaluation"]["policy"] = {"similarity_weight": .5, "reserve_weight": .4, "cost_weight": .1}
         result = decide(raw)
-        self.assertEqual(result.status, "unavailable")
-        self.assertLess(result.unavailable_options[0].ranking_score, .75)
+        [option] = result.customer_options + result.staff_options
+        self.assertLess(option.ranking_score, .75)  # rounding can't lift it over the line
+        self.assertTrue(any("below the 0.75" in r.lower() for r in option.reasons))
 
     def test_recipe_changed_after_checks_is_never_a_staff_proposal(self):
         class ChangingInventory(Inventory):

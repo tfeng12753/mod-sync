@@ -111,8 +111,9 @@ class MappingTests(unittest.TestCase):
 
     def test_chicken_swap_offers_carry_component_level_removals(self):
         evaluation = self.inv.evaluate_request(request("chicken_bowl", SWAP_CHICKEN))
-        [(req, indexes)] = build_modification_requests(self.inv, evaluation)
+        (req, indexes), (omit, omit_indexes) = build_modification_requests(self.inv, evaluation)
         self.assertEqual(indexes, [0, 1])
+        self.assertEqual((omit.action, omit_indexes), ("omit", [2]))  # "leave the chicken off" is its own group
         self.assertEqual((req.action, req.target_ingredient_id, req.exclude_target), ("substitute", "chicken", True))
         tofu, mush = req.offers
         self.assertEqual(tofu.offered_item_id, "crispy_tofu")
@@ -129,7 +130,7 @@ class MappingTests(unittest.TestCase):
 
     def test_forecast_window_and_history(self):
         evaluation = self.inv.evaluate_request(request("chicken_bowl", SWAP_CHICKEN))
-        [(req, _)] = build_modification_requests(self.inv, evaluation)
+        req = build_modification_requests(self.inv, evaluation)[0][0]
         forecast = req.evaluation.forecast
         self.assertEqual(forecast.start, DEMO_EVALUATION_TIME)
         self.assertEqual(forecast.end, DEMO_EVALUATION_TIME + timedelta(hours=3))
@@ -162,7 +163,7 @@ class MappingTests(unittest.TestCase):
         evaluation = self.inv.evaluate_request(request("satay_noodles", level="allergy", allergens=["peanut"]))
         groups = build_modification_requests(self.inv, evaluation)
         self.assertEqual([(r.action, r.target_ingredient_id, ix) for r, ix in groups],
-                         [("substitute", "peanut_sauce", [0, 1])])  # peanut sauce can't just be left off
+                         [("substitute", "peanut_sauce", [0, 1]), ("omit", "peanuts", [2])])
         sub = groups[0][0]
         sesame = sub.offers[0]
         self.assertEqual(sesame.offered_item_id, "sesame_dressing")
@@ -217,16 +218,19 @@ class DemoScenarioTests(unittest.TestCase):
         self.assertEqual(changes_of(ev, 0), [("grilled_chicken", "crispy_tofu")])
         # The engine sees tofu is needed for dinner and mushrooms are surplus.
         self.assertEqual(r.status, "reply_to_customer")
-        [best] = r.choices
+        best, tofu = r.choices[0], next(c for c in r.choices if c.option_index == 0)
         self.assertEqual(changes_of(ev, best), [("grilled_chicken", "roasted_mushrooms")])
         self.assertEqual(best.route, "customer")
         self.assertGreaterEqual(best.score, 0.75)
         self.assertEqual(best.price_change_cents, 0)
-        [tofu] = r.unavailable
-        self.assertEqual(tofu["option_index"], 0)
-        self.assertTrue(any("below 0.75" in x for x in tofu["reasons"]))
-        self.assertTrue(any(x.startswith("Firm tofu") and "-" in x for x in tofu["reasons"]))
-        tofu_factors = r.raw[0]["unavailable_options"][0]["ranking_factors"]
+        # Tofu is in stock, so it is still offered: ranked after mushrooms, never hidden.
+        self.assertEqual(r.unavailable, [])
+        self.assertLess(tofu.score, 0.75)
+        self.assertGreater(r.choices.index(tofu), 0)
+        self.assertTrue(any("below the 0.75" in x.lower() for x in tofu.reasons))
+        raw = r.raw[0]
+        tofu_factors = next(o for o in raw["customer_options"] + raw["staff_options"]
+                            if o["ranking_score"] is not None and o["ranking_score"] < 0.75)["ranking_factors"]
         self.assertLess(tofu_factors["reserve"], 0.5)  # forecast reserve deficit
         self.assertTrue(decision_is_current(ModificationDecision.model_validate(r.raw[0]), DEMO_EVALUATION_TIME))
 
@@ -235,9 +239,10 @@ class DemoScenarioTests(unittest.TestCase):
         history = [dict(rec, quantity=rec["quantity"] // 10) if rec["ingredient_id"] == "tofu" else rec
                    for rec in self.inv.usage_history()]
         ev, r = route(self.inv, request("chicken_bowl", SWAP_CHICKEN), history=history)
-        self.assertEqual([changes_of(ev, c)[0][1] for c in r.choices], ["crispy_tofu", "roasted_mushrooms"])
+        self.assertEqual([changes_of(ev, c)[0][1] for c in r.choices], ["crispy_tofu", "roasted_mushrooms", None])
         self.assertGreater(r.choices[0].score, r.choices[1].score)
         self.assertEqual({c.route for c in r.choices}, {"customer"})
+        self.assertIsNone(r.choices[-1].score)  # leaving it off is offered last, never ranked as a swap
 
     def test_4_stock_change_requires_reevaluation(self):
         ev, r = route(self.inv, request("chicken_bowl", SWAP_CHICKEN))
@@ -248,9 +253,12 @@ class DemoScenarioTests(unittest.TestCase):
         self.assertFalse(stale.ok)
         self.assertEqual(stale.code, "INSUFFICIENT_STOCK")
         ev2, r2 = route(self.inv, request("chicken_bowl", SWAP_CHICKEN))
-        self.assertEqual([changes_of(ev2, i) for i in range(len(ev2.options))], [[("grilled_chicken", "crispy_tofu")]])
-        self.assertEqual(r2.status, "unavailable")  # tofu alone is below the cutoff tonight
-        self.assertEqual(r2.choices, [])
+        self.assertEqual([changes_of(ev2, i) for i in range(len(ev2.options))],
+                         [[("grilled_chicken", "crispy_tofu")], [("grilled_chicken", None)]])
+        # Tofu is below the cutoff tonight but still offered, and recommended ahead of leaving it off.
+        self.assertEqual([changes_of(ev2, c) for c in r2.choices],
+                         [[("grilled_chicken", "crispy_tofu")], [("grilled_chicken", None)]])
+        self.assertLess(r2.choices[0].score, 0.75)
         # A tofu delivery arrives: reevaluating now recommends tofu.
         self.inv.adjust("tofu", 2000, "delivery")
         ev3, r3 = route(self.inv, request("chicken_bowl", SWAP_CHICKEN))
@@ -316,14 +324,16 @@ class AllergyFlowTests(unittest.TestCase):
         self.assertEqual(changes_of(self.ev, best), [("crushed_peanuts", None), ("peanut_sauce", "sesame_dressing")])
         self.assertEqual(best.label, "Leave off Crushed peanuts; Sesame dressing instead of Peanut sauce")
         self.assertGreaterEqual(best.score, 0.75)
-        # The noodles' defining sauce is never simply left off (can_leave_off: false).
-        self.assertTrue(all(("peanut_sauce", None) not in changes_of(self.ev, c) for c in self.r.choices))
+        # Leaving the sauce off is the customer's choice too, offered after both swaps.
+        self.assertEqual(changes_of(self.ev, self.r.choices[-1]), [("crushed_peanuts", None), ("peanut_sauce", None)])
         self.assertIn("confirming", self.r.customer_message)
 
-    def test_weak_substitute_is_not_offered_even_to_staff(self):
-        [garlic] = self.r.unavailable
-        self.assertEqual(changes_of(self.ev, garlic["option_index"])[1], ("peanut_sauce", "garlic_sauce"))
-        self.assertTrue(any("below 0.75" in x for x in garlic["reasons"]))
+    def test_weak_substitute_is_offered_after_the_strong_one(self):
+        labels = [changes_of(self.ev, c)[1] for c in self.r.choices]
+        self.assertLess(labels.index(("peanut_sauce", "sesame_dressing")), labels.index(("peanut_sauce", "garlic_sauce")))
+        garlic = next(c for c in self.r.choices if changes_of(self.ev, c)[1] == ("peanut_sauce", "garlic_sauce"))
+        self.assertLess(garlic.score, 0.75)
+        self.assertTrue(any("below the 0.75" in x.lower() for x in garlic.reasons))
 
     def test_staff_notes_are_preserved(self):
         self.assertIn(SAFETY_REVIEW_NOTE, self.r.staff_review_notes)

@@ -150,9 +150,9 @@ def _options(inv, dish, targets: list[str], base_ops, qty, exclude, diets) -> li
             if s.replace == t:
                 score, source = similarity(cat, s.replace, s.with_, s.similarity)
                 alts.append({"replace": t, "with": s.with_, "similarity": score, "source": source})
-        if cat.components[t].can_leave_off:
-            # Leaving something off has no culinary similarity; it is ranked after swaps.
-            alts.append({"replace": t, "with": None, "similarity": None, "source": "leave_off"})
+        # The customer can always choose to leave the part off. It has no culinary similarity, so
+        # it is ranked after every swap and is only recommended when no swap works.
+        alts.append({"replace": t, "with": None, "similarity": None, "source": "leave_off"})
         choices.append(alts)
 
     options = []
