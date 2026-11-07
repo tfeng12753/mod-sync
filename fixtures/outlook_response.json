@@ -1,0 +1,167 @@
+{
+  "outlook": {
+    "schema_version": "1.0",
+    "evaluated_at": "2026-11-07T17:00:00-05:00",
+    "inventory_version": "synthetic-v1",
+    "forecasts": {
+      "start": "2026-11-07T17:00:00-05:00",
+      "end": "2026-11-07T20:00:00-05:00",
+      "daypart": "dinner",
+      "forecasts": [
+        {
+          "ingredient_id": "tofu",
+          "unit": "g",
+          "expected_usage": 1499.965,
+          "uncertainty_buffer": 149.997,
+          "method": "same_weekday_daypart",
+          "source": "measured",
+          "sample_count": 12,
+          "backtest_count": 3,
+          "backtest_mae": 28.074,
+          "warnings": [
+            "AutoETS selected using three rolling validation periods.",
+            "Model comparison and buffer use selection-window errors; they are not an independent accuracy guarantee.",
+            "Buffer is a heuristic reserve, not a calibrated prediction interval."
+          ],
+          "model": "autoets",
+          "baseline_backtest_mae": 30.235,
+          "autoets_backtest_mae": 28.074
+        },
+        {
+          "ingredient_id": "mushrooms",
+          "unit": "g",
+          "expected_usage": 300.016,
+          "uncertainty_buffer": 30.002,
+          "method": "same_weekday_daypart",
+          "source": "measured",
+          "sample_count": 12,
+          "backtest_count": 3,
+          "backtest_mae": 10.505,
+          "warnings": [
+            "AutoETS selected using three rolling validation periods.",
+            "Model comparison and buffer use selection-window errors; they are not an independent accuracy guarantee.",
+            "Buffer is a heuristic reserve, not a calibrated prediction interval."
+          ],
+          "model": "autoets",
+          "baseline_backtest_mae": 11.338,
+          "autoets_backtest_mae": 10.505
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "expected_usage": 4999.578,
+          "uncertainty_buffer": 499.958,
+          "method": "same_weekday_daypart",
+          "source": "measured",
+          "sample_count": 12,
+          "backtest_count": 3,
+          "backtest_mae": 70.068,
+          "warnings": [
+            "AutoETS selected using three rolling validation periods.",
+            "Model comparison and buffer use selection-window errors; they are not an independent accuracy guarantee.",
+            "Buffer is a heuristic reserve, not a calibrated prediction interval."
+          ],
+          "model": "autoets",
+          "baseline_backtest_mae": 75.586,
+          "autoets_backtest_mae": 70.068
+        }
+      ]
+    },
+    "ingredients": [
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "risk": "covered",
+        "available_after_commitments": 1700.0,
+        "remaining_demand": 1499.965,
+        "projected_balance": 200.035,
+        "reserve_headroom": 50.038,
+        "extra_budget_quantity": 50.038,
+        "reasons": [],
+        "facts": [
+          {
+            "fact_id": "forecast",
+            "text": "tofu: expected usage is 1499.965 g; reserve buffer is 149.997 g."
+          },
+          {
+            "fact_id": "reserve",
+            "text": "Inventory coverage is covered; reserve headroom is 50.0 g."
+          },
+          {
+            "fact_id": "extras",
+            "text": "Up to 50.0 g is forecast reserve capacity for extras, shared across orders; the base order must already be accounted for."
+          }
+        ],
+        "explanation": "tofu: expected usage is 1499.965 g; reserve buffer is 149.997 g. Inventory coverage is covered; reserve headroom is 50.0 g. Up to 50.0 g is forecast reserve capacity for extras, shared across orders; the base order must already be accounted for."
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "risk": "covered",
+        "available_after_commitments": 1300.0,
+        "remaining_demand": 300.016,
+        "projected_balance": 999.984,
+        "reserve_headroom": 969.982,
+        "extra_budget_quantity": 969.982,
+        "reasons": [],
+        "facts": [
+          {
+            "fact_id": "forecast",
+            "text": "mushrooms: expected usage is 300.016 g; reserve buffer is 30.002 g."
+          },
+          {
+            "fact_id": "reserve",
+            "text": "Inventory coverage is covered; reserve headroom is 970.0 g."
+          },
+          {
+            "fact_id": "extras",
+            "text": "Up to 970.0 g is forecast reserve capacity for extras, shared across orders; the base order must already be accounted for."
+          }
+        ],
+        "explanation": "mushrooms: expected usage is 300.016 g; reserve buffer is 30.002 g. Inventory coverage is covered; reserve headroom is 970.0 g. Up to 970.0 g is forecast reserve capacity for extras, shared across orders; the base order must already be accounted for."
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "risk": "covered",
+        "available_after_commitments": 10000.0,
+        "remaining_demand": 4999.578,
+        "projected_balance": 5000.422,
+        "reserve_headroom": 4500.464,
+        "extra_budget_quantity": 4500.464,
+        "reasons": [],
+        "facts": [
+          {
+            "fact_id": "forecast",
+            "text": "rice: expected usage is 4999.578 g; reserve buffer is 499.958 g."
+          },
+          {
+            "fact_id": "reserve",
+            "text": "Inventory coverage is covered; reserve headroom is 4500.5 g."
+          },
+          {
+            "fact_id": "extras",
+            "text": "Up to 4500.5 g is forecast reserve capacity for extras, shared across orders; the base order must already be accounted for."
+          }
+        ],
+        "explanation": "rice: expected usage is 4999.578 g; reserve buffer is 499.958 g. Inventory coverage is covered; reserve headroom is 4500.5 g. Up to 4500.5 g is forecast reserve capacity for extras, shared across orders; the base order must already be accounted for."
+      }
+    ],
+    "warnings": [
+      "Extra budgets are advisory and shared across requests, not reservations. Recheck the inventory version and atomically reserve on confirmation. The base order must already be accounted for before assessing an extra."
+    ],
+    "explanation_source": "deterministic",
+    "staff_review_notes": []
+  },
+  "extra_assessment": {
+    "ingredient_id": "tofu",
+    "unit": "g",
+    "quantity": 200.0,
+    "available_now": true,
+    "preserves_reserve": false,
+    "extra_portions_within_reserve": 0,
+    "decision": "reserve_at_risk",
+    "reason": "The portion is available now but would use forecast reserve capacity.",
+    "staff_review_notes": []
+  }
+}

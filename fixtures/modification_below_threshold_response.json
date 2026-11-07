@@ -1,0 +1,111 @@
+{
+  "action": "extra",
+  "status": "unavailable",
+  "minimum_score": 0.75,
+  "threshold_basis": "combined",
+  "customer_message": "We cannot accommodate this request with the available menu and inventory options.",
+  "customer_options": [],
+  "staff_options": [],
+  "unavailable_options": [
+    {
+      "option_id": "extra_guac",
+      "label": "Extra guacamole instead of avocado",
+      "route": "unavailable",
+      "offered_item_id": "guacamole",
+      "portion_quantity": 60.0,
+      "portion_unit": "g",
+      "dish_quantity": 1,
+      "portions_per_dish": 1,
+      "total_portions": 1,
+      "total_offered_quantity": 60.0,
+      "requirements": {
+        "rice": 200.0,
+        "guacamole": 60.0
+      },
+      "removed_requirements": {},
+      "similarity": 0.6,
+      "similarity_required": true,
+      "ranking_score": 0.73,
+      "ranking_factors": {
+        "similarity": 0.6,
+        "reserve": 1.0,
+        "cost": 0.5
+      },
+      "price_change_cents": 150,
+      "pricing_reference": "menu-extra-guac-v1",
+      "requires_customer_acceptance": false,
+      "reasons": [
+        "We cannot accommodate this option: its combined score is missing or below 0.75."
+      ],
+      "staff_review_notes": []
+    }
+  ],
+  "staff_review_notes": [],
+  "forecasts": {
+    "start": "2026-11-07T17:00:00-05:00",
+    "end": "2026-11-07T20:00:00-05:00",
+    "daypart": "dinner",
+    "forecasts": [
+      {
+        "ingredient_id": "guacamole",
+        "unit": "g",
+        "expected_usage": 100.0,
+        "uncertainty_buffer": 10.0,
+        "method": "same_weekday_daypart",
+        "source": "measured",
+        "sample_count": 12,
+        "backtest_count": 9,
+        "backtest_mae": 0.0,
+        "warnings": [
+          "Buffer is a heuristic reserve, not a calibrated prediction interval."
+        ],
+        "model": "historical",
+        "baseline_backtest_mae": 0.0,
+        "autoets_backtest_mae": null
+      },
+      {
+        "ingredient_id": "beans",
+        "unit": "g",
+        "expected_usage": 100.0,
+        "uncertainty_buffer": 10.0,
+        "method": "same_weekday_daypart",
+        "source": "measured",
+        "sample_count": 12,
+        "backtest_count": 9,
+        "backtest_mae": 0.0,
+        "warnings": [
+          "Buffer is a heuristic reserve, not a calibrated prediction interval."
+        ],
+        "model": "historical",
+        "baseline_backtest_mae": 0.0,
+        "autoets_backtest_mae": null
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "expected_usage": 5005.251,
+        "uncertainty_buffer": 500.525,
+        "method": "same_weekday_daypart",
+        "source": "measured",
+        "sample_count": 12,
+        "backtest_count": 9,
+        "backtest_mae": 77.514,
+        "warnings": [
+          "Buffer is a heuristic reserve, not a calibrated prediction interval."
+        ],
+        "model": "historical",
+        "baseline_backtest_mae": 77.514,
+        "autoets_backtest_mae": null
+      }
+    ]
+  },
+  "inventory_version": "unversioned-inventory-read",
+  "warnings": [
+    "Reserve deficits are ranking penalties, not hard stock limits. Confirmation must recheck inventory and reserve stock in the inventory service.",
+    "Inventory exposes net availability without commitment totals; gross forecast demand is conservatively reserved, which may overstate shortages.",
+    "Inventory has no authoritative snapshot version; confirmation must call check again."
+  ],
+  "evaluated_at": "2026-11-07T17:00:00-05:00",
+  "expires_at": "2026-11-07T17:05:00-05:00",
+  "requires_inventory_recheck_on_confirmation": true
+}

@@ -1,0 +1,470 @@
+{
+  "$defs": {
+    "ForecastResult": {
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "format": "date-time",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "format": "date-time",
+          "title": "End",
+          "type": "string"
+        },
+        "daypart": {
+          "title": "Daypart",
+          "type": "string"
+        },
+        "forecasts": {
+          "items": {
+            "$ref": "#/$defs/IngredientForecast"
+          },
+          "title": "Forecasts",
+          "type": "array"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "daypart",
+        "forecasts"
+      ],
+      "title": "ForecastResult",
+      "type": "object"
+    },
+    "IngredientForecast": {
+      "additionalProperties": false,
+      "properties": {
+        "ingredient_id": {
+          "minLength": 1,
+          "title": "Ingredient Id",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "each"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "expected_usage": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Expected Usage"
+        },
+        "uncertainty_buffer": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Uncertainty Buffer"
+        },
+        "method": {
+          "enum": [
+            "same_weekday_daypart",
+            "daypart_fallback",
+            "insufficient_history"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "measured",
+            "recipe_estimated"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "sample_count": {
+          "title": "Sample Count",
+          "type": "integer"
+        },
+        "backtest_count": {
+          "title": "Backtest Count",
+          "type": "integer"
+        },
+        "backtest_mae": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Backtest Mae"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        },
+        "model": {
+          "default": "historical",
+          "enum": [
+            "autoets",
+            "historical",
+            "unknown"
+          ],
+          "title": "Model",
+          "type": "string"
+        },
+        "baseline_backtest_mae": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Baseline Backtest Mae"
+        },
+        "autoets_backtest_mae": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Autoets Backtest Mae"
+        }
+      },
+      "required": [
+        "ingredient_id",
+        "unit",
+        "expected_usage",
+        "uncertainty_buffer",
+        "method",
+        "source",
+        "sample_count",
+        "backtest_count",
+        "backtest_mae",
+        "warnings"
+      ],
+      "title": "IngredientForecast",
+      "type": "object"
+    },
+    "RoutedOption": {
+      "additionalProperties": false,
+      "properties": {
+        "option_id": {
+          "title": "Option Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "route": {
+          "enum": [
+            "customer",
+            "staff",
+            "unavailable"
+          ],
+          "title": "Route",
+          "type": "string"
+        },
+        "offered_item_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Offered Item Id"
+        },
+        "portion_quantity": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Portion Quantity"
+        },
+        "portion_unit": {
+          "anyOf": [
+            {
+              "enum": [
+                "g",
+                "ml",
+                "each"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Portion Unit"
+        },
+        "dish_quantity": {
+          "title": "Dish Quantity",
+          "type": "integer"
+        },
+        "portions_per_dish": {
+          "title": "Portions Per Dish",
+          "type": "integer"
+        },
+        "total_portions": {
+          "title": "Total Portions",
+          "type": "integer"
+        },
+        "total_offered_quantity": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Total Offered Quantity"
+        },
+        "requirements": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Requirements",
+          "type": "object"
+        },
+        "removed_requirements": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Removed Requirements",
+          "type": "object"
+        },
+        "similarity": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Similarity"
+        },
+        "similarity_required": {
+          "title": "Similarity Required",
+          "type": "boolean"
+        },
+        "ranking_score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ranking Score"
+        },
+        "ranking_factors": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Ranking Factors",
+          "type": "object"
+        },
+        "price_change_cents": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Price Change Cents"
+        },
+        "pricing_reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Pricing Reference"
+        },
+        "requires_customer_acceptance": {
+          "title": "Requires Customer Acceptance",
+          "type": "boolean"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "staff_review_notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Staff Review Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "option_id",
+        "label",
+        "route",
+        "offered_item_id",
+        "portion_quantity",
+        "portion_unit",
+        "dish_quantity",
+        "portions_per_dish",
+        "total_portions",
+        "total_offered_quantity",
+        "requirements",
+        "removed_requirements",
+        "similarity",
+        "similarity_required",
+        "ranking_score",
+        "ranking_factors",
+        "price_change_cents",
+        "pricing_reference",
+        "requires_customer_acceptance",
+        "reasons",
+        "staff_review_notes"
+      ],
+      "title": "RoutedOption",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "title": "Action",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "reply_to_customer",
+        "needs_staff_review",
+        "unavailable"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "minimum_score": {
+      "title": "Minimum Score",
+      "type": "number"
+    },
+    "threshold_basis": {
+      "title": "Threshold Basis",
+      "type": "string"
+    },
+    "customer_message": {
+      "title": "Customer Message",
+      "type": "string"
+    },
+    "customer_options": {
+      "items": {
+        "$ref": "#/$defs/RoutedOption"
+      },
+      "title": "Customer Options",
+      "type": "array"
+    },
+    "staff_options": {
+      "items": {
+        "$ref": "#/$defs/RoutedOption"
+      },
+      "title": "Staff Options",
+      "type": "array"
+    },
+    "unavailable_options": {
+      "items": {
+        "$ref": "#/$defs/RoutedOption"
+      },
+      "title": "Unavailable Options",
+      "type": "array"
+    },
+    "staff_review_notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Staff Review Notes",
+      "type": "array"
+    },
+    "forecasts": {
+      "$ref": "#/$defs/ForecastResult"
+    },
+    "inventory_version": {
+      "title": "Inventory Version",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "evaluated_at": {
+      "format": "date-time",
+      "title": "Evaluated At",
+      "type": "string"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "title": "Expires At",
+      "type": "string"
+    },
+    "requires_inventory_recheck_on_confirmation": {
+      "const": true,
+      "default": true,
+      "title": "Requires Inventory Recheck On Confirmation",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "action",
+    "status",
+    "minimum_score",
+    "threshold_basis",
+    "customer_message",
+    "customer_options",
+    "staff_options",
+    "unavailable_options",
+    "staff_review_notes",
+    "forecasts",
+    "inventory_version",
+    "warnings",
+    "evaluated_at",
+    "expires_at"
+  ],
+  "title": "ModificationDecision",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

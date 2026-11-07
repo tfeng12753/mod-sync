@@ -1,0 +1,216 @@
+{
+  "schema_version": "1.0",
+  "inventory_version": "synthetic-v1",
+  "status": "needs_staff_review",
+  "recommended_option_id": null,
+  "forecasts": {
+    "start": "2026-11-07T17:00:00-05:00",
+    "end": "2026-11-07T20:00:00-05:00",
+    "daypart": "dinner",
+    "forecasts": [
+      {
+        "ingredient_id": "tofu",
+        "unit": "g",
+        "expected_usage": 1499.965,
+        "uncertainty_buffer": 149.997,
+        "method": "same_weekday_daypart",
+        "source": "measured",
+        "sample_count": 12,
+        "backtest_count": 3,
+        "backtest_mae": 28.074,
+        "warnings": [
+          "AutoETS selected using three rolling validation periods.",
+          "Model comparison and buffer use selection-window errors; they are not an independent accuracy guarantee.",
+          "Buffer is a heuristic reserve, not a calibrated prediction interval."
+        ],
+        "model": "autoets",
+        "baseline_backtest_mae": 30.235,
+        "autoets_backtest_mae": 28.074
+      },
+      {
+        "ingredient_id": "mushrooms",
+        "unit": "g",
+        "expected_usage": 300.016,
+        "uncertainty_buffer": 30.002,
+        "method": "same_weekday_daypart",
+        "source": "measured",
+        "sample_count": 12,
+        "backtest_count": 3,
+        "backtest_mae": 10.505,
+        "warnings": [
+          "AutoETS selected using three rolling validation periods.",
+          "Model comparison and buffer use selection-window errors; they are not an independent accuracy guarantee.",
+          "Buffer is a heuristic reserve, not a calibrated prediction interval."
+        ],
+        "model": "autoets",
+        "baseline_backtest_mae": 11.338,
+        "autoets_backtest_mae": 10.505
+      },
+      {
+        "ingredient_id": "rice",
+        "unit": "g",
+        "expected_usage": 4999.578,
+        "uncertainty_buffer": 499.958,
+        "method": "same_weekday_daypart",
+        "source": "measured",
+        "sample_count": 12,
+        "backtest_count": 3,
+        "backtest_mae": 70.068,
+        "warnings": [
+          "AutoETS selected using three rolling validation periods.",
+          "Model comparison and buffer use selection-window errors; they are not an independent accuracy guarantee.",
+          "Buffer is a heuristic reserve, not a calibrated prediction interval."
+        ],
+        "model": "autoets",
+        "baseline_backtest_mae": 75.586,
+        "autoets_backtest_mae": 70.068
+      }
+    ]
+  },
+  "ranked_options": [],
+  "excluded_options": [
+    {
+      "option_id": "tofu_bowl",
+      "label": "Tofu Bowl",
+      "score": null,
+      "eligible": false,
+      "requires_staff_review": true,
+      "reasons": [
+        "tofu: allergy soy: restriction violated; option blocked.",
+        "Person 2: soy allergy request. Staff must review ingredients and preparation.",
+        "An AI model cannot certify that a dish or ingredient is safe or allergen-free. Allergy and dietary restriction requests must go to restaurant staff for review before confirmation."
+      ],
+      "tradeoffs": [
+        {
+          "ingredient_id": "tofu",
+          "unit": "g",
+          "requested_quantity": 200.0,
+          "available_after_commitments": 1700.0,
+          "uncommitted_expected_demand": 1499.965,
+          "uncertainty_buffer": 149.997,
+          "projected_surplus": -149.962,
+          "reserve_score": 0.45455592310610793
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "requested_quantity": 200.0,
+          "available_after_commitments": 10000.0,
+          "uncommitted_expected_demand": 4999.578,
+          "uncertainty_buffer": 499.958,
+          "projected_surplus": 4300.464,
+          "reserve_score": 0.8909842575810032
+        }
+      ],
+      "ingredient_cost_change_cents": -10,
+      "additional_labor_cents": 0,
+      "price_change_cents": 0,
+      "factors": {},
+      "facts": [
+        {
+          "fact_id": "reserve:tofu",
+          "text": "tofu: reserve headroom after this recipe, commitments, expected remaining demand and buffer is -150.0 g (negative means a reserve deficit)."
+        },
+        {
+          "fact_id": "reserve:rice",
+          "text": "rice: reserve headroom after this recipe, commitments, expected remaining demand and buffer is 4300.5 g (negative means a reserve deficit)."
+        },
+        {
+          "fact_id": "cost",
+          "text": "Ingredient cost changes by -10 cents; additional labor is 0 cents."
+        },
+        {
+          "fact_id": "price",
+          "text": "Customer price changes by 0 cents."
+        }
+      ],
+      "explanation": "tofu: allergy soy: restriction violated; option blocked. Person 2: soy allergy request. Staff must review ingredients and preparation. An AI model cannot certify that a dish or ingredient is safe or allergen-free. Allergy and dietary restriction requests must go to restaurant staff for review before confirmation.",
+      "staff_review_notes": [
+        "Person 2: soy allergy request. Staff must review ingredients and preparation.",
+        "An AI model cannot certify that a dish or ingredient is safe or allergen-free. Allergy and dietary restriction requests must go to restaurant staff for review before confirmation."
+      ],
+      "similarity": 0.95,
+      "similarity_source": "inventory",
+      "similarity_rationale": null,
+      "blocked_by_restriction": true
+    }
+  ],
+  "review_options": [
+    {
+      "option_id": "mushroom_bowl",
+      "label": "Mushroom Bowl",
+      "score": 0.858844,
+      "eligible": false,
+      "requires_staff_review": true,
+      "reasons": [
+        "Person 2: soy allergy request. Staff must review ingredients and preparation.",
+        "An AI model cannot certify that a dish or ingredient is safe or allergen-free. Allergy and dietary restriction requests must go to restaurant staff for review before confirmation."
+      ],
+      "tradeoffs": [
+        {
+          "ingredient_id": "mushrooms",
+          "unit": "g",
+          "requested_quantity": 200.0,
+          "available_after_commitments": 1300.0,
+          "uncommitted_expected_demand": 300.016,
+          "uncertainty_buffer": 30.002,
+          "projected_surplus": 769.982,
+          "reserve_score": 1.0
+        },
+        {
+          "ingredient_id": "rice",
+          "unit": "g",
+          "requested_quantity": 200.0,
+          "available_after_commitments": 10000.0,
+          "uncommitted_expected_demand": 4999.578,
+          "uncertainty_buffer": 499.958,
+          "projected_surplus": 4300.464,
+          "reserve_score": 0.8909842575810032
+        }
+      ],
+      "ingredient_cost_change_cents": -40,
+      "additional_labor_cents": 20,
+      "price_change_cents": 0,
+      "factors": {
+        "similarity": 0.9,
+        "reserve": 0.8909842575810032,
+        "cost": 0.52
+      },
+      "facts": [
+        {
+          "fact_id": "reserve:mushrooms",
+          "text": "mushrooms: reserve headroom after this recipe, commitments, expected remaining demand and buffer is 770.0 g (negative means a reserve deficit)."
+        },
+        {
+          "fact_id": "reserve:rice",
+          "text": "rice: reserve headroom after this recipe, commitments, expected remaining demand and buffer is 4300.5 g (negative means a reserve deficit)."
+        },
+        {
+          "fact_id": "cost",
+          "text": "Ingredient cost changes by -40 cents; additional labor is 20 cents."
+        },
+        {
+          "fact_id": "price",
+          "text": "Customer price changes by 0 cents."
+        }
+      ],
+      "explanation": "mushrooms: reserve headroom after this recipe, commitments, expected remaining demand and buffer is 770.0 g (negative means a reserve deficit). rice: reserve headroom after this recipe, commitments, expected remaining demand and buffer is 4300.5 g (negative means a reserve deficit). Ingredient cost changes by -40 cents; additional labor is 20 cents. Customer price changes by 0 cents. Person 2: soy allergy request. Staff must review ingredients and preparation. An AI model cannot certify that a dish or ingredient is safe or allergen-free. Allergy and dietary restriction requests must go to restaurant staff for review before confirmation.",
+      "staff_review_notes": [
+        "Person 2: soy allergy request. Staff must review ingredients and preparation.",
+        "An AI model cannot certify that a dish or ingredient is safe or allergen-free. Allergy and dietary restriction requests must go to restaurant staff for review before confirmation."
+      ],
+      "similarity": 0.9,
+      "similarity_source": "inventory",
+      "similarity_rationale": null,
+      "blocked_by_restriction": false
+    }
+  ],
+  "staff_review_notes": [
+    "Person 2: soy allergy request. Staff must review ingredients and preparation.",
+    "An AI model cannot certify that a dish or ingredient is safe or allergen-free. Allergy and dietary restriction requests must go to restaurant staff for review before confirmation."
+  ],
+  "explanation_source": "deterministic",
+  "warnings": [
+    "Reserve deficits are ranking penalties, not hard stock limits. Confirmation must recheck inventory and reserve stock in the inventory service."
+  ]
+}

@@ -1,0 +1,367 @@
+{
+  "$defs": {
+    "DecisionFact": {
+      "additionalProperties": false,
+      "properties": {
+        "fact_id": {
+          "title": "Fact Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fact_id",
+        "text"
+      ],
+      "title": "DecisionFact",
+      "type": "object"
+    },
+    "ForecastResult": {
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "format": "date-time",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "format": "date-time",
+          "title": "End",
+          "type": "string"
+        },
+        "daypart": {
+          "title": "Daypart",
+          "type": "string"
+        },
+        "forecasts": {
+          "items": {
+            "$ref": "#/$defs/IngredientForecast"
+          },
+          "title": "Forecasts",
+          "type": "array"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "daypart",
+        "forecasts"
+      ],
+      "title": "ForecastResult",
+      "type": "object"
+    },
+    "IngredientForecast": {
+      "additionalProperties": false,
+      "properties": {
+        "ingredient_id": {
+          "minLength": 1,
+          "title": "Ingredient Id",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "each"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "expected_usage": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Expected Usage"
+        },
+        "uncertainty_buffer": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Uncertainty Buffer"
+        },
+        "method": {
+          "enum": [
+            "same_weekday_daypart",
+            "daypart_fallback",
+            "insufficient_history"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "measured",
+            "recipe_estimated"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "sample_count": {
+          "title": "Sample Count",
+          "type": "integer"
+        },
+        "backtest_count": {
+          "title": "Backtest Count",
+          "type": "integer"
+        },
+        "backtest_mae": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Backtest Mae"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        },
+        "model": {
+          "default": "historical",
+          "enum": [
+            "autoets",
+            "historical",
+            "unknown"
+          ],
+          "title": "Model",
+          "type": "string"
+        },
+        "baseline_backtest_mae": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Baseline Backtest Mae"
+        },
+        "autoets_backtest_mae": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Autoets Backtest Mae"
+        }
+      },
+      "required": [
+        "ingredient_id",
+        "unit",
+        "expected_usage",
+        "uncertainty_buffer",
+        "method",
+        "source",
+        "sample_count",
+        "backtest_count",
+        "backtest_mae",
+        "warnings"
+      ],
+      "title": "IngredientForecast",
+      "type": "object"
+    },
+    "IngredientOutlook": {
+      "additionalProperties": false,
+      "properties": {
+        "ingredient_id": {
+          "minLength": 1,
+          "title": "Ingredient Id",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "g",
+            "ml",
+            "each"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "risk": {
+          "enum": [
+            "covered",
+            "reserve_at_risk",
+            "projected_shortage",
+            "current_shortage",
+            "unknown"
+          ],
+          "title": "Risk",
+          "type": "string"
+        },
+        "available_after_commitments": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Available After Commitments"
+        },
+        "remaining_demand": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Remaining Demand"
+        },
+        "projected_balance": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Projected Balance"
+        },
+        "reserve_headroom": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reserve Headroom"
+        },
+        "extra_budget_quantity": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Extra Budget Quantity"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "facts": {
+          "items": {
+            "$ref": "#/$defs/DecisionFact"
+          },
+          "title": "Facts",
+          "type": "array"
+        },
+        "explanation": {
+          "default": "",
+          "title": "Explanation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ingredient_id",
+        "unit",
+        "risk",
+        "available_after_commitments",
+        "remaining_demand",
+        "projected_balance",
+        "reserve_headroom",
+        "extra_budget_quantity",
+        "reasons"
+      ],
+      "title": "IngredientOutlook",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "evaluated_at": {
+      "format": "date-time",
+      "title": "Evaluated At",
+      "type": "string"
+    },
+    "inventory_version": {
+      "title": "Inventory Version",
+      "type": "string"
+    },
+    "forecasts": {
+      "$ref": "#/$defs/ForecastResult"
+    },
+    "ingredients": {
+      "items": {
+        "$ref": "#/$defs/IngredientOutlook"
+      },
+      "title": "Ingredients",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "explanation_source": {
+      "default": "deterministic",
+      "enum": [
+        "deterministic",
+        "openrouter"
+      ],
+      "title": "Explanation Source",
+      "type": "string"
+    },
+    "staff_review_notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Staff Review Notes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "evaluated_at",
+    "inventory_version",
+    "forecasts",
+    "ingredients",
+    "warnings"
+  ],
+  "title": "InventoryOutlook",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
