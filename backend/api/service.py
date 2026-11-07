@@ -12,7 +12,10 @@ import logging
 from datetime import timedelta
 from typing import Any, Awaitable, Callable
 
+import httpx
+
 from backend.inventory import Inventory, load_inventory
+from backend.parsing.parser import ParserValidationError
 
 from .store import Order, OrderStore, utcnow
 
@@ -70,6 +73,28 @@ class OrderService:
             parsed = await asyncio.to_thread(self.parse_fn, inv, dish_id, qty, text, list(clarifications or []))
         except ApiError:
             raise
+        except httpx.HTTPStatusError as exc:
+            status = exc.response.status_code
+            logger.warning("OpenRouter parsing request failed: HTTP %s", status)
+            messages = {
+                400: "OpenRouter rejected the configured model or request settings. Check OPENROUTER_MODEL and structured-output support.",
+                401: "OpenRouter rejected the API key. Check OPENROUTER_API_KEY in the backend terminal or server environment.",
+                402: "OpenRouter reports insufficient credits. Add credits or check the API key's spending limit.",
+                403: "OpenRouter denied access. Check the API key's permissions and account restrictions.",
+                404: "OpenRouter could not find the configured model. Check OPENROUTER_MODEL.",
+                429: "OpenRouter is rate limiting requests. Please wait and try again.",
+            }
+            raise ApiError(502, messages.get(status,
+                           f"OpenRouter parsing service failed (HTTP {status}). Please try again.")) from exc
+        except httpx.TimeoutException as exc:
+            logger.warning("OpenRouter parsing request timed out")
+            raise ApiError(502, "OpenRouter took too long to respond. Please try again.") from exc
+        except httpx.RequestError as exc:
+            logger.warning("OpenRouter connection failed: %s", type(exc).__name__)
+            raise ApiError(502, "The backend couldn't connect to OpenRouter. Check its internet connection and try again.") from exc
+        except ParserValidationError as exc:
+            logger.warning("parser rejected the structured response")
+            raise ApiError(502, "The parser returned an invalid structured result. Please retry or ask restaurant staff.") from exc
         except Exception as exc:  # ParserValidationError, provider errors: never treated as approved
             logger.warning("parser failed: %s", type(exc).__name__)
             raise ApiError(502, "We couldn't safely read that request; please rephrase or ask staff.") from exc
@@ -208,6 +233,15 @@ class OrderService:
                 check_args=_check_args(parsed.parser_output),
             )
             order.log("created", status)
+            if status == "ready" and not needs_review and not text.strip() and not clarifications:
+                try:
+                    self._confirm(order, hold_key)
+                except ApiError:
+                    inv.release(order_id)
+                    return self._final(base, "unavailable", message="Stock just changed. Please try again.")
+                order.log("accepted", "confirmed")
+                evaluation_out.update(status="confirmed", expires_at=None,
+                                      customer_message=f"Order {order_id} confirmed. The kitchen has it.")
             self.orders.add(order)
             return evaluation_out
 

@@ -16,7 +16,7 @@ export class ApiError extends Error {
 
 function friendlyMessage(status, detail) {
   if (status === 0) return `Can't reach the kitchen server at ${API_URL}. Is the backend running?`
-  if (status === 502) return "We couldn't safely read that request. Please try rephrasing it, or call the restaurant."
+  if (status === 502) return detail || "We couldn't safely read that request. Please try rephrasing it, or call the restaurant."
   if (status === 404) return detail || 'Not found.'
   if (status === 409) return detail || 'That order can no longer be changed.'
   return detail || `Request failed (${status}).`

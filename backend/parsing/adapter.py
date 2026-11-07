@@ -16,7 +16,8 @@ What it does:
    and their aliases go into the prompt payload.
 2. Runs the parser: ``mode="openrouter"`` (LLM; needs ``OPENROUTER_API_KEY`` unless a ``client``
    is passed) or ``mode="offline"`` (deterministic rules, see ``offline.py``). Default: openrouter
-   when a client is passed or the key is set, else offline.
+   when a client is passed or the key is set, else offline. With a key and no explicit mode/client,
+   exact menu commands use the alias index; other requests use the validated model parse cache.
 3. Translates parser changes to inventory ops (CLAUDE.md "Contracts"); ``set N`` is compared with
    the recipe amount: 0 -> remove, above -> add the difference, below -> less, equal -> nothing.
    Unknown items become ``"unknown:<word>"`` ops so inventory returns ``needs_clarification``.
@@ -56,7 +57,7 @@ class ParsedRequest:
     questions: list[str] = field(default_factory=list)
     staff_notes: list[str] = field(default_factory=list)
     restrictions: list[dict] = field(default_factory=list)  # [{"kind": "allergy"|"diet", "value": str}]
-    source: str = "offline"   # "openrouter" | "offline"
+    source: str = "offline"   # "menu" | "openrouter" | "openrouter_cache" | "offline"
 
 
 # ----- catalog -> parser request -------------------------------------------------------------------
@@ -285,7 +286,22 @@ def parse_request(inv, dish_id: str, qty: int, text: str, clarifications=(), cli
 
     request = build_parse_request(inv, dish_id, qty, text if text.strip() else "(no text)", clarifications)
     if source == "openrouter":
-        result = _require_named_additions(inv, request, parse_modifications(request, client=client))
+        if mode is None and client is None:
+            from .cache import parse_with_cache
+            from .menu_phrases import parse_menu_phrase
+            fast_path = os.getenv("PARSER_FAST_PATH_ENABLED", "1").lower() not in ("0", "false", "off")
+            result = parse_menu_phrase(inv, request, dish_id) if fast_path else None
+            if result is not None:
+                source = "menu"
+            else:
+                result, hit = parse_with_cache(request)
+                if hit:
+                    source = "openrouter_cache"
+        else:
+            # Explicit modes and injected clients keep model benchmarks/tests reproducible.
+            result = parse_modifications(request, client=client)
+        if source != "menu":
+            result = _require_named_additions(inv, request, result)
     else:
         from .offline import offline_parse
         result = validate_result(request, offline_parse(inv, request, dish_id))

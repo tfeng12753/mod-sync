@@ -9,11 +9,16 @@ nonnegative extra and swap upcharges for the whole order, with dish quantity app
 Cheaper swaps and removals give no discount and cannot offset other upcharges. Null still means
 staff must set a price; recipe cost savings are separate from customer prices.
 
+`parsed.source` reports `menu` for exact catalog commands, `openrouter` for a model call,
+`openrouter_cache` for a repeated validated model interpretation, or `offline` without a key.
+Only parsing is cached; stock, pricing, forecasts and approval are evaluated fresh every time.
+
 ## Order lifecycle
 
 ```text
 POST /api/evaluate ─► status
   ready                    → order "awaiting_customer" (customer just confirms the request as asked)
+  confirmed                → plain order with blank text and no review needed (stock deducted)
   needs_customer_approval  → order "awaiting_customer" (customer picks an option)
   needs_staff_review       → order "awaiting_staff"
   needs_clarification      → no order; show questions, re-POST with clarifications
@@ -128,8 +133,8 @@ Customer withdraws an `awaiting_customer` / `awaiting_staff` order. Releases the
 ```
 Statuses: `awaiting_customer`, `awaiting_staff`, `confirmed`, `rejected`, `expired`, `cancelled`.
 
-Field types: `questions` is `string[]`; `parsed.ops` items use the inventory op shape (CLAUDE.md
-"Contracts"); `parsed.restrictions` items are `{kind, value}`; `review.evidence` matches
+Field types: `questions` is `string[]`; `parsed.ops` items use the inventory op shape;
+`parsed.restrictions` items are `{kind, value}`; `review.evidence` matches
 `check.evidence` in `fixtures/allergy_request_example.json` (`components[]`, `allergens_present`
 `{allergen: [source strings]}`, `cross_contact[]`, `note`). `warnings` (string[]) and `forecast`
 (per-ingredient summary) may also appear on an Evaluation.

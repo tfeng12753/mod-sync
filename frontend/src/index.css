@@ -60,11 +60,6 @@ button { font: inherit; cursor: pointer; color: inherit; }
 .nav-item:hover { background: rgba(251, 226, 205, .55); }
 .nav-item.active { background: var(--soft); border-left-color: var(--accent); }
 .nav-badge { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
-.sidebar-foot { margin-top: auto; padding: 0 24px; display: grid; gap: 10px; }
-.tag { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
-.api-badge { display: inline-flex; align-items: center; gap: 6px; justify-self: start; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; background: #fff; color: var(--muted); border: 1px solid var(--line); }
-.api-badge i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.api-badge.ok { color: var(--green); } .api-badge.down { color: var(--danger); } .api-badge.mock { color: #0c4a99; }
 
 .content { min-width: 0; padding: 28px 32px 40px; }
 .page-title { font-size: 34px; font-weight: 800; letter-spacing: -.02em; margin: 4px 0 18px; }
@@ -237,7 +232,6 @@ blockquote { margin: 12px 0; padding: 10px 14px; background: var(--bg); border-l
   .brand { padding: 0; }
   .nav { display: flex; order: 3; width: 100%; overflow-x: auto; gap: 6px; }
   .nav-item { width: auto; white-space: nowrap; padding: 8px 14px; border-left: 0; border-radius: 999px; }
-  .sidebar-foot { margin: 0 0 0 auto; padding: 0; } .sidebar-foot .tag { display: none; }
   .content { padding: 20px 16px 32px; }
   .page-title { font-size: 28px; }
   .dish-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }

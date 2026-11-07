@@ -434,7 +434,14 @@ export async function handle(method, path, body = {}) {
   if (method === 'POST' && path === '/api/evaluate') {
     const e = evaluate(body)
     if (e.error) return fail(...e.error)
-    if (e.status === 'ready' || e.status === 'needs_customer_approval' || e.status === 'needs_staff_review') createOrder(e, body)
+    if (e.status === 'ready' || e.status === 'needs_customer_approval' || e.status === 'needs_staff_review') {
+      const order = createOrder(e, body)
+      if (e.status === 'ready' && !body.text?.trim() && !body.clarifications?.length) {
+        acceptOrder(order, null)
+        Object.assign(e, { status: 'confirmed', expires_at: null, customer_message: `Order ${order.order_id} confirmed. The kitchen has it.` })
+        order.evaluation = clone(e)
+      }
+    }
     return ok(e)
   }
   if (method === 'GET' && path === '/api/orders') return ok(orders)

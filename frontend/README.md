@@ -19,10 +19,8 @@ npm run dev          # http://localhost:5173
 
 Other scripts: `npm run build` (production build to `dist/`), `npm run lint`, `npm run preview`.
 
-Orders sent from **Kitchen / staff → Demo controls** also appear in **Customer app → Your orders**
-in the same browser session. For the swap scenario, click **Review options**, then **Choose this**;
-the same ticket updates in the kitchen. Reviewing an order restores its dish, quantity, and request
-in the customer form.
+Submit demo orders manually from **Menu**. Open **Your orders** to review any requested changes.
+Reviewing an order restores its dish, quantity, and request in the customer form.
 
 The customer form always submits orders as DoorDash, with no channel selector. Restaurant tickets
 still show channel tags; reviewing an existing demo order preserves that ticket's original channel.
