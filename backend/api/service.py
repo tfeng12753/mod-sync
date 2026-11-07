@@ -333,9 +333,9 @@ class OrderService:
         inv = self.inv
         out = []
         for item in inv.stock.items():
-            unit = inv.catalog.components[item].unit if item in inv.catalog.components else (
-                inv.catalog.ingredients[item].unit if item in inv.catalog.ingredients else "")
-            out.append({"id": item, "name": inv.catalog.name_of(item), "unit": unit,
+            unit = inv.unit_of(item) or ""
+            name = inv.catalog.ingredients[item].name if item in inv.catalog.ingredients else inv.catalog.name_of(item)
+            out.append({"id": item, "name": name, "unit": unit,
                         "on_hand": inv.stock.on_hand(item), "available": inv.available(item),
                         "initial_on_hand": self._initial.get(item, 0)})
         return out

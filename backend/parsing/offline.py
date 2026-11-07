@@ -44,6 +44,7 @@ _RESTRICTION_WORDS = {w for t in [*DEFAULT_ALLERGEN_TERMS, *DEFAULT_DIET_TERMS] 
 
 _SUB_SWAP = re.compile(r"\b(?:swap|switch|replace|sub|change)\s+(?:out\s+)?(?P<old>.+?)\s+(?:for|with|to)\s+(?P<new>.+)")
 _SUB_INSTEAD = re.compile(r"(?P<new>.+?)\s+(?:instead\s+of|in\s+place\s+of|rather\s+than)\s+(?P<old>.+)")
+_SUB_BARE = re.compile(r"\b(?:swap|switch|replace|sub|substitute|change)\s+(?:out\s+)?(?P<old>.+)")  # "swap the chicken"
 _SOMETHING_ELSE = re.compile(r"\b(?:something|anything)\s+else\b|\binstead\b|\bsubstitute\b|\breplace\s+it\b")
 _ON_SIDE = re.compile(r"(?P<item>.+?)\s+on\s+the\s+side\b")
 _LESS = re.compile(r"\b(?:go\s+)?(?:light|lite|less|easy|half)\b(?:\s+(?:on|of))?\s+(?P<item>.+)")
@@ -157,6 +158,10 @@ def offline_parse(inv, request: ParseRequest, dish_id: str) -> ParseResult:
                         questions.append(f"Which do you mean by '{new[2]}': " + " or ".join(name(i) for i in new[1]) + "?")
                 else:
                     item(m.group("old"), "substitute", correction)
+                continue
+            if (m := _SUB_BARE.search(clause)) and res.resolve(m.group("old"))[0] == "id":
+                # "swap the chicken" with no replacement named -> substitute with null (inventory offers options)
+                item(m.group("old"), "substitute", correction)
                 continue
             if _SOMETHING_ELSE.search(clause) and res.resolve(clause)[0] in ("none", "unknown"):
                 removed = [e for e in entries if e.get("id") and e["op"] == "remove"]

@@ -179,7 +179,7 @@ class _Ctx:
                 self.reason("INVALID_OP", f"Op {kind!r} is missing an ingredient.", "needs_clarification")
                 continue
             if not self._known(target):
-                self.reason("UNKNOWN_ITEM", f"{target!r} isn't on our ingredient list.", "needs_clarification", target)
+                self.reason("UNKNOWN_ITEM", _unknown_message(target), "needs_clarification", target)
                 continue
             qty = raw.get("qty", 1)
             if kind == "add" and (not isinstance(qty, int) or isinstance(qty, bool) or qty < 1):
@@ -187,7 +187,7 @@ class _Ctx:
                 continue
             with_ = raw.get("with")
             if kind == "substitute" and with_ is not None and not self._known(with_):
-                self.reason("UNKNOWN_ITEM", f"{with_!r} isn't on our ingredient list.", "needs_clarification", with_)
+                self.reason("UNKNOWN_ITEM", _unknown_message(with_), "needs_clarification", with_)
                 continue
             out.append(Op(kind, target, int(qty) if kind == "add" else 1, with_))
         return out
@@ -438,6 +438,12 @@ def _unit(catalog: Catalog, item: str) -> str:
     if item in catalog.components:
         return catalog.components[item].unit or ""
     return catalog.ingredients[item].unit if item in catalog.ingredients else ""
+
+
+def _unknown_message(item_id: str) -> str:
+    word = item_id.split(":", 1)[1] if item_id.startswith("unknown:") else item_id
+    word = word.replace("_", " ")
+    return f"We don't have \"{word}\" on our menu. Could you choose something else, or leave it out?"
 
 
 def _status(reasons: list[Reason]) -> str:

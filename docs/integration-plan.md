@@ -1,6 +1,16 @@
 # Integration plan — connecting the 4 parts
 
-Status: **In progress on branch `integration`.** Written 2026-11-07 after reading every branch.
+Status: **Phases 1–5 done on branch `integration` (2026-11-07).** All four parts run together:
+text → parser (`backend/parsing`, offline mode without a key) → inventory `evaluate_request()` →
+engine `decide_modification` via `backend/integration/engine_adapter.py` → API (`backend/api`) →
+React UI (`frontend/`). 306 Python tests pass (inventory, engine, parser, integration, API, e2e);
+frontend lints and builds; the demo flows were clicked through in a browser against the real API.
+
+### Still open
+- Revoke the leaked OpenRouter key; test the parser once with a real key (`backend/parsing/run_manual_cases.py`).
+- Team review: Person 2 (parser changes), Person 4 (one engine change, below), Jacob (UI rewrite).
+- Offline parser gaps (listed in `backend/parsing/README.md`), e.g. "make it a bowl".
+- State is in memory (restart = fresh stock); first evaluation takes ~3 s while the forecast model warms up.
 
 ## Decisions taken (2026-11-07)
 

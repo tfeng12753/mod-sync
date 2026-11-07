@@ -71,13 +71,21 @@ inventory → forecast format: [backend/inventory/plan.md](backend/inventory/pla
 
 ## Commands
 
-Run from the repo root (standard library only, no installs needed):
+Run the app (two terminals, from the repo root):
 
 ```bash
-.venv/Scripts/python -m unittest discover -s tests -t .   # all tests (inventory + engine + ...)
+.venv/Scripts/python -m uvicorn backend.api.app:app --port 8000   # API; parser runs offline without OPENROUTER_API_KEY
+npm --prefix frontend install && npm --prefix frontend run dev    # UI at http://localhost:5173
+```
+
+Tests and generators (from the repo root):
+
+```bash
+.venv/Scripts/python -m unittest discover -s tests -t .   # all tests (inventory, engine, parser, integration, api, e2e)
 py -3 -m backend.inventory.demo               # walk through the demo scenarios
 py -3 -m backend.inventory.demo --fixture     # regenerate fixtures/allergy_request_example.json
 py -3 -m backend.inventory.export             # regenerate parser_vocabulary.json + menu.json
+py -3 -m backend.inventory.history            # regenerate synthetic backend/data/usage_history.json
 ```
 
 After editing `backend/data/catalog.json` or `aliases.json`, rerun both generators; a test fails
