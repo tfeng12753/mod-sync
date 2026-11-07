@@ -448,7 +448,7 @@ def _unit(catalog: Catalog, item: str) -> str:
 def _unknown_message(item_id: str) -> str:
     word = item_id.split(":", 1)[1] if item_id.startswith("unknown:") else item_id
     word = word.replace("_", " ")
-    return f"We don't have \"{word}\" on our menu. Could you choose something else, or leave it out?"
+    return f"Sorry, we don't have \"{word}\" on our menu. Would you like something else instead, or should we leave it out?"
 
 
 def _status(reasons: list[Reason]) -> str:

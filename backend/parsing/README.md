@@ -50,12 +50,16 @@ names/aliases index. It is built when inventory loads; no paid startup call or g
 are needed. Every clause and ingredient must match exactly and unambiguously. Any unmatched text,
 contradiction, unknown ingredient, allergy/diet context, or clarification history goes to the model.
 These shortcuts interpret the request only: they never approve an extra or substitution.
+Ordinary wording such as `could you please hold the onions, and put sauce on the side?` also
+matches when every clause still names a known item.
 
 Other requests cache only the validated model interpretation, up to 256 entries for 10 minutes
 per process. Cache keys include the full original text and ordered clarification history, dish,
 quantity, recipe, menu vocabulary/aliases, model, prompt, output schema, and hashed credential
 scope. Changing any of those causes a new model call. Results are copied and revalidated on hits;
-provider failures and invalid output are not cached. Identical concurrent misses share one call,
+provider failures and invalid structured output are not cached. Fresh and cached model parses both
+ask for clarification if the model adds or swaps in an item the customer did not name.
+Identical concurrent misses share one call,
 while different requests can proceed independently. Redeploy/restart clears this in-memory cache.
 
 Inventory, prices, demand forecasts, restrictions, stock holds, confirmation and staff/customer

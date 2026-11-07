@@ -206,6 +206,20 @@ class ModelCacheTests(unittest.TestCase):
 
 
 class CachedApiTests(unittest.TestCase):
+    def test_cached_model_guess_cannot_add_an_item_the_customer_did_not_name(self):
+        inv = load_inventory()
+        fake = FakeClient(model_output(changes=[change("chicken_bowl", "avocado", "add", 1)]))
+        with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"}):
+            with patch("backend.parsing.cache._PARSE_CACHE", ParseCache()):
+                with patch("backend.parsing.parser.httpx.Client") as http:
+                    http.return_value.__enter__.return_value = fake
+                    for source in ("openrouter", "openrouter_cache"):
+                        result = parse_request(inv, "chicken_bowl", 1, "add sand")
+                        self.assertEqual(result.source, source)
+                        self.assertEqual(result.status, "needs_clarification")
+                        self.assertEqual(result.parser_output["ops"], [])
+        self.assertEqual(len(fake.calls), 1)
+
     def test_cached_interpretation_rechecks_stock_prices_and_full_safety_context(self):
         inv = load_inventory()
         client = FakeClient(model_output(changes=[change("chicken_bowl", "avocado", "add", 1)]))

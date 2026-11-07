@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '../useStore.js'
 import { api } from '../api.js'
 import { ORDER_STATUS, countdown, describeOp, money, priceChange, questionText, restrictionText } from '../logic/format.js'
@@ -62,7 +62,7 @@ function UnavailableList({ items }) {
   )
 }
 
-export default function CustomerView() {
+export default function CustomerView({ ordersFocus = 0 }) {
   const { state, dispatch } = useStore()
   const { menu, menuError } = state
   const [dishId, setDishId] = useState(null)
@@ -88,6 +88,10 @@ export default function CustomerView() {
     && (!q || m.name.toLowerCase().includes(q) || m.components.some((c) => c.name.toLowerCase().includes(q))))
   const mine = state.orders.filter((o) => state.myOrderIds.includes(o.order_id))
 
+  useEffect(() => {
+    if (ordersFocus) document.getElementById('your-orders')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [ordersFocus])
+
   const submit = async (clarifications = []) => {
     if (!selectedId) return
     setBusy(true)
@@ -109,9 +113,9 @@ export default function CustomerView() {
     }
   }
 
-  const sendAnswers = () => {
+  const sendAnswers = (answer = reply.trim()) => {
     const question = (evaluation.questions ?? []).map(questionText).join('\n') || evaluation.customer_message
-    submit([...clarificationHistory, { question, answer: reply.trim() }])
+    submit([...clarificationHistory, { question, answer }])
   }
 
   const accept = async (optionId) => {
@@ -173,6 +177,8 @@ export default function CustomerView() {
   const questions = evaluation?.questions ?? []
   const canReply = evaluation && ['needs_clarification', 'unavailable'].includes(evaluation.status)
     && !evaluation.clarification_exhausted
+  // "Sorry, we don't have X… something else instead, or leave it out?" gets one-tap answers.
+  const canLeaveOut = canReply && (evaluation.questions ?? []).some((q) => /leave it out/i.test(questionText(q)))
   const clarificationLimit = evaluation?.clarification_limit ?? 3
 
   return (
@@ -226,9 +232,9 @@ export default function CustomerView() {
           })}
         </div>
 
-        {mine.length > 0 && (
           <section id="your-orders" className="section">
             <h2>Your orders <span className="count">{mine.length}</span></h2>
+            {mine.length === 0 && <p className="empty">No orders yet. Pick a dish from the menu and add your request to start one.</p>}
             <div className="orders-list">
             {mine.map((o) => {
               const [label, tone] = ORDER_STATUS[o.status] ?? [o.status, 'info']
@@ -282,7 +288,6 @@ export default function CustomerView() {
             })}
             </div>
           </section>
-        )}
       </section>
 
       <aside className="cart">
@@ -419,15 +424,21 @@ export default function CustomerView() {
                     <ul>{clarificationHistory.map((item, i) => <li key={i}>{item.answer}</li>)}</ul>
                   </details>
                 )}
+                {canLeaveOut && (
+                  <div className="row">
+                    <button className="btn" disabled={busy} onClick={() => sendAnswers('leave it out')}>Leave it out</button>
+                    <button className="btn ghost" disabled={busy} onClick={startOver}>Cancel this request</button>
+                  </div>
+                )}
                 <label className="field">
-                  <span>What would you like instead?</span>
+                  <span>{canLeaveOut ? 'Or tell us what you would like instead' : 'What would you like instead?'}</span>
                   <textarea rows={2} value={reply} disabled={busy} onChange={(e) => setReply(e.target.value)}
                     placeholder="e.g. add avocado instead, or swap chicken for tofu" />
                 </label>
                 <p className="muted">Answer the questions or revise the change. We'll check it with the kitchen again.</p>
                 <small className="muted">{Math.max(0, clarificationLimit - clarificationHistory.length)} replies remaining.</small>
                 <div className="row">
-                  <button className="btn primary" disabled={busy || !reply.trim()} onClick={sendAnswers}>
+                  <button className="btn primary" disabled={busy || !reply.trim()} onClick={() => sendAnswers()}>
                     {busy ? 'Checking with the kitchen…' : 'Check updated request'}
                   </button>
                   <button className="btn ghost" disabled={busy} onClick={startOver}>Edit original request</button>
