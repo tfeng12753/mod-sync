@@ -6,6 +6,7 @@ these tests exercise the real inventory and order lifecycle end to end over HTTP
 
 import json
 import unittest
+import httpx
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -172,6 +173,36 @@ class ApiTests(unittest.TestCase):
     def test_parser_failure_is_502(self):
         res = evaluate(self.client, "chicken_bowl", "PARSER_BOOM")
         self.assertEqual(res.status_code, 502)
+
+    def test_provider_errors_have_safe_actionable_diagnostics(self):
+        for status, expected in [(400, "request settings"), (401, "API key"), (402, "credits"),
+                                 (403, "denied access"), (404, "configured model"),
+                                 (429, "rate limiting"), (503, "HTTP 503")]:
+            with self.subTest(status=status):
+                def failed_parse(*args):
+                    request = httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions",
+                                            headers={"Authorization": "Bearer private-test-key"})
+                    response = httpx.Response(status, request=request, text="private-test-key")
+                    response.raise_for_status()
+
+                service = OrderService(inv=load_inventory(), parse_fn=failed_parse)
+                client = TestClient(create_app(service))
+                with self.assertLogs("backend.api.service", level="WARNING") as logs:
+                    response = evaluate(client, "chicken_bowl", "no avocado")
+                self.assertEqual(response.status_code, 502)
+                self.assertIn(expected, response.json()["detail"])
+                self.assertNotIn("private-test-key", response.text + "".join(logs.output))
+                self.assertEqual(service.list_orders(), [])
+
+    def test_provider_timeout_is_not_reported_as_customer_parse_failure(self):
+        def timed_out(*args):
+            raise httpx.ReadTimeout("private upstream diagnostics")
+
+        service = OrderService(inv=load_inventory(), parse_fn=timed_out)
+        response = evaluate(TestClient(create_app(service)), "chicken_bowl", "no avocado")
+        self.assertEqual(response.status_code, 502)
+        self.assertIn("too long", response.json()["detail"])
+        self.assertNotIn("private upstream diagnostics", response.text)
 
     def test_unknown_dish_and_order(self):
         self.assertEqual(evaluate(self.client, "pizza", "hi").status_code, 404)

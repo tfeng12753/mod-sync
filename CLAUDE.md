@@ -1,6 +1,8 @@
 # mod-sync — CLAUDE.md
 
 OpenRouter parsing defaults to `anthropic/claude-sonnet-5.5`; `OPENROUTER_MODEL` overrides it.
+Parser 502 responses distinguish provider authentication, credit, model/settings, rate-limit,
+connection/timeout, and invalid structured-output errors. Never log keys or raw provider bodies.
 
 Deployment: root `Dockerfile` and `render.yaml` host the React build and Python API as one Render
 web service. See [docs/render-deploy.md](docs/render-deploy.md). Production frontend calls use

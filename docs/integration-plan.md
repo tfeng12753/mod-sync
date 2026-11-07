@@ -1,6 +1,9 @@
 # Integration plan — connecting the 4 parts
 
 OpenRouter parsing defaults to `anthropic/claude-sonnet-5.5`; `OPENROUTER_MODEL` overrides it.
+Parsing failures return safe 502 diagnostics for provider auth/credits/model/rate limits,
+connection/timeouts, or invalid structured responses; the frontend displays the provided detail.
+Raw provider responses and credentials are not exposed.
 
 Deployment addition: `Dockerfile` + `render.yaml` run the integrated UI/API as one Render web
 service. The frontend defaults to same-origin requests in production, and FastAPI serves the
