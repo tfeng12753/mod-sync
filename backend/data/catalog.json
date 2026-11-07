@@ -62,7 +62,7 @@
                           "contains": ["garlic", "mayonnaise", "lemon"],                         "tags": ["sauce", "creamy", "garlicky", "savory"]},
     "sesame_dressing":   {"name": "Sesame dressing",    "prep": "premade", "can_leave_off": true, "unit": "ml",   "portion": 40,  "cost_cents_per_unit": 1.2,
                           "contains": ["sesame_oil", "soy_sauce", "rice_vinegar"],               "tags": ["sauce", "nutty", "tangy", "savory"]},
-    "peanut_sauce":      {"name": "Peanut sauce",       "prep": "premade", "can_leave_off": true, "unit": "ml",   "portion": 60,  "cost_cents_per_unit": 1.1,
+    "peanut_sauce":      {"name": "Peanut sauce",       "prep": "premade", "can_leave_off": false, "unit": "ml",   "portion": 60,  "cost_cents_per_unit": 1.1,
                           "contains": ["peanut_butter", "soy_sauce", "coconut_milk", "lemon"],   "tags": ["sauce", "creamy", "nutty", "savory"]},
     "tahini_sauce":      {"name": "Tahini sauce",       "prep": "premade", "can_leave_off": true, "unit": "ml",   "portion": 30,  "cost_cents_per_unit": 1.3,
                           "contains": ["tahini", "lemon", "garlic"],                             "tags": ["sauce", "creamy", "nutty", "tangy"]},
@@ -88,7 +88,7 @@
         {"replace": "grilled_chicken", "with": "crispy_tofu",       "similarity": 0.8, "price_delta_cents": 0},
         {"replace": "grilled_chicken", "with": "roasted_mushrooms", "similarity": 0.65, "price_delta_cents": -100},
         {"replace": "garlic_sauce",    "with": "sesame_dressing",   "similarity": 0.7, "price_delta_cents": 0},
-        {"replace": "rice_base",       "with": "greens_base",                        "price_delta_cents": 0}
+        {"replace": "rice_base",       "with": "greens_base",       "similarity": 0.6, "price_delta_cents": 0}
       ]
     },
     "tofu_bowl": {
@@ -130,7 +130,7 @@
         "sliced_avocado": {"max": 1, "price_cents": 200}
       },
       "substitutions": [
-        {"replace": "tortilla",     "with": "greens_base",  "similarity": 0.4, "price_delta_cents": 0},
+        {"replace": "tortilla",     "with": "greens_base",  "similarity": 0.6, "price_delta_cents": 0},
         {"replace": "tahini_sauce", "with": "garlic_sauce", "similarity": 0.7, "price_delta_cents": 0}
       ]
     },

@@ -29,8 +29,11 @@ class Order:
     evaluation: dict[str, Any]
     selected_option_id: str | None
     staff_note: str | None = None
+    # Approval applies to exactly one recipe/price; final acceptance must match it.
+    staff_approved_choice: str | None = None
     # Internal: what to hold/confirm for each choice ("as_requested" or option_id).
     requirements_by_choice: dict[str, dict[str, int]] = field(default_factory=dict)
+    evidence_by_choice: dict[str, dict[str, Any]] = field(default_factory=dict)
     history: list[dict[str, Any]] = field(default_factory=list)
 
     def log(self, event: str, note: str = "") -> None:
@@ -58,6 +61,7 @@ class Order:
             "original_text": self.original_text,
             "selected_option_id": self.selected_option_id,
             "staff_note": self.staff_note,
+            "staff_approved_choice": self.staff_approved_choice,
             "kitchen_instructions": self.kitchen_instructions(),
             "evaluation": self.evaluation,
             "history": list(self.history),

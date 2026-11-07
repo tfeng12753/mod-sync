@@ -1,0 +1,29 @@
+# Anthropic
+anthropic/claude-sonnet-5
+anthropic/claude-sonnet-5.5
+anthropic/claude-haiku-5.5
+anthropic/claude-opus-5.5
+anthropic/claude-fable-5.1
+anthropic/claude-sonnet-4.6
+anthropic/claude-haiku-4.5
+# OpenAI
+openai/gpt-6.1-terra
+openai/gpt-6.1-sol
+openai/gpt-6-luna
+openai/gpt-5.4-nano
+openai/gpt-5.4-mini
+# Google
+google/gemini-3.8-flash
+google/gemini-3.5-flash-lite
+google/gemini-3.1-flash-lite
+# Fast / cheap others
+inception/mercury-3
+deepseek/deepseek-v4.1-flash
+qwen/qwen3.8-flash
+z-ai/glm-5.3-flash
+mistralai/mistral-small-2603
+mistralai/mistral-large-4-0
+x-ai/grok-4.7
+moonshotai/kimi-k3.1-pro
+cohere/command-a-plus
+google/gemma-4-31b-it

@@ -73,7 +73,8 @@ class FixtureCasesWithFakeModel(unittest.TestCase):
         inv = load_inventory()
         # Passing both through would be a duplicate (item, ingredient): rejected as unsafe.
         with self.assertRaises(ParserValidationError):
-            run(inv, dish, case["text"], model_output_for_case(case))
+            run(inv, dish, case["text"], model_output(changes=[
+                change(dish, "avocado", "remove"), change(dish, "avocado", "add", 1)]))
         # The explicit correction is the final intent.
         parsed, _ = run(inv, dish, case["text"], model_output(changes=[change(dish, "avocado", "add", 1)]))
         self.assertEqual(parsed.parser_output["ops"], [{"op": "add", "ingredient": "avocado", "qty": 1}])
@@ -163,6 +164,22 @@ class Translation(unittest.TestCase):
         ])
         out = to_parser_output(self.inv, req, result, "d", 1)
         self.assertEqual(out["ops"], [{"op": "less", "ingredient": "avocado"}, {"op": "add", "ingredient": "tofu", "qty": 2}])
+
+    def test_ingredient_named_like_a_part_means_the_part(self):
+        # "no tahini": the model may pick the tahini ingredient (made ahead inside the sauce).
+        dish = "falafel_wrap"
+        parsed, _ = run(self.inv, dish, "no tahini", model_output(changes=[change(dish, "tahini", "remove")]))
+        self.assertEqual(parsed.parser_output["ops"], [{"op": "remove", "ingredient": "tahini_sauce"}])
+        self.assertEqual(self.inv.evaluate_request(parsed.parser_output).status, "ready")
+        # An ingredient that is not a part's alias is left alone ("no garlic" stays garlic).
+        parsed, _ = run(self.inv, "chicken_bowl", "no garlic", model_output(changes=[change("chicken_bowl", "garlic", "remove")]))
+        self.assertEqual(parsed.parser_output["ops"], [{"op": "remove", "ingredient": "garlic"}])
+
+    def test_stray_quantity_on_substitute_is_ignored(self):
+        dish = "falafel_wrap"
+        parsed, _ = run(self.inv, dish, "garlic sauce instead of tahini",
+                        model_output(changes=[change(dish, "tahini_sauce", "substitute", 1, "garlic_sauce")]))
+        self.assertEqual(parsed.parser_output["ops"], [{"op": "substitute", "ingredient": "tahini_sauce", "with": "garlic_sauce"}])
 
     def test_substitute_with_null(self):
         dish = "chicken_bowl"

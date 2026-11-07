@@ -83,6 +83,12 @@ class ApiTests(unittest.TestCase):
     def setUp(self):
         self.client, self.service = make_client()
 
+    def send_to_staff(self, result, option_id=None):
+        choice = option_id if option_id is not None else result["recommended_option_id"]
+        response = self.client.post(f"/api/orders/{result['order_id']}/accept", json={"option_id": choice})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["status"], "awaiting_staff")
+
     def test_health_and_menu(self):
         self.assertEqual(self.client.get("/api/health").json(), {"status": "ok"})
         menu = self.client.get("/api/menu").json()
@@ -115,30 +121,43 @@ class ApiTests(unittest.TestCase):
         res = self.client.post(f"/api/orders/{r['order_id']}/accept", json={"option_id": None})
         self.assertEqual(res.status_code, 400)
 
-    def test_allergy_goes_to_staff_and_approve_confirms(self):
+    def test_allergy_customer_then_staff_then_final_customer_confirmation(self):
         r = evaluate(self.client, "satay_noodles", "my kid is allergic to peanuts").json()
-        self.assertEqual(r["status"], "needs_staff_review")
+        self.assertEqual(r["status"], "needs_customer_approval")
         self.assertTrue(r["review"]["required"])
         self.assertIn("allergy: peanut", r["review"]["reasons"])
         self.assertIn("engine note", r["review"]["staff_notes"])
         self.assertTrue(all(o["route"] == "staff" for o in r["options"]))
         self.assertNotIn("peanut", r["review"]["evidence"]["allergens_present"])
         queue = [o for o in self.client.get("/api/orders").json() if o["status"] == "awaiting_staff"]
-        self.assertEqual([o["order_id"] for o in queue], [r["order_id"]])
+        self.assertEqual(queue, [])
+        self.assertEqual(self.client.post(f"/api/orders/{r['order_id']}/review", json={"action": "approve"}).status_code, 409)
+        self.send_to_staff(r)
+        before = self.service.inv.stock.on_hand("sesame_dressing")
         order = self.client.post(f"/api/orders/{r['order_id']}/review", json={"action": "approve"}).json()
+        self.assertEqual(order["status"], "awaiting_customer")
+        self.assertEqual(self.service.inv.stock.on_hand("sesame_dressing"), before)
+        order = self.client.post(f"/api/orders/{r['order_id']}/accept", json={"option_id": r["recommended_option_id"]}).json()
         self.assertEqual(order["status"], "confirmed")
+        self.assertLess(self.service.inv.stock.on_hand("sesame_dressing"), before)
         self.assertEqual(order["kitchen_instructions"][0], "ALLERGY: peanut")
 
     def test_staff_edit_switches_option(self):
         r = evaluate(self.client, "satay_noodles", "my kid is allergic to peanuts").json()
+        self.send_to_staff(r)
         second = r["options"][1]["option_id"]
         order = self.client.post(f"/api/orders/{r['order_id']}/review",
                                  json={"action": "edit", "option_id": second}).json()
-        self.assertEqual(order["status"], "confirmed")
+        self.assertEqual(order["status"], "awaiting_customer")
         self.assertEqual(order["selected_option_id"], second)
+        self.assertEqual(self.client.post(f"/api/orders/{r['order_id']}/accept", json={"option_id": r["recommended_option_id"]}).status_code, 409)
+        self.assertEqual(self.service.get_order(r["order_id"])["selected_option_id"], second)
+        order = self.client.post(f"/api/orders/{r['order_id']}/accept", json={"option_id": second}).json()
+        self.assertEqual(order["status"], "confirmed")
 
     def test_staff_reject_releases_hold(self):
         r = evaluate(self.client, "satay_noodles", "my kid is allergic to peanuts").json()
+        self.send_to_staff(r)
         sauce = r["options"][0]["changes"][1]["with"]
         held = self.service.inv.available(sauce)
         order = self.client.post(f"/api/orders/{r['order_id']}/review",
@@ -153,6 +172,52 @@ class ApiTests(unittest.TestCase):
         self.client.post(f"/api/orders/{r['order_id']}/accept", json={"option_id": None})
         self.assertEqual(self.client.post(f"/api/orders/{r['order_id']}/accept",
                                           json={"option_id": None}).status_code, 409)
+
+    def test_as_requested_diet_needs_both_customer_confirmations(self):
+        def diet_parse(inv, dish_id, qty, text, clarifications):
+            return FakeParsed("needs_staff_review", {"dish": dish_id, "qty": qty, "ops": [],
+                              "flags": {"level": "diet", "diets": ["vegan"]}},
+                              staff_notes=["Review vegan preparation"], restrictions=[{"kind": "diet", "value": "vegan"}])
+        self.service.parse_fn = diet_parse
+        r = evaluate(self.client, "tofu_bowl", "vegan please").json()
+        self.assertEqual(r["status"], "ready")
+        self.assertTrue(r["review"]["required"])
+        self.send_to_staff(r)
+        response = self.client.post(f"/api/orders/{r['order_id']}/review", json={"action": "approve"})
+        self.assertEqual(response.json()["status"], "awaiting_customer")
+        self.assertEqual(response.json()["staff_approved_choice"], "as_requested")
+        order = self.client.post(f"/api/orders/{r['order_id']}/accept", json={}).json()
+        self.assertEqual(order["status"], "confirmed")
+
+    def test_staff_approved_order_can_be_cancelled_without_deduction(self):
+        r = evaluate(self.client, "satay_noodles", "my kid is allergic to peanuts").json()
+        before = self.service.inv.stock.on_hand("sesame_dressing")
+        self.send_to_staff(r)
+        self.client.post(f"/api/orders/{r['order_id']}/review", json={"action": "approve"})
+        self.assertEqual(self.client.post(f"/api/orders/{r['order_id']}/cancel").json()["status"], "cancelled")
+        self.assertEqual(self.service.inv.stock.on_hand("sesame_dressing"), before)
+        self.assertEqual(self.service.inv.available("sesame_dressing"), before)
+
+    def test_allergy_with_unresolved_question_does_not_create_order(self):
+        self.service.parse_fn = lambda *args: FakeParsed("needs_staff_review",
+            {"dish": "chicken_bowl", "qty": 1, "ops": []},
+            questions=["Which sauce did you mean?"], staff_notes=["Review allergy"],
+            restrictions=[{"kind": "allergy", "value": "peanut"}])
+        r = evaluate(self.client, "chicken_bowl", "peanut allergy, no sauce").json()
+        self.assertEqual(r["status"], "needs_clarification")
+        self.assertTrue(r["review"]["required"])
+        self.assertIsNone(r["order_id"])
+        self.assertEqual(self.service.list_orders(), [])
+
+    def test_final_customer_acceptance_rechecks_stock(self):
+        r = evaluate(self.client, "satay_noodles", "my kid is allergic to peanuts").json()
+        self.send_to_staff(r)
+        self.client.post(f"/api/orders/{r['order_id']}/review", json={"action": "approve"})
+        self.service.inv.release(r["order_id"])
+        self.service.inv.set_on_hand("sesame_dressing", 0, "stock correction")
+        res = self.client.post(f"/api/orders/{r['order_id']}/accept", json={"option_id": r["recommended_option_id"]})
+        self.assertEqual(res.status_code, 409)
+        self.assertEqual(self.service.get_order(r["order_id"])["status"], "awaiting_customer")
 
     def test_clarification_from_parser_and_inventory(self):
         r = evaluate(self.client, "chicken_bowl", "ASK_ME").json()
@@ -243,6 +308,7 @@ class ApiTests(unittest.TestCase):
 
     def test_reject_note_and_initial_stock(self):
         r = evaluate(self.client, "satay_noodles", "my kid is allergic to peanuts").json()
+        self.send_to_staff(r)
         order = self.client.post(f"/api/orders/{r['order_id']}/review",
                                  json={"action": "reject", "note": "shared wok"}).json()
         self.assertEqual(order["staff_note"], "shared wok")
@@ -259,12 +325,13 @@ class ApiTests(unittest.TestCase):
         self.assertTrue(all(item["on_hand"] == item["initial_on_hand"] for item in stock))
         self.assertTrue(all(item["available"] == item["on_hand"] for item in stock))
 
-    def test_engine_failure_falls_back_to_inventory_ranking(self):
+    def test_engine_failure_cannot_bypass_combined_score_cutoff(self):
         client, _ = make_client(route=broken_route)
         r = evaluate(client, "chicken_bowl", "no chicken, can you put something else instead").json()
-        self.assertEqual(r["status"], "needs_customer_approval")
+        self.assertEqual(r["status"], "unavailable")
         self.assertTrue(r["warnings"])
-        self.assertEqual(r["options"][0]["changes"][0]["with"], "crispy_tofu")
+        self.assertEqual(r["options"], [])
+        self.assertIsNone(r["order_id"])
 
 
 if __name__ == "__main__":

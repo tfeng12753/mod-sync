@@ -31,7 +31,7 @@ export default function SubstitutionCard({ option, recommended, selected, audien
         </div>
       )}
 
-      {option.reasons?.length > 0 && (
+      {staff && option.reasons?.length > 0 && (
         <ul className="why-list">{option.reasons.map((r, i) => <li key={i} className="why">{r}</li>)}</ul>
       )}
 

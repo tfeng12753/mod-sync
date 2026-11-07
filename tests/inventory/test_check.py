@@ -233,12 +233,14 @@ class CandidateTests(unittest.TestCase):
         self.assertTrue(all(c.feasible for c in cands))
 
     def test_tag_similarity_fallback(self):
-        cands = self.inv.substitute_candidates("chicken_bowl", "rice_base")
-        self.assertEqual(len(cands), 1)
-        self.assertEqual(cands[0].similarity_source, "tags")
+        # Every catalog swap has a chef score now; the fallback still covers swaps added without one.
+        from backend.inventory.feasibility import similarity
+        score, source = similarity(self.inv.catalog, "rice_base", "greens_base", None)
+        self.assertEqual(source, "tags")
         # rice_base {base, grain, mild, soft} vs greens_base {base, fresh, mild, crisp}: Jaccard 2/6
-        self.assertEqual(cands[0].similarity, round(0.2 + 0.8 * 2 / 6, 2))
-        self.assertTrue(0.2 <= cands[0].similarity <= 1)
+        self.assertEqual(score, round(0.2 + 0.8 * 2 / 6, 2))
+        cands = self.inv.substitute_candidates("chicken_bowl", "rice_base")
+        self.assertEqual([(c.similarity, c.similarity_source) for c in cands], [(0.6, "chef")])
 
     def test_tag_similarity_bounds(self):
         from backend.inventory.feasibility import similarity

@@ -128,8 +128,31 @@ def _unknown_id(word: str) -> str:
     return UNKNOWN_PREFIX + "_".join(word.split())
 
 
+def _part_aliases(inv, dish_id: str) -> dict[str, str]:
+    """Ingredient id -> dish part whose aliases name that ingredient ("tahini" -> tahini_sauce).
+
+    A customer saying "no tahini" means the sauce; the bare ingredient is made ahead inside it."""
+    cat = inv.catalog
+    dish = cat.dishes.get(dish_id)
+    vocab = next((d for d in inv.parser_vocabulary()["dishes"] if d["id"] == dish_id), None)
+    if dish is None or vocab is None:
+        return {}
+    parts = {i["id"]: {a.lower() for a in i.get("aliases", [])} for i in vocab["items"]
+             if i.get("kind") == "component" and i["id"] in dish.components}
+    out = {}
+    for item in vocab["items"]:
+        if item.get("kind") != "ingredient" or item["id"] in dish.components:
+            continue
+        names = {item["id"].replace("_", " "), item["name"].lower()}
+        hits = [cid for cid, aliases in parts.items() if names & aliases]
+        if len(hits) == 1:
+            out[item["id"]] = hits[0]
+    return out
+
+
 def to_parser_output(inv, request: ParseRequest, result: ParseResult, dish_id: str, qty: int) -> dict[str, Any]:
     recipe = request.cart[0].ingredients
+    part_for = _part_aliases(inv, dish_id)
     ops: list[dict[str, Any]] = []
 
     def emit(op):
@@ -137,7 +160,7 @@ def to_parser_output(inv, request: ParseRequest, result: ParseResult, dish_id: s
             ops.append(op)
 
     for ch in result.changes:
-        iid = ch.ingredient_id
+        iid = part_for.get(ch.ingredient_id, ch.ingredient_id)
         if ch.operation == "add":
             emit({"op": "add", "ingredient": iid, "qty": ch.quantity})
         elif ch.operation == "substitute":

@@ -109,13 +109,16 @@ forecast reserve + 0.10 cost):
 | --- | --- | --- |
 | chicken_bowl, satay_noodles | grilled_chicken → crispy_tofu / roasted_mushrooms | 0.8 / 0.65 |
 | chicken_bowl | garlic_sauce → sesame_dressing | 0.7 |
-| chicken_bowl | rice_base → greens_base | tags (0.47) |
+| chicken_bowl | rice_base → greens_base | 0.6 (same as tofu_bowl) |
 | tofu_bowl | crispy_tofu → roasted_mushrooms; sesame_dressing → garlic_sauce; rice_base → greens_base | 0.75; 0.6; 0.6 |
 | satay_noodles | peanut_sauce → sesame_dressing / garlic_sauce | 0.7 / 0.55 |
-| falafel_wrap | tortilla → greens_base; tahini_sauce → garlic_sauce | 0.4; 0.7 |
+| falafel_wrap | tortilla → greens_base; tahini_sauce → garlic_sauce | 0.6; 0.7 |
 
 Mushrooms (0.65) only qualify when the forecast shows surplus (reserve factor ≈ 1): 0.55×0.65 +
 0.35×1 + 0.10×0.53 ≈ 0.76. Tofu (0.8) falls below the cutoff when dinner demand eats its reserve.
+A swap can never pass below similarity ≈ 0.545 (0.55×s + 0.45 at best), so every chef-approved swap
+is at least 0.55. Peanut sauce is `can_leave_off: false`: it defines the satay noodles, so the system
+never suggests dropping it (a customer can still ask for no peanut sauce).
 
 ## Synthetic usage history and use-by (forecast inputs)
 

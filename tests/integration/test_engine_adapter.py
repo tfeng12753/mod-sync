@@ -148,20 +148,27 @@ class MappingTests(unittest.TestCase):
                         ingredients=[{"ingredient_id": i, "unit": self.inv.unit_of(i)} for i in items],
                         history=self.inv.usage_history())
 
+    def test_leave_off_option_maps_to_omit(self):
+        evaluation = self.inv.evaluate_request(request("chicken_bowl", level="allergy", allergens=["egg"]))
+        groups = build_modification_requests(self.inv, evaluation)
+        self.assertEqual([(r.action, r.target_ingredient_id, ix) for r, ix in groups],
+                         [("substitute", "garlic_sauce", [0]), ("omit", "garlic_sauce", [1])])
+        omit = groups[1][0]
+        self.assertIsNone(omit.offers[0].offered_item_id)
+        self.assertIsNone(omit.offers[0].menu_price_change_cents)
+        self.assertEqual(omit.evaluation.candidates[0].similarity_source, "not_applicable")
+
     def test_allergy_options_group_by_action_and_target(self):
         evaluation = self.inv.evaluate_request(request("satay_noodles", level="allergy", allergens=["peanut"]))
         groups = build_modification_requests(self.inv, evaluation)
         self.assertEqual([(r.action, r.target_ingredient_id, ix) for r, ix in groups],
-                         [("substitute", "peanut_sauce", [0, 1]), ("omit", "peanuts", [2])])
-        sub, omit = groups[0][0], groups[1][0]
+                         [("substitute", "peanut_sauce", [0, 1])])  # peanut sauce can't just be left off
+        sub = groups[0][0]
         sesame = sub.offers[0]
         self.assertEqual(sesame.offered_item_id, "sesame_dressing")
         self.assertEqual(sesame.removed_requirements, {"peanut_sauce": 60, "peanuts": 15})
         self.assertEqual(sesame.portion_requirements, {"sesame_dressing": 40})
         self.assertEqual((sesame.portion_quantity, sesame.portion_unit), (40, "ml"))
-        self.assertIsNone(omit.offers[0].offered_item_id)
-        self.assertIsNone(omit.offers[0].menu_price_change_cents)
-        self.assertEqual(omit.evaluation.candidates[0].similarity_source, "not_applicable")
         restrictions = sub.evaluation.restrictions
         self.assertEqual([(r.kind, r.value) for r in restrictions], [("allergy", "peanut")])
         profiles = {p.ingredient_id: p for p in sub.evaluation.ingredient_profiles}
@@ -309,9 +316,8 @@ class AllergyFlowTests(unittest.TestCase):
         self.assertEqual(changes_of(self.ev, best), [("crushed_peanuts", None), ("peanut_sauce", "sesame_dressing")])
         self.assertEqual(best.label, "Leave off Crushed peanuts; Sesame dressing instead of Peanut sauce")
         self.assertGreaterEqual(best.score, 0.75)
-        leave_all = self.r.choices[-1]
-        self.assertEqual(changes_of(self.ev, leave_all), [("crushed_peanuts", None), ("peanut_sauce", None)])
-        self.assertIsNone(leave_all.score)
+        # The noodles' defining sauce is never simply left off (can_leave_off: false).
+        self.assertTrue(all(("peanut_sauce", None) not in changes_of(self.ev, c) for c in self.r.choices))
         self.assertIn("confirming", self.r.customer_message)
 
     def test_weak_substitute_is_not_offered_even_to_staff(self):

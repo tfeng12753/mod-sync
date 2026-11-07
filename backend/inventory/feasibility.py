@@ -179,6 +179,10 @@ class _Ctx:
                 self.reason("INVALID_OP", f"Op {kind!r} is missing an ingredient.", "needs_clarification")
                 continue
             if not self._known(target):
+                if kind == "remove" and target.startswith("unknown:"):
+                    word = target.split(":", 1)[1].replace("_", " ")
+                    self.reason("NOT_IN_DISH", f"{word[:1].upper()}{word[1:]} isn't listed in {self.dish.name}'s recipe; no change is needed.", "info", target)
+                    continue
                 self.reason("UNKNOWN_ITEM", _unknown_message(target), "needs_clarification", target)
                 continue
             qty = raw.get("qty", 1)

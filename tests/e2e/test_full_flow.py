@@ -78,7 +78,7 @@ class FullFlowTests(unittest.TestCase):
 
     def test_peanut_allergy_staff_flow(self):
         r = self.evaluate("satay_noodles", "my kid is allergic to peanuts")
-        self.assertEqual(r["status"], "needs_staff_review")
+        self.assertEqual(r["status"], "needs_customer_approval")
         self.assertEqual(r["parsed"]["restrictions"], [{"kind": "allergy", "value": "peanut"}])
         first = r["options"][0]
         self.assertEqual(first["route"], "staff")
@@ -86,7 +86,11 @@ class FullFlowTests(unittest.TestCase):
                          [("crushed_peanuts", None), ("peanut_sauce", "sesame_dressing")])
         self.assertNotIn("peanut", r["review"]["evidence"]["allergens_present"])
         self.assertTrue(r["review"]["staff_notes"])
+        order = self.client.post(f"/api/orders/{r['order_id']}/accept", json={"option_id": first["option_id"]}).json()
+        self.assertEqual(order["status"], "awaiting_staff")
         order = self.client.post(f"/api/orders/{r['order_id']}/review", json={"action": "approve"}).json()
+        self.assertEqual(order["status"], "awaiting_customer")
+        order = self.client.post(f"/api/orders/{r['order_id']}/accept", json={"option_id": first["option_id"]}).json()
         self.assertEqual(order["status"], "confirmed")
         self.assertEqual(order["kitchen_instructions"][0], "ALLERGY: peanut")
 
@@ -158,10 +162,11 @@ class FullFlowTests(unittest.TestCase):
             with self.subTest(allergen=allergen):
                 self.setUp()
                 response = self.followup(text, answers)
-                self.assertEqual(response["status"], "needs_staff_review")
+                self.assertTrue(response["review"]["required"])
                 self.assertIn({"kind": "allergy", "value": allergen}, response["parsed"]["restrictions"])
-                order = self.client.post(f"/api/orders/{response['order_id']}/accept", json={})
-                self.assertEqual(order.status_code, 409)  # customer cannot bypass staff
+                order = self.client.post(f"/api/orders/{response['order_id']}/accept", json={"option_id": response["recommended_option_id"]})
+                self.assertEqual(order.status_code, 200)
+                self.assertEqual(order.json()["status"], "awaiting_staff")
 
 
 if __name__ == "__main__":
