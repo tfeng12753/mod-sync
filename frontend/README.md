@@ -30,7 +30,7 @@ Set them in the shell or in `frontend/.env.local` (gitignored via `*.local`).
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `VITE_API_URL` | `http://localhost:8000` | Backend base URL (endpoints are under `/api`). |
+| `VITE_API_URL` | Development: `http://localhost:8000`; production: same origin | Backend base URL; explicit empty string also uses the same origin. |
 | `VITE_USE_MOCK` | unset | `1` = use the in-browser mock instead of the backend. |
 
 ## Mock mode (no backend)
@@ -74,3 +74,6 @@ Kitchen checklists and staff option instruction lists show only order changes: r
 substitutions, light portions, and items on the side. Allergy/diet labels remain on the ticket;
 routine hygiene and packaging reminders are not checklist items. An unchanged order has no checks.
 Order-change checks and "hand off to courier" are UI-only; the backend doesn't track them.
+
+The root Dockerfile builds and serves this UI through FastAPI as a single Render web service.
+See [Render deployment](../docs/render-deploy.md). Keep OpenRouter keys on the backend.

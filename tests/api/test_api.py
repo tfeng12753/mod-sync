@@ -221,8 +221,12 @@ class ApiTests(unittest.TestCase):
 
     def test_reset(self):
         evaluate(self.client, "chicken_bowl", "extra avo!!")
-        self.client.post("/api/demo/reset")
+        self.client.post("/api/stock/tofu", json={"on_hand": 0})
+        self.assertEqual(self.client.post("/api/demo/reset").json(), {"status": "reset"})
         self.assertEqual(self.client.get("/api/orders").json(), [])
+        stock = self.client.get("/api/stock").json()["items"]
+        self.assertTrue(all(item["on_hand"] == item["initial_on_hand"] for item in stock))
+        self.assertTrue(all(item["available"] == item["on_hand"] for item in stock))
 
     def test_engine_failure_falls_back_to_inventory_ranking(self):
         client, _ = make_client(route=broken_route)

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: mod-sync
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    numInstances: 1
+    autoDeployTrigger: commit
+    envVars:
+      - key: FRONTEND_DIST
+        value: /app/frontend/dist
+      - key: OPENROUTER_MODEL
+        value: anthropic/claude-fable-5.1

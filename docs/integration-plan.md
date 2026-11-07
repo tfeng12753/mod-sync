@@ -1,5 +1,14 @@
 # Integration plan — connecting the 4 parts
 
+OpenRouter parsing defaults to `anthropic/claude-fable-5.1`; `OPENROUTER_MODEL` overrides it.
+
+Deployment addition: `Dockerfile` + `render.yaml` run the integrated UI/API as one Render web
+service. The frontend defaults to same-origin requests in production, and FastAPI serves the
+compiled UI when `FRONTEND_DIST` is set. One worker/instance preserves the in-memory demo state.
+See [Render instructions](render-deploy.md).
+The demo sidebar exposes **Clear backend** with confirmation; it calls `/api/demo/reset`
+and refreshes orders/stock so demo state can be reset without restarting the service.
+
 Status: **Phases 1–5 done on branch `integration` (2026-11-07).** All four parts run together:
 text → parser (`backend/parsing`, offline mode without a key) → inventory `evaluate_request()` →
 engine `decide_modification` via `backend/integration/engine_adapter.py` → API (`backend/api`) →
