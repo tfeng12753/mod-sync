@@ -175,6 +175,29 @@ class Translation(unittest.TestCase):
         parsed, _ = run(self.inv, "chicken_bowl", "no garlic", model_output(changes=[change("chicken_bowl", "garlic", "remove")]))
         self.assertEqual(parsed.parser_output["ops"], [{"op": "remove", "ingredient": "garlic"}])
 
+    def test_model_cannot_add_something_the_customer_never_named(self):
+        dish = "chicken_bowl"
+        for text, wrong in [("add sand", change(dish, "avocado", "add", 1)),
+                            ("swap the chicken for gravel", change(dish, "chicken", "substitute", 0, "crispy_tofu"))]:
+            with self.subTest(text=text):
+                parsed, _ = run(self.inv, dish, text, model_output(changes=[wrong]))
+                self.assertEqual(parsed.status, "needs_clarification")
+                self.assertEqual(parsed.parser_output["ops"], [])
+                self.assertIn("Sorry", parsed.questions[0])
+
+    def test_named_additions_pass_the_guard(self):
+        for dish, text, ch in [
+            ("tofu_bowl", "double tofu", change("tofu_bowl", "crispy_tofu", "add", 1)),
+            ("chicken_bowl", "extra avo!!", change("chicken_bowl", "avocado", "add", 1)),
+            ("chicken_bowl", "more chicken please", change("chicken_bowl", "grilled_chicken", "add", 1)),
+            ("chicken_bowl", "mushrooms instead of chicken", change("chicken_bowl", "chicken", "substitute", 0, "roasted_mushrooms")),
+            ("chicken_bowl", "no chicken, something else", change("chicken_bowl", "chicken", "substitute", 0, None)),
+        ]:
+            with self.subTest(text=text):
+                parsed, _ = run(self.inv, dish, text, model_output(changes=[ch]))
+                self.assertEqual(parsed.status, "ready")
+                self.assertEqual(len(parsed.parser_output["ops"]), 1)
+
     def test_stray_quantity_on_substitute_is_ignored(self):
         dish = "falafel_wrap"
         parsed, _ = run(self.inv, dish, "garlic sauce instead of tahini",

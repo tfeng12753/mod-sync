@@ -32,6 +32,8 @@ export function nameIn(dish, id) {
 // Parsed op -> chip {type, text}. Types map to Jacob's chip colours.
 export function describeOp(op, dish) {
   const n = nameIn(dish, op.ingredient)
+  // Words we couldn't match to the menu are shown as such, never as a real change.
+  if (String(op.ingredient ?? '').startsWith('unknown:')) return { type: 'remove', text: `${n}: not on our menu` }
   switch (op.op) {
     case 'remove': return { type: 'remove', text: `NO ${n}` }
     case 'add': return { type: 'add', text: `EXTRA ${n}${op.qty > 1 ? ` ×${op.qty}` : ''}` }

@@ -53,6 +53,16 @@ _ADD = re.compile(r"\b(?:(?P<n>\d+|one|two|three|four|five)\s+)?(?:extra|double|
 _SPLIT = re.compile(r"[,.;!?\n]+|\b(?:and|but|also|plus|then)\b")
 
 
+# Replies to "something else, or leave it out?" that drop the unresolved change.
+_DROP_IT = re.compile(
+    r"^(?:(?:ok|okay|um|then|just)\s+)*"
+    r"(?:leave (?:it|that) (?:out|off)|skip(?: it| that)?|cancel(?: it| that)?(?: change)?"
+    r"|forget (?:it|that)|drop (?:it|that)|remove (?:it|that)|no(?: thanks| thank you)?|nope|none|nothing"
+    r"|never ?mind|no changes?|keep it as is|keep (?:the )?original)"
+    r"(?:\s+(?:then|please|thanks|thank you))*$"
+)
+
+
 def _words(text: str) -> list[str]:
     return re.sub(r"[^a-z0-9' ]+", " ", text.lower()).replace("'", "").split()
 
@@ -123,10 +133,7 @@ def offline_parse(inv, request: ParseRequest, dish_id: str) -> ParseResult:
         pending = {i: parse(clause) for i, clause in enumerate(clauses)}
         pending = {i: result for i, result in pending.items() if unresolved(result)}
         response = parse(answer)
-        cancel = " ".join(_words(answer)) in {
-            "never mind", "nevermind", "no changes", "keep it as is", "keep the original",
-            "keep original", "cancel that change", "forget that", "skip that", "nothing",
-        }
+        cancel = bool(_DROP_IT.match(" ".join(_words(answer))))
         # A follow-up command revises the unresolved clause, while "also" keeps it pending.
         command = bool(response.changes or response.unknown_items or any(pattern.search(answer.lower())
                        for pattern in (_SUB_SWAP, _SUB_INSTEAD, _SUB_BARE, _ON_SIDE, _LESS, _REMOVE, _ADD)))

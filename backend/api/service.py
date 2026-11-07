@@ -95,9 +95,14 @@ class OrderService:
         if parsed.status == "needs_staff_review" and not review_reasons:
             review_reasons = ["parser flagged this request for staff review"]
         staff_notes = list(parsed.staff_notes)
+        # "No X" when the dish has no X is not a change: drop it from what the customer sees.
+        absent = {r.item for r in evaluation.check.reasons if r.code == "NOT_IN_DISH" and r.status == "info"}
+        base["parsed"]["ops"] = [_as_dish_part(inv, dish_id, op) for op in base["parsed"]["ops"]
+                                 if op.get("ingredient") not in absent]
         base["as_requested"] = {
             "feasible": evaluation.check.ok,
-            "reasons": [r.message for r in evaluation.check.reasons],
+            "reasons": [r.message for r in evaluation.check.reasons
+                        if not (r.code == "NOT_IN_DISH" and r.status == "info")],
             "kitchen_instructions": list(evaluation.check.kitchen_instructions),
             "price_change_cents": evaluation.check.price_delta_cents,
         }
@@ -172,13 +177,13 @@ class OrderService:
             now = utcnow()
             evaluation_out = self._final(base, status, message=_customer_message(status, options, selected))
             if needs_review:
+                flags = parsed.parser_output.get("flags") or {}
+                safety = bool(parsed.restrictions) or flags.get("level") in ("allergy", "diet")
                 evaluation_out["customer_message"] = (
                     "Please review the proposed ingredients and price before sending your request to staff. "
-                    "Staff must review allergy and dietary requests; AI cannot certify a dish as safe or allergen-free."
+                    + ("Staff must review allergy and dietary requests; AI cannot certify a dish as safe or allergen-free."
+                       if safety else "The kitchen needs to confirm this change before it's final.")
                 )
-            absent = [r.message for r in evaluation.check.reasons if r.code == "NOT_IN_DISH"]
-            if absent:
-                evaluation_out["customer_message"] += " " + " ".join(absent)
             evaluation_out["order_id"] = order_id
             evaluation_out["expires_at"] = (now + timedelta(seconds=HOLD_SECONDS)).isoformat()
             order = Order(
@@ -396,6 +401,18 @@ class OrderService:
             self.inv = self._loader()
             self._initial = {i: self.inv.stock.on_hand(i) for i in self.inv.stock.items()}
             self.orders.clear()
+
+
+def _as_dish_part(inv: Inventory, dish_id: str, op: dict[str, Any]) -> dict[str, Any]:
+    """Name an op by the dish part the kitchen changes: "extra tofu" on the tofu bowl is extra
+    Crispy tofu (whose defining ingredient is firm tofu), not extra raw firm tofu."""
+    target = op.get("ingredient")
+    cat = inv.catalog
+    dish = cat.dishes[dish_id]
+    if not isinstance(target, str) or target in dish.components:
+        return op
+    parts = [cid for cid in dish.components if getattr(cat.components[cid], "main", None) == target]
+    return {**op, "ingredient": parts[0]} if len(parts) == 1 else op
 
 
 def _unavailable_message(reasons: list[str]) -> str:

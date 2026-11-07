@@ -65,7 +65,24 @@ class FullFlowTests(unittest.TestCase):
     def test_bare_swap_offers_options(self):
         r = self.evaluate("chicken_bowl", "can you swap the chicken")
         self.assertEqual(r["status"], "needs_customer_approval")
-        self.assertEqual(r["parsed"]["ops"], [{"op": "substitute", "ingredient": "chicken", "with": None}])
+        self.assertEqual(r["parsed"]["ops"], [{"op": "substitute", "ingredient": "grilled_chicken", "with": None}])
+
+    def test_removing_something_the_dish_lacks_is_no_change(self):
+        for text in ["no cheese", "none of the chicken", "no avocado and no cilantro"]:
+            with self.subTest(text=text):
+                r = self.evaluate("tofu_bowl", text)
+                self.assertEqual(r["status"], "ready")
+                self.assertEqual(r["parsed"]["ops"], [])
+                self.assertEqual(r["as_requested"]["kitchen_instructions"], [])
+                self.assertEqual(r["as_requested"]["reasons"], [])
+                self.assertEqual(r["customer_message"], "We can make this as requested.")
+
+    def test_extra_tofu_is_extra_crispy_tofu(self):
+        for text in ["double tofu", "extra tofu"]:
+            with self.subTest(text=text):
+                r = self.evaluate("tofu_bowl", text)
+                self.assertEqual(r["parsed"]["ops"], [{"op": "add", "ingredient": "crispy_tofu", "qty": 1}])
+                self.assertEqual(r["as_requested"]["kitchen_instructions"], ["EXTRA Crispy tofu x1"])
 
     def test_4_stock_change_forces_reevaluation(self):
         r = self.evaluate("chicken_bowl", "no chicken, can you put something else instead")
@@ -125,7 +142,7 @@ class FullFlowTests(unittest.TestCase):
         response = self.followup("swap chicken for caviar", ["add lettuce instead", "add avocado instead"])
         self.assertEqual(response["status"], "ready")
         self.assertEqual(response["warnings"], [])  # full engine flow ran without fallback
-        self.assertEqual(response["parsed"]["ops"], [{"op": "add", "ingredient": "avocado", "qty": 1}])
+        self.assertEqual(response["parsed"]["ops"], [{"op": "add", "ingredient": "sliced_avocado", "qty": 1}])
         order = self.client.post(f"/api/orders/{response['order_id']}/accept", json={}).json()
         self.assertEqual(order["status"], "confirmed")
         self.assertEqual(order["channel"], "doordash")

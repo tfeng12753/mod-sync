@@ -16,6 +16,9 @@ function ApiBadge() {
 function Shell() {
   const { state } = useStore()
   const [role, setRole] = useState('staff')
+  const [section, setSection] = useState('menu')
+  // Bumped on every "Your orders" click so CustomerView scrolls even when it is already open.
+  const [ordersFocus, setOrdersFocus] = useState(0)
 
   const mine = state.orders.filter((o) => state.myOrderIds.includes(o.order_id))
   const needsMe = mine.filter((o) => o.status === 'awaiting_customer').length
@@ -23,12 +26,19 @@ function Shell() {
 
   const goOrders = () => {
     setRole('customer')
-    requestAnimationFrame(() => document.getElementById('your-orders')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    setSection('orders')
+    setOrdersFocus((n) => n + 1)
+  }
+  const goMenu = () => {
+    setRole('customer')
+    setSection('menu')
+    document.querySelector('main.content')?.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const nav = [
-    { key: 'menu', label: 'Menu', icon: 'menu', active: role === 'customer', onClick: () => setRole('customer') },
-    { key: 'orders', label: 'Your orders', icon: 'bag', badge: needsMe || null, onClick: goOrders },
+    { key: 'menu', label: 'Menu', icon: 'menu', active: role === 'customer' && section === 'menu', onClick: goMenu },
+    { key: 'orders', label: 'Your orders', icon: 'bag', active: role === 'customer' && section === 'orders', badge: needsMe || null, onClick: goOrders },
     { key: 'kitchen', label: 'Kitchen / staff', icon: 'chef', active: role === 'staff', badge: needsStaff || null, onClick: () => setRole('staff') },
   ]
 
@@ -53,7 +63,7 @@ function Shell() {
           <ApiBadge />
         </div>
       </aside>
-      <main className="content">{role === 'customer' ? <CustomerView /> : <StaffView />}</main>
+      <main className="content">{role === 'customer' ? <CustomerView ordersFocus={ordersFocus} /> : <StaffView />}</main>
     </div>
   )
 }

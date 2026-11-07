@@ -200,6 +200,65 @@ def to_parser_output(inv, request: ParseRequest, result: ParseResult, dish_id: s
     }
 
 
+# ----- guard: never add something the customer didn't name ------------------------------------------
+
+NOT_ON_MENU_QUESTION = ("Sorry, we couldn't find what you asked to add on our menu. "
+                        "Would you like something else instead, or should we leave it out?")
+
+
+def _stem(word: str) -> str:
+    for suffix in ("es", "s"):
+        if len(word) > 3 and word.endswith(suffix):
+            return word[: -len(suffix)]
+    return word
+
+
+def _words(text: str) -> list[str]:
+    return [_stem(w) for w in "".join(c if c.isalnum() else " " for c in text.lower()).split()]
+
+
+def _terms(inv, item_id: str) -> set[tuple[str, ...]]:
+    """Ways a customer can name an item: id, name, aliases, the name's head noun, and the same for a
+    part's defining ingredient (so "extra tofu" names crispy_tofu)."""
+    cat = inv.catalog
+    vocab = {i["id"]: i for d in inv.parser_vocabulary()["dishes"] for i in d["items"]}
+    ids = {item_id}
+    comp = cat.components.get(item_id)
+    if comp is not None and getattr(comp, "main", None):
+        ids.add(comp.main)
+    ids |= {cid for cid, c in cat.components.items() if getattr(c, "main", None) == item_id}
+    terms = set()
+    for i in ids:
+        names = [i.replace("_", " "), cat.name_of(i), *vocab.get(i, {}).get("aliases", [])]
+        for n in names:
+            w = tuple(_words(n))
+            if w:
+                terms.add(w)
+                terms.add(w[-1:])  # head noun: "grilled chicken" -> "chicken"
+    return terms
+
+
+def _mentioned(words: list[str], terms: set[tuple[str, ...]]) -> bool:
+    return any(all(t in words for t in term) for term in terms)
+
+
+def _require_named_additions(inv, request: ParseRequest, result: ParseResult) -> ParseResult:
+    """The model must not turn an unknown word into a real item ("add sand" -> extra avocado).
+    Anything added or swapped in has to be named in the customer's own words; otherwise ask.
+    Removals are left alone: dropping something for an allergy is the safe direction."""
+    words = _words(" ".join([request.instructions, *(c.answer for c in request.clarifications)]))
+    unnamed = [ch for ch in result.changes
+               if (ch.operation in ("add", "set") and not _mentioned(words, _terms(inv, ch.ingredient_id)))
+               or (ch.operation == "substitute" and ch.with_ingredient_id
+                   and not _mentioned(words, _terms(inv, ch.with_ingredient_id)))]
+    if not unnamed:
+        return result
+    return result.model_copy(update={
+        "status": "needs_clarification", "changes": [], "staff_notes": [],
+        "questions": list(dict.fromkeys([*result.questions, NOT_ON_MENU_QUESTION])),
+    })
+
+
 # ----- entry point ---------------------------------------------------------------------------------
 
 
@@ -226,7 +285,7 @@ def parse_request(inv, dish_id: str, qty: int, text: str, clarifications=(), cli
 
     request = build_parse_request(inv, dish_id, qty, text if text.strip() else "(no text)", clarifications)
     if source == "openrouter":
-        result = parse_modifications(request, client=client)
+        result = _require_named_additions(inv, request, parse_modifications(request, client=client))
     else:
         from .offline import offline_parse
         result = validate_result(request, offline_parse(inv, request, dish_id))
