@@ -1,0 +1,146 @@
+{
+  "_note": "SYNTHETIC demo data for the hackathon prototype. Not a real restaurant's recipes, prices, allergen info, or stock.",
+  "restaurant": "Bowl & Co (synthetic)",
+  "allergy_protocol": [
+    "Wash hands and change gloves before starting this order.",
+    "Use a clean cutting board, fresh utensils, and a clean pan or wok.",
+    "Do not use shared fryer oil or shared garnish containers.",
+    "Pack and seal this order separately and label it with the allergy."
+  ],
+  "ingredients": {
+    "rice":           {"name": "Jasmine rice",     "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.4},
+    "mixed_greens":   {"name": "Mixed greens",     "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 1.2},
+    "chicken":        {"name": "Chicken thigh",    "unit": "g",    "allergens": [],               "diet": [],                      "cost_cents_per_unit": 1.1},
+    "tofu":           {"name": "Firm tofu",        "unit": "g",    "allergens": ["soy"],          "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.7},
+    "mushrooms":      {"name": "Cremini mushrooms","unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.9},
+    "avocado":        {"name": "Avocado",          "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 1.5},
+    "oil":            {"name": "Canola oil",       "unit": "ml",   "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.3},
+    "cornstarch":     {"name": "Cornstarch",       "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.2},
+    "wheat_noodles":  {"name": "Wheat noodles",    "unit": "g",    "allergens": ["wheat"],        "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.5},
+    "peanuts":        {"name": "Roasted peanuts",  "unit": "g",    "allergens": ["peanut"],       "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 1.0},
+    "scallion":       {"name": "Scallion",         "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.8},
+    "flour_tortilla": {"name": "Flour tortilla",   "unit": "each", "allergens": ["wheat"],        "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 35},
+    "lettuce":        {"name": "Romaine lettuce",  "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.6},
+    "tomato":         {"name": "Tomato",           "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.7},
+
+    "garlic":         {"name": "Garlic",           "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 1.0},
+    "mayonnaise":     {"name": "Mayonnaise",       "unit": "g",    "allergens": ["egg"],          "diet": ["vegetarian"],          "cost_cents_per_unit": 0.6},
+    "lemon":          {"name": "Lemon juice",      "unit": "ml",   "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.5},
+    "sesame_oil":     {"name": "Sesame oil",       "unit": "ml",   "allergens": ["sesame"],       "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 1.5},
+    "soy_sauce":      {"name": "Soy sauce",        "unit": "ml",   "allergens": ["soy", "wheat"], "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.4},
+    "rice_vinegar":   {"name": "Rice vinegar",     "unit": "ml",   "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.3},
+    "peanut_butter":  {"name": "Peanut butter",    "unit": "g",    "allergens": ["peanut"],       "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.9},
+    "coconut_milk":   {"name": "Coconut milk",     "unit": "ml",   "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.5},
+    "tahini":         {"name": "Tahini",           "unit": "g",    "allergens": ["sesame"],       "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 1.2},
+    "chickpeas":      {"name": "Chickpeas",        "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.4},
+    "flour":          {"name": "Wheat flour",      "unit": "g",    "allergens": ["wheat"],        "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.2},
+    "miso":           {"name": "Miso paste",       "unit": "g",    "allergens": ["soy"],          "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 1.0},
+    "bonito_flakes":  {"name": "Bonito flakes",    "unit": "g",    "allergens": ["fish"],         "diet": [],                      "cost_cents_per_unit": 4.0},
+    "seaweed":        {"name": "Kombu seaweed",    "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 3.0},
+    "red_onion":      {"name": "Red onion",        "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.4},
+    "sugar":          {"name": "Sugar",            "unit": "g",    "allergens": [],               "diet": ["vegan", "vegetarian"], "cost_cents_per_unit": 0.2}
+  },
+  "components": {
+    "rice_base":         {"name": "Rice base",          "prep": "assembly", "main": "rice",           "uses": {"rice": 200},                               "tags": ["base", "grain", "mild", "soft"]},
+    "greens_base":       {"name": "Greens base",        "prep": "assembly", "main": "mixed_greens",   "uses": {"mixed_greens": 120},                       "tags": ["base", "fresh", "mild", "crisp"]},
+    "noodles_base":      {"name": "Wheat noodles",      "prep": "assembly", "main": "wheat_noodles",  "uses": {"wheat_noodles": 180},                      "tags": ["base", "grain", "mild", "chewy"],
+                          "cross_contact": ["Cooked in a shared wok also used for peanut sauce dishes."]},
+    "grilled_chicken":   {"name": "Grilled chicken",    "prep": "assembly", "main": "chicken",        "uses": {"chicken": 150, "oil": 5},                  "tags": ["protein", "savory", "chewy", "hot"]},
+    "crispy_tofu":       {"name": "Crispy tofu",        "prep": "assembly", "main": "tofu",           "uses": {"tofu": 150, "cornstarch": 10, "oil": 10},  "tags": ["protein", "savory", "crispy", "hot"],
+                          "cross_contact": ["Fried in the shared fryer (also used for falafel)."]},
+    "roasted_mushrooms": {"name": "Roasted mushrooms",  "prep": "assembly", "main": "mushrooms",      "uses": {"mushrooms": 150, "oil": 5},                "tags": ["protein", "umami", "soft", "hot"]},
+    "tofu_cubes":        {"name": "Silken tofu cubes",  "prep": "assembly", "main": "tofu",           "uses": {"tofu": 60},                                "tags": ["protein", "mild", "soft"]},
+    "sliced_avocado":    {"name": "Sliced avocado",     "prep": "assembly", "main": "avocado",        "uses": {"avocado": 60},                             "tags": ["topping", "creamy", "mild"]},
+    "crushed_peanuts":   {"name": "Crushed peanuts",    "prep": "assembly", "main": "peanuts",        "uses": {"peanuts": 15},                             "tags": ["topping", "crunchy", "nutty"]},
+    "scallions":         {"name": "Scallions",          "prep": "assembly", "main": "scallion",       "uses": {"scallion": 10},                            "tags": ["topping", "fresh", "sharp"]},
+    "tortilla":          {"name": "Flour tortilla",     "prep": "assembly", "main": "flour_tortilla", "uses": {"flour_tortilla": 1},                       "tags": ["base", "grain", "soft"]},
+    "lettuce":           {"name": "Lettuce",            "prep": "assembly", "main": "lettuce",        "uses": {"lettuce": 30},                             "tags": ["topping", "fresh", "crisp"]},
+    "tomato":            {"name": "Tomato",             "prep": "assembly", "main": "tomato",         "uses": {"tomato": 40},                              "tags": ["topping", "fresh", "juicy"]},
+
+    "garlic_sauce":      {"name": "Garlic sauce",       "prep": "premade", "unit": "ml",   "portion": 40,  "cost_cents_per_unit": 1.0,
+                          "contains": ["garlic", "mayonnaise", "lemon"],                         "tags": ["sauce", "creamy", "garlicky", "savory"]},
+    "sesame_dressing":   {"name": "Sesame dressing",    "prep": "premade", "unit": "ml",   "portion": 40,  "cost_cents_per_unit": 1.2,
+                          "contains": ["sesame_oil", "soy_sauce", "rice_vinegar"],               "tags": ["sauce", "nutty", "tangy", "savory"]},
+    "peanut_sauce":      {"name": "Peanut sauce",       "prep": "premade", "unit": "ml",   "portion": 60,  "cost_cents_per_unit": 1.1,
+                          "contains": ["peanut_butter", "soy_sauce", "coconut_milk", "lemon"],   "tags": ["sauce", "creamy", "nutty", "savory"]},
+    "tahini_sauce":      {"name": "Tahini sauce",       "prep": "premade", "unit": "ml",   "portion": 30,  "cost_cents_per_unit": 1.3,
+                          "contains": ["tahini", "lemon", "garlic"],                             "tags": ["sauce", "creamy", "nutty", "tangy"]},
+    "falafel":           {"name": "Falafel",            "prep": "premade", "unit": "each", "portion": 4,   "cost_cents_per_unit": 25,
+                          "contains": ["chickpeas", "garlic", "flour"],                          "tags": ["protein", "savory", "crispy", "hot"],
+                          "cross_contact": ["Fried in the shared fryer (also used for crispy tofu)."]},
+    "miso_broth":        {"name": "Miso broth",         "prep": "premade", "unit": "ml",   "portion": 350, "cost_cents_per_unit": 0.4,
+                          "contains": ["miso", "bonito_flakes", "seaweed"],                      "tags": ["broth", "umami", "hot"]},
+    "pickled_onion":     {"name": "Pickled red onion",  "prep": "premade", "unit": "g",    "portion": 25,  "cost_cents_per_unit": 0.8,
+                          "contains": ["red_onion", "rice_vinegar", "sugar"],                    "tags": ["topping", "tangy", "crisp"]}
+  },
+  "dishes": {
+    "chicken_bowl": {
+      "name": "Garlic Chicken Bowl",
+      "price_cents": 1450,
+      "components": {"rice_base": 1, "grilled_chicken": 1, "garlic_sauce": 1, "sliced_avocado": 1, "pickled_onion": 1},
+      "extras": {
+        "grilled_chicken": {"max": 1, "price_cents": 350},
+        "sliced_avocado":  {"max": 2, "price_cents": 200},
+        "garlic_sauce":    {"max": 1, "price_cents": 75}
+      },
+      "substitutions": [
+        {"replace": "grilled_chicken", "with": "crispy_tofu",       "similarity": 4, "price_delta_cents": 0},
+        {"replace": "grilled_chicken", "with": "roasted_mushrooms", "similarity": 3, "price_delta_cents": -100},
+        {"replace": "garlic_sauce",    "with": "sesame_dressing",   "similarity": 3, "price_delta_cents": 0},
+        {"replace": "rice_base",       "with": "greens_base",                        "price_delta_cents": 0}
+      ]
+    },
+    "tofu_bowl": {
+      "name": "Crispy Tofu Bowl",
+      "price_cents": 1350,
+      "components": {"rice_base": 1, "crispy_tofu": 1, "sesame_dressing": 1, "pickled_onion": 1},
+      "extras": {
+        "crispy_tofu":    {"max": 1, "price_cents": 300},
+        "sliced_avocado": {"max": 2, "price_cents": 200},
+        "grilled_chicken":{"max": 1, "price_cents": 350}
+      },
+      "substitutions": [
+        {"replace": "crispy_tofu",     "with": "roasted_mushrooms", "similarity": 4, "price_delta_cents": -100},
+        {"replace": "sesame_dressing", "with": "garlic_sauce",      "similarity": 3, "price_delta_cents": 0},
+        {"replace": "rice_base",       "with": "greens_base",       "similarity": 3, "price_delta_cents": 0}
+      ]
+    },
+    "satay_noodles": {
+      "name": "Satay Noodles",
+      "price_cents": 1500,
+      "components": {"noodles_base": 1, "grilled_chicken": 1, "peanut_sauce": 1, "crushed_peanuts": 1, "scallions": 1},
+      "extras": {
+        "crushed_peanuts": {"max": 1, "price_cents": 50},
+        "grilled_chicken": {"max": 1, "price_cents": 350}
+      },
+      "substitutions": [
+        {"replace": "grilled_chicken", "with": "crispy_tofu",       "similarity": 4, "price_delta_cents": 0},
+        {"replace": "grilled_chicken", "with": "roasted_mushrooms", "similarity": 3, "price_delta_cents": -100},
+        {"replace": "peanut_sauce",    "with": "sesame_dressing",   "similarity": 3, "price_delta_cents": 0},
+        {"replace": "peanut_sauce",    "with": "garlic_sauce",      "similarity": 2, "price_delta_cents": 0}
+      ]
+    },
+    "falafel_wrap": {
+      "name": "Falafel Wrap",
+      "price_cents": 1250,
+      "components": {"tortilla": 1, "falafel": 1, "tahini_sauce": 1, "lettuce": 1, "tomato": 1},
+      "extras": {
+        "falafel":        {"max": 1, "price_cents": 250},
+        "sliced_avocado": {"max": 1, "price_cents": 200}
+      },
+      "substitutions": [
+        {"replace": "tortilla",     "with": "greens_base",  "similarity": 2, "price_delta_cents": 0},
+        {"replace": "tahini_sauce", "with": "garlic_sauce", "similarity": 3, "price_delta_cents": 0}
+      ]
+    },
+    "miso_soup": {
+      "name": "Miso Soup",
+      "price_cents": 650,
+      "components": {"miso_broth": 1, "tofu_cubes": 1, "scallions": 1},
+      "extras": {
+        "tofu_cubes": {"max": 1, "price_cents": 100}
+      },
+      "substitutions": []
+    }
+  }
+}

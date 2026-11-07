@@ -57,8 +57,15 @@ Inventory public API and the inventory → forecast candidate format: see
 
 ## Commands
 
-Not built yet. Planned: `py -3 -m unittest discover -s tests -t .` from the repo root
-(standard library only).
+Run from the repo root (standard library only, no installs needed):
+
+```bash
+py -3 -m unittest discover -s tests -t .      # all tests
+py -3 -m backend.inventory.demo               # walk through the demo scenarios
+py -3 -m backend.inventory.demo --fixture     # regenerate fixtures/allergy_request_example.json
+```
+
+Shared example of the full allergy flow: [fixtures/allergy_request_example.json](fixtures/allergy_request_example.json).
 
 ## Keeping docs current
 

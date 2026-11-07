@@ -1,0 +1,37 @@
+{
+  "_note": "SYNTHETIC demo stock levels. Raw ingredients used at assembly and premade components (stocked as made-ahead batches). Units match catalog.json.",
+  "on_hand": {
+    "rice": 8000,
+    "mixed_greens": 1500,
+    "chicken": 3000,
+    "tofu": 900,
+    "mushrooms": 2500,
+    "avocado": 1200,
+    "oil": 2000,
+    "cornstarch": 1000,
+    "wheat_noodles": 3000,
+    "peanuts": 500,
+    "scallion": 400,
+    "flour_tortilla": 30,
+    "lettuce": 1500,
+    "tomato": 1500,
+    "garlic_sauce": 1200,
+    "sesame_dressing": 800,
+    "peanut_sauce": 900,
+    "tahini_sauce": 400,
+    "falafel": 60,
+    "miso_broth": 3500,
+    "pickled_onion": 600
+  },
+  "safety_buffer": {
+    "tofu": 150,
+    "avocado": 60,
+    "chicken": 150,
+    "falafel": 4
+  },
+  "deliveries": [
+    {"item": "tofu", "qty": 2000, "eta": "2026-11-08T10:00:00"},
+    {"item": "chicken", "qty": 5000, "eta": "2026-11-08T10:00:00"},
+    {"item": "avocado", "qty": 1500, "eta": "2026-11-09T10:00:00"}
+  ]
+}
