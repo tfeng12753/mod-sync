@@ -1,7 +1,8 @@
 // Thin client for the mod-sync backend (see docs/api-contract.md).
-// Base URL: VITE_API_URL (default http://localhost:8000). VITE_USE_MOCK=1 swaps in src/mockApi.js.
+// Development uses localhost:8000; production uses the UI's own origin.
 
-export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
+const defaultApiUrl = import.meta.env.DEV ? 'http://localhost:8000' : ''
+export const API_URL = (import.meta.env.VITE_API_URL ?? defaultApiUrl).replace(/\/+$/, '')
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK === '1'
 
 export class ApiError extends Error {

@@ -153,26 +153,29 @@ class OrderService:
         for o in options:
             o.pop("_evidence", None)
 
-        order_id = self.orders.new_id()
-        hold_key = selected or "as_requested"
-        hold = inv.hold(order_id, requirements_by_choice[hold_key], ttl_seconds=HOLD_SECONDS)
-        if not hold.ok:
-            return self._final(base, "unavailable", message="Stock just changed and this can't be made right now. "
-                                                             "Please try again.")
-        now = utcnow()
-        evaluation_out = self._final(base, status, message=_customer_message(status, options, selected))
-        evaluation_out["order_id"] = order_id
-        evaluation_out["expires_at"] = (now + timedelta(seconds=HOLD_SECONDS)).isoformat()
-        order = Order(
-            order_id=order_id,
-            status="awaiting_staff" if status == "needs_staff_review" else "awaiting_customer",
-            created_at=now, expires_at=now + timedelta(seconds=HOLD_SECONDS), channel=channel,
-            customer_name=customer_name, dish=dish, qty=qty, original_text=text, evaluation=evaluation_out,
-            selected_option_id=selected, requirements_by_choice=requirements_by_choice,
-        )
-        order.log("created", status)
-        self.orders.add(order)
-        return evaluation_out
+        with self.orders.lock:
+            if inv is not self.inv:
+                raise ApiError(409, "The backend was cleared while processing this request. Please submit it again.")
+            order_id = self.orders.new_id()
+            hold_key = selected or "as_requested"
+            hold = inv.hold(order_id, requirements_by_choice[hold_key], ttl_seconds=HOLD_SECONDS)
+            if not hold.ok:
+                return self._final(base, "unavailable", message="Stock just changed and this can't be made right now. "
+                                                                 "Please try again.")
+            now = utcnow()
+            evaluation_out = self._final(base, status, message=_customer_message(status, options, selected))
+            evaluation_out["order_id"] = order_id
+            evaluation_out["expires_at"] = (now + timedelta(seconds=HOLD_SECONDS)).isoformat()
+            order = Order(
+                order_id=order_id,
+                status="awaiting_staff" if status == "needs_staff_review" else "awaiting_customer",
+                created_at=now, expires_at=now + timedelta(seconds=HOLD_SECONDS), channel=channel,
+                customer_name=customer_name, dish=dish, qty=qty, original_text=text, evaluation=evaluation_out,
+                selected_option_id=selected, requirements_by_choice=requirements_by_choice,
+            )
+            order.log("created", status)
+            self.orders.add(order)
+            return evaluation_out
 
     def _options(self, evaluation, routing, review_required, requirements_by_choice):
         cat = self.inv.catalog
@@ -349,9 +352,10 @@ class OrderService:
         return next(i for i in self.stock() if i["id"] == item_id)
 
     def reset(self) -> None:
-        self.inv = self._loader()
-        self._initial = {i: self.inv.stock.on_hand(i) for i in self.inv.stock.items()}
-        self.orders.clear()
+        with self.orders.lock:
+            self.inv = self._loader()
+            self._initial = {i: self.inv.stock.on_hand(i) for i in self.inv.stock.items()}
+            self.orders.clear()
 
 
 def _unavailable_message(reasons: list[str]) -> str:

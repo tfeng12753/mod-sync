@@ -1,5 +1,7 @@
 # Restaurant forecasting and modification decisions
 
+**Deploy the integrated app as one Render web service:** see [Render instructions](docs/render-deploy.md). The root Dockerfile builds React and serves it through the Python API; `render.yaml` also supports one-service Blueprint deployment.
+
 A Python module for forecasting and routing modification requests. It forecasts ingredient demand, joins inventory availability, and decides whether a substitution, omission, or extra can be offered to the customer, needs staff review, or cannot be accommodated. Inventory owns culinary similarity scoring through OpenRouter; this module consumes those scores. Menu/catalog owners supply approved items, portions, preparation facts, and prices.
 
 ```text

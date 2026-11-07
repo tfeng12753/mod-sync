@@ -8,10 +8,13 @@ Endpoints follow docs/api-contract.md. State is in memory (restart = fresh synth
 from __future__ import annotations
 
 import os
+from pathlib import Path
+from threading import Lock
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .service import ApiError, OrderService
@@ -46,16 +49,20 @@ class StockBody(BaseModel):
     reason: str = ""
 
 
-def create_app(service: OrderService | None = None) -> FastAPI:
+def create_app(service: OrderService | None = None, frontend_dist: Path | None = None) -> FastAPI:
     app = FastAPI(title="ModSync API", version="1.0")
     origins = os.environ.get("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["GET", "POST"],
                        allow_headers=["Content-Type"])
     app.state.service = service
+    service_lock = Lock()
 
     def svc() -> OrderService:
         if app.state.service is None:  # created lazily so importing the module is cheap
-            app.state.service = OrderService()
+            # Initial menu, stock and order requests share exactly one store.
+            with service_lock:
+                if app.state.service is None:
+                    app.state.service = OrderService()
         return app.state.service
 
     @app.exception_handler(ApiError)
@@ -108,6 +115,14 @@ def create_app(service: OrderService | None = None) -> FastAPI:
     def reset():
         svc().reset()
         return {"status": "reset"}
+
+    # API/docs routes take precedence; local API-only development still works.
+    configured_dist = frontend_dist or os.environ.get("FRONTEND_DIST")
+    if configured_dist:
+        dist = Path(configured_dist)
+        if not (dist / "index.html").is_file():
+            raise RuntimeError("FRONTEND_DIST must contain a built index.html")
+        app.mount("/", StaticFiles(directory=dist, html=True), name="frontend")
 
     return app
 

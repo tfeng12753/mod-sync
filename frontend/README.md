@@ -30,7 +30,7 @@ Set them in the shell or in `frontend/.env.local` (gitignored via `*.local`).
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `VITE_API_URL` | `http://localhost:8000` | Backend base URL (endpoints are under `/api`). |
+| `VITE_API_URL` | Development: `http://localhost:8000`; production: same origin | Backend base URL; explicit empty string also uses the same origin. |
 | `VITE_USE_MOCK` | unset | `1` = use the in-browser mock instead of the backend. |
 
 ## Mock mode (no backend)
@@ -71,3 +71,6 @@ The mock is only bundled when `VITE_USE_MOCK=1`; a normal build never loads it.
 | `src/logic/format.js` | Pure display helpers (money, chips, pack checklist from kitchen instructions). |
 
 Pack checks and "hand off to courier" are UI-only; the backend doesn't track them.
+
+The root Dockerfile builds and serves this UI through FastAPI as a single Render web service.
+See [Render deployment](../docs/render-deploy.md). Keep OpenRouter keys on the backend.

@@ -1,5 +1,13 @@
 # mod-sync — CLAUDE.md
 
+Deployment: root `Dockerfile` and `render.yaml` host the React build and Python API as one Render
+web service. See [docs/render-deploy.md](docs/render-deploy.md). Production frontend calls use
+the same origin; development still uses localhost:8000. `FRONTEND_DIST` enables static serving
+and requires a built index. Concurrent initial requests share one lazily initialized service.
+Keep one worker/instance while orders and stock remain in memory; this is a synthetic-data demo.
+Kitchen / staff → Demo controls → Clear backend uses the real reset endpoint, with an inline
+confirmation, to clear shared orders/holds and restore starting stock.
+
 DoorDash × Nova hackathon project: an assistant that turns a restaurant customer's special request
 ("no garlic", "swap chicken", "peanut allergy") into feasible, restaurant-approved modifications,
 checks them against inventory, and ranks substitutions using demand forecasts.

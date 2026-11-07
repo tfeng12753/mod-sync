@@ -8,10 +8,13 @@ export default function DemoControls() {
   const [busy, setBusy] = useState(null)
   const [error, setError] = useState(null)
   const [filter, setFilter] = useState('')
+  const [confirmReset, setConfirmReset] = useState(false)
+  const [resetMessage, setResetMessage] = useState('')
 
   const run = async (key, fn) => {
     setBusy(key)
     setError(null)
+    setResetMessage('')
     try {
       await fn()
     } catch (e) {
@@ -44,6 +47,8 @@ export default function DemoControls() {
     await api.resetDemo()
     dispatch({ type: 'RESET_CLIENT' })
     await Promise.all([refreshOrders(), refreshStock()])
+    setConfirmReset(false)
+    setResetMessage('Backend cleared. Orders and holds removed; starting stock restored.')
   })
 
   const f = filter.trim().toLowerCase()
@@ -55,6 +60,23 @@ export default function DemoControls() {
       <p className="muted">Trigger each scenario on cue. All data is synthetic.</p>
       <p className="muted">Open Customer app → Your orders to review and accept demo orders.</p>
       {error && <div className="error">{error}</div>}
+      {resetMessage && <p role="status">{resetMessage}</p>}
+
+      <h5>Clear backend</h5>
+      <p className="muted">Remove all demo orders and holds, and restore starting stock for everyone.</p>
+      {confirmReset ? (
+        <div role="group" aria-label="Confirm backend reset">
+          <p>Clear the shared demo backend now?</p>
+          <div className="row">
+            <button className="btn small" disabled={!!busy} onClick={reset}>
+              {busy === 'reset' ? 'Clearing…' : 'Clear now'}
+            </button>
+            <button className="btn small ghost" disabled={!!busy} onClick={() => setConfirmReset(false)}>Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <button className="btn block" disabled={!!busy} onClick={() => setConfirmReset(true)}>Clear backend</button>
+      )}
 
       <h5>Send an order</h5>
       {SAMPLES.map((s) => (
@@ -82,10 +104,6 @@ export default function DemoControls() {
           )
         })}
       </ul>
-
-      <div className="row">
-        <button className="btn small ghost" disabled={!!busy} onClick={reset}>{busy === 'reset' ? 'Resetting…' : 'Reset demo (stock + orders)'}</button>
-      </div>
 
       <h5>Activity</h5>
       <ul className="log">
