@@ -63,7 +63,7 @@ function UnavailableList({ items }) {
 }
 
 export default function CustomerView({ ordersFocus = 0 }) {
-  const { state, dispatch } = useStore()
+  const { state, dispatch, refreshOrders } = useStore()
   const { menu, menuError } = state
   const [dishId, setDishId] = useState(null)
   const [qty, setQty] = useState(1)
@@ -79,7 +79,7 @@ export default function CustomerView({ ordersFocus = 0 }) {
   const [query, setQuery] = useState('')
   const [avoid, setAvoid] = useState(null)
 
-  const selectedId = dishId ?? menu[0]?.id
+  const selectedId = dishId
   const dish = menu.find((d) => d.id === selectedId)
   const evalDish = evaluation ? menu.find((d) => d.id === evaluation.dish?.id) : null
   const allergens = [...new Set(menu.flatMap((m) => m.allergens ?? []))].sort()
@@ -92,6 +92,16 @@ export default function CustomerView({ ordersFocus = 0 }) {
     if (ordersFocus) document.getElementById('your-orders')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [ordersFocus])
 
+  const clearCart = () => {
+    setDishId(null)
+    setQty(1)
+    setNote('')
+    setEvaluation(null)
+    setClarificationHistory([])
+    setReply('')
+    setError(null)
+  }
+
   const submit = async (clarifications = []) => {
     if (!selectedId) return
     setBusy(true)
@@ -99,12 +109,18 @@ export default function CustomerView({ ordersFocus = 0 }) {
     setFlash(null)
     try {
       const e = await api.evaluate({ dishId: selectedId, qty, text: note, clarifications, channel: 'doordash', customerName: customerName.trim() })
-      setEvaluation(e)
-      setClarificationHistory(clarifications)
-      setReply('')
       if (e.order_id) {
         dispatch({ type: 'MINE', orderId: e.order_id })
         dispatch({ type: 'LOG', text: `${e.order_id}: ${e.dish?.name} → ${e.status}` })
+      }
+      if (e.status === 'confirmed') {
+        clearCart()
+        setFlash(e.customer_message)
+        await refreshOrders()
+      } else {
+        setEvaluation(e)
+        setClarificationHistory(clarifications)
+        setReply('')
       }
     } catch (err) {
       setError(err.message)
@@ -128,10 +144,7 @@ export default function CustomerView({ ordersFocus = 0 }) {
       setFlash(order.status === 'confirmed'
         ? `Order ${order.order_id} confirmed. The kitchen has it.`
         : `Order ${order.order_id} sent. The kitchen is confirming it.`)
-      setEvaluation(null)
-      setNote('')
-      setClarificationHistory([])
-      setReply('')
+      clearCart()
     } catch (err) {
       setError(err.message)
     } finally {
@@ -224,7 +237,7 @@ export default function CustomerView({ ordersFocus = 0 }) {
                     {m.allergens.map((a) => <span key={a} className="tag-pill">{a}</span>)}
                   </div>
                 )}
-                <button className={`btn ${on ? 'chosen' : 'cta'} block`} disabled={!!evaluation} aria-pressed={on} onClick={() => setDishId(m.id)}>
+                <button className={`btn ${on ? 'chosen' : 'cta'} block`} disabled={busy || !!evaluation} aria-pressed={on} onClick={() => setDishId(m.id)}>
                   {on ? <><Icon name="check" size={18} /> In your order</> : 'Add to order'}
                 </button>
               </article>
@@ -294,31 +307,34 @@ export default function CustomerView({ ordersFocus = 0 }) {
         <h2>Order summary</h2>
         <div className="channel-seg"><Icon name="truck" /> DoorDash delivery</div>
 
-        {dish && (
-          <div className="line-item">
-            <DishArt key={dish.id} dish={dish} className="line-art" />
-            <div className="line-text">
-              <b>{dish.name}</b>
-              <span className="muted">{money(dish.price_cents)}</span>
+        {dish ? (
+          <>
+            <div className="line-item">
+              <DishArt key={dish.id} dish={dish} className="line-art" />
+              <div className="line-text">
+                <b>{dish.name}</b>
+                <span className="muted">{money(dish.price_cents)}</span>
+              </div>
+              <div className="stepper" role="group" aria-label="Quantity">
+                <button aria-label="One fewer" disabled={busy || !!evaluation || qty <= 1} onClick={() => setQty(Math.max(1, qty - 1))}><Icon name="minus" size={16} /></button>
+                <input type="number" min={1} max={20} value={qty} disabled={busy || !!evaluation} aria-label="Quantity"
+                  onChange={(e) => setQty(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} />
+                <button aria-label="One more" disabled={busy || !!evaluation || qty >= 20} onClick={() => setQty(Math.min(20, qty + 1))}><Icon name="plus" size={16} /></button>
+              </div>
             </div>
-            <div className="stepper" role="group" aria-label="Quantity">
-              <button aria-label="One fewer" disabled={!!evaluation || qty <= 1} onClick={() => setQty(Math.max(1, qty - 1))}><Icon name="minus" size={16} /></button>
-              <input type="number" min={1} max={20} value={qty} disabled={!!evaluation} aria-label="Quantity"
-                onChange={(e) => setQty(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} />
-              <button aria-label="One more" disabled={!!evaluation || qty >= 20} onClick={() => setQty(Math.min(20, qty + 1))}><Icon name="plus" size={16} /></button>
-            </div>
-          </div>
-        )}
+            {!evaluation?.order_id && <button className="btn small ghost" disabled={busy} onClick={clearCart}>Remove from cart</button>}
+          </>
+        ) : <p className="empty">Your cart is empty. Add a dish from the menu.</p>}
         {dish?.allergens?.length > 0 && <p className="muted">Contains: {dish.allergens.join(', ')}</p>}
 
         <label className="field">
           <span>Name (optional)</span>
-          <input type="text" value={customerName} disabled={!!evaluation} onChange={(e) => setCustomerName(e.target.value)} placeholder="e.g. Sam" />
+          <input type="text" value={customerName} disabled={busy || !!evaluation} onChange={(e) => setCustomerName(e.target.value)} placeholder="e.g. Sam" />
         </label>
 
         <label className="field">
           <span>Special request</span>
-          <textarea rows={3} value={note} disabled={!!evaluation} onChange={(e) => setNote(e.target.value)}
+          <textarea rows={3} value={note} disabled={busy || !!evaluation} onChange={(e) => setNote(e.target.value)}
             placeholder="e.g. no pickled onion, swap chicken for tofu, sauce on the side, I'm allergic to peanuts" />
         </label>
 
@@ -330,7 +346,7 @@ export default function CustomerView({ ordersFocus = 0 }) {
 
         {!evaluation && (
           <button className="btn cta block big" disabled={busy || !dish} onClick={() => submit()}>
-            {busy ? 'Checking with the kitchen…' : 'Check my order'}
+            {busy ? 'Checking with the kitchen…' : note.trim() ? 'Check my order' : 'Place order'}
           </button>
         )}
 

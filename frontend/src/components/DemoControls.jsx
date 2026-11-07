@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useStore } from '../useStore.js'
 import { api } from '../api.js'
-import { SAMPLES } from '../data/sampleOrders.js'
+
+// Enough for an extra portion now, but below the demo dinner forecast reserve.
+const LOW_AVOCADO_STOCK = 350
 
 export default function DemoControls() {
   const { state, dispatch, refreshOrders, refreshStock } = useStore()
@@ -24,13 +26,6 @@ export default function DemoControls() {
     }
   }
 
-  const send = (s) => run(`send-${s.label}`, async () => {
-    const e = await api.evaluate(s)
-    if (e.order_id) dispatch({ type: 'MINE', orderId: e.order_id })
-    dispatch({ type: 'LOG', text: `${e.order_id ?? 'no order'}: ${s.label} → ${e.status}` })
-    await refreshOrders()
-  })
-
   const markOut = (item) => run(`out-${item.id}`, async () => {
     const updated = await api.setStock(item.id, 0, 'ran out (demo)')
     dispatch({ type: 'STOCK_ITEM', item: updated })
@@ -41,6 +36,12 @@ export default function DemoControls() {
     const updated = await api.setStock(item.id, item.initial_on_hand, 'restocked (demo)')
     dispatch({ type: 'STOCK_ITEM', item: updated })
     dispatch({ type: 'LOG', text: `${item.name} restocked` })
+  })
+
+  const markAlmostOut = (item) => run(`low-${item.id}`, async () => {
+    const updated = await api.setStock(item.id, LOW_AVOCADO_STOCK, 'almost out (demo)')
+    dispatch({ type: 'STOCK_ITEM', item: updated })
+    dispatch({ type: 'LOG', text: `${item.name} marked almost out (${updated.on_hand} ${updated.unit})` })
   })
 
   const reset = () => run('reset', async () => {
@@ -58,7 +59,6 @@ export default function DemoControls() {
     <aside className="panel demo">
       <h4>Demo controls</h4>
       <p className="muted">Trigger each scenario on cue. All data is synthetic.</p>
-      <p className="muted">Open Customer app → Your orders to review and accept demo orders.</p>
       {error && <div className="error">{error}</div>}
       {resetMessage && <p role="status">{resetMessage}</p>}
 
@@ -78,28 +78,25 @@ export default function DemoControls() {
         <button className="btn block" disabled={!!busy} onClick={() => setConfirmReset(true)}>Clear backend</button>
       )}
 
-      <h5>Send an order</h5>
-      {SAMPLES.map((s) => (
-        <button key={s.label} className="btn block" disabled={!!busy} onClick={() => send(s)}>
-          {s.label}
-        </button>
-      ))}
-
       <h5>Stock</h5>
       {state.stockError && <div className="error">{state.stockError}</div>}
       <input className="filter" type="search" placeholder="Filter stock…" value={filter} onChange={(e) => setFilter(e.target.value)} />
       <ul className="stock">
         {items.map((s) => {
           const out = s.on_hand <= 0
+          const avocado = s.id === 'avocado'
+          const low = avocado && s.on_hand <= LOW_AVOCADO_STOCK
           return (
             <li key={s.id} className={out ? 'out' : ''}>
               <span>
                 <b>{s.name}</b>
                 <small className="muted"> {s.on_hand} {s.unit}{s.available !== s.on_hand ? ` (${s.available} avail.)` : ''}</small>
               </span>
-              {out && s.initial_on_hand > 0
-                ? <button className="btn small" disabled={!!busy} onClick={() => restock(s)}>Restock</button>
-                : <button className="btn small" disabled={out || !!busy} onClick={() => markOut(s)}>{out ? 'Out' : 'Mark out'}</button>}
+              <div className="row tight wrap">
+                {avocado && <button className="btn small" disabled={low || !!busy} onClick={() => markAlmostOut(s)}>Almost out</button>}
+                {(!out || !s.initial_on_hand) && <button className="btn small" disabled={out || !!busy} onClick={() => markOut(s)}>{out ? 'Out' : 'Mark out'}</button>}
+                {(out || low) && s.initial_on_hand > 0 && <button className="btn small" disabled={!!busy} onClick={() => restock(s)}>Restock</button>}
+              </div>
             </li>
           )
         })}

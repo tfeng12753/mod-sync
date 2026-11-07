@@ -220,6 +220,15 @@ class OrderService:
                 evidence_by_choice=evidence_by_choice,
             )
             order.log("created", status)
+            if status == "ready" and not needs_review and not text.strip() and not clarifications:
+                try:
+                    self._confirm(order, hold_key)
+                except ApiError:
+                    inv.release(order_id)
+                    return self._final(base, "unavailable", message="Stock just changed. Please try again.")
+                order.log("accepted", "confirmed")
+                evaluation_out.update(status="confirmed", expires_at=None,
+                                      customer_message=f"Order {order_id} confirmed. The kitchen has it.")
             self.orders.add(order)
             return evaluation_out
 
