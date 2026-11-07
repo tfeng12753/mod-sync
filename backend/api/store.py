@@ -34,6 +34,10 @@ class Order:
     # Internal: what to hold/confirm for each choice ("as_requested" or option_id).
     requirements_by_choice: dict[str, dict[str, int]] = field(default_factory=dict)
     evidence_by_choice: dict[str, dict[str, Any]] = field(default_factory=dict)
+    # Internal: each choice's full inventory ops, and the allergens/diets they were checked against,
+    # so declining an extra re-checks the exact recipe.
+    ops_by_choice: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
+    check_args: tuple[list[str], list[str]] = ((), ())
     history: list[dict[str, Any]] = field(default_factory=list)
 
     def log(self, event: str, note: str = "") -> None:

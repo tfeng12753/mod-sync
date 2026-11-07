@@ -81,7 +81,8 @@ export const api = {
     if (customerName) body.customer_name = customerName
     return request('POST', '/api/evaluate', body)
   },
-  accept: (orderId, optionId = null) => request('POST', `/api/orders/${enc(orderId)}/accept`, { option_id: optionId }),
+  accept: (orderId, optionId = null, declinedExtras = []) =>
+    request('POST', `/api/orders/${enc(orderId)}/accept`, { option_id: optionId, declined_extras: declinedExtras }),
   approve: (orderId, optionId = null) => request('POST', `/api/orders/${enc(orderId)}/review`, { action: 'approve', option_id: optionId }),
   edit: (orderId, optionId) => request('POST', `/api/orders/${enc(orderId)}/review`, { action: 'edit', option_id: optionId }),
   reject: (orderId, note = '') => request('POST', `/api/orders/${enc(orderId)}/review`, { action: 'reject', note }),

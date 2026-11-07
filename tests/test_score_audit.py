@@ -19,7 +19,8 @@ class ScoreAuditTests(unittest.TestCase):
                 expected = 0.55 * f["similarity"] + 0.35 * f["reserve"] + 0.10 * f["cost"]
                 self.assertAlmostEqual(scored.ranking_score, expected)
                 self.assertTrue(all(0 <= value <= 1 for value in f.values()))
-                self.assertEqual(scored.route == "unavailable", expected < 0.75)
+                self.assertNotEqual(scored.route, "unavailable")  # score ranks, never hides
+                self.assertEqual(any("below the 0.75" in r.lower() for r in scored.reasons), expected < 0.75)
 
     def test_more_surplus_can_help_but_cannot_bypass_similarity_weight(self):
         low = Inventory()
@@ -31,7 +32,9 @@ class ScoreAuditTests(unittest.TestCase):
         self.assertEqual(a.similarity, b.similarity)
         raw = raw_request()
         raw["evaluation"]["candidates"][0]["similarity"] = 0.5
-        self.assertEqual(option(decide(raw, inventory=high)).route, "unavailable")
+        weak = option(decide(raw, inventory=high))
+        self.assertLess(weak.ranking_score, 0.75)  # surplus alone can't lift a weak swap over the line
+        self.assertTrue(any("below the 0.75" in r.lower() for r in weak.reasons))
 
     def test_cost_increase_never_improves_score(self):
         raw = raw_request()

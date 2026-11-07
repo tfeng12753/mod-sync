@@ -62,6 +62,31 @@ function UnavailableList({ items }) {
   )
 }
 
+// Paid extras on their own lines: the customer keeps or drops each one before choosing.
+function ExtrasList({ extras, declined, onToggle, locked }) {
+  if (!extras?.length) return null
+  return (
+    <div className="sub extras">
+      <strong>Your extras</strong>
+      <ul className="extras-list">
+        {extras.map((x) => (
+          <li key={x.id}>
+            <label className="row between">
+              <span>
+                <input type="checkbox" checked={!declined.includes(x.id)} disabled={locked}
+                  onChange={() => onToggle(x.id)} />{' '}
+                Extra {x.name}{x.qty > 1 ? ` ×${x.qty}` : ''}
+              </span>
+              <span className={declined.includes(x.id) ? 'muted strike' : ''}>+{money(x.price_cents)}</span>
+            </label>
+          </li>
+        ))}
+      </ul>
+      {!locked && <small className="muted">Untick any extra you don't want. Option prices below don't include extras.</small>}
+    </div>
+  )
+}
+
 export default function CustomerView({ ordersFocus = 0 }) {
   const { state, dispatch, refreshOrders } = useStore()
   const { menu, menuError } = state
@@ -72,6 +97,8 @@ export default function CustomerView({ ordersFocus = 0 }) {
   const [evaluation, setEvaluation] = useState(null)
   const [clarificationHistory, setClarificationHistory] = useState([])
   const [reply, setReply] = useState('')
+  // Unticked extras, tied to the evaluation they were chosen on (a new one starts with all kept).
+  const [declinedState, setDeclinedState] = useState({ key: '', ids: [] })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [flash, setFlash] = useState(null)
@@ -87,6 +114,15 @@ export default function CustomerView({ ordersFocus = 0 }) {
   const shown = menu.filter((m) => (!avoid || !(m.allergens ?? []).includes(avoid))
     && (!q || m.name.toLowerCase().includes(q) || m.components.some((c) => c.name.toLowerCase().includes(q))))
   const mine = state.orders.filter((o) => state.myOrderIds.includes(o.order_id))
+
+  const evaluationKey = evaluation ? `${evaluation.order_id}:${evaluation.status}` : ''
+  const declinedExtras = declinedState.key === evaluationKey ? declinedState.ids : []
+  const toggleExtra = (id) => setDeclinedState({
+    key: evaluationKey,
+    ids: declinedExtras.includes(id) ? declinedExtras.filter((x) => x !== id) : [...declinedExtras, id],
+  })
+  const keptExtrasCents = (evaluation?.extras ?? []).filter((x) => !declinedExtras.includes(x.id))
+    .reduce((sum, x) => sum + x.price_cents, 0)
 
   useEffect(() => {
     if (ordersFocus) document.getElementById('your-orders')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -138,7 +174,8 @@ export default function CustomerView({ ordersFocus = 0 }) {
     setBusy(true)
     setError(null)
     try {
-      const order = await api.accept(evaluation.order_id, optionId)
+      const order = await api.accept(evaluation.order_id, optionId,
+        evaluation.staff_approved_choice ? [] : declinedExtras)
       dispatch({ type: 'ORDER', order })
       dispatch({ type: 'LOG', text: `${order.order_id}: customer accepted ${optionId ?? 'as requested'} → ${order.status}` })
       setFlash(order.status === 'confirmed'
@@ -367,7 +404,12 @@ export default function CustomerView({ ordersFocus = 0 }) {
             {evaluation.status === 'ready' && (
               <div className="sub sub-done">
                 <strong>{evaluation.customer_message || 'We can make this as you asked.'}</strong>
-                <div className="price">{priceChange(evaluation.as_requested?.price_change_cents)}</div>
+                <ExtrasList extras={evaluation.extras} declined={declinedExtras} onToggle={toggleExtra}
+                  locked={Boolean(evaluation.staff_approved_choice)} />
+                <div className="price">{priceChange(
+                  evaluation.extras?.length && !evaluation.staff_approved_choice
+                    ? (evaluation.as_requested?.own_price_change_cents ?? 0) + keptExtrasCents
+                    : evaluation.as_requested?.price_change_cents)}</div>
                 <Instructions lines={evaluation.as_requested?.kitchen_instructions} />
                 <div className="row">
                   <button className="btn primary" disabled={busy} onClick={() => accept(null)}>
@@ -388,8 +430,11 @@ export default function CustomerView({ ordersFocus = 0 }) {
                   )}
                   {evaluation.expires_at && <small className="muted">Options held for {countdown(evaluation.expires_at, state.now)}.</small>}
                 </div>
+                <ExtrasList extras={evaluation.extras} declined={declinedExtras} onToggle={toggleExtra}
+                  locked={Boolean(evaluation.staff_approved_choice)} />
                 {evaluation.options.filter((o) => !evaluation.staff_approved_choice || o.option_id === evaluation.staff_approved_choice).map((o) => (
-                  <SubstitutionCard key={o.option_id} option={o} audience="customer" busy={busy}
+                  <SubstitutionCard key={o.option_id} busy={busy} audience="customer"
+                    option={evaluation.staff_approved_choice ? o : { ...o, price_change_cents: o.own_price_change_cents ?? o.price_change_cents }}
                     recommended={o.option_id === evaluation.recommended_option_id}
                     onChoose={accept} chooseLabel={evaluation.staff_approved_choice ? 'Confirm this option and price' : evaluation.review?.required ? 'Choose and send to staff' : 'Choose this'} />
                 ))}

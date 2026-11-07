@@ -36,6 +36,8 @@ class EvaluateBody(BaseModel):
 
 class AcceptBody(BaseModel):
     option_id: str | None = None
+    # Extras (dish part ids from evaluation["extras"]) the customer chose not to keep.
+    declined_extras: list[str] = []
 
 
 class ReviewBody(BaseModel):
@@ -85,7 +87,7 @@ def create_app(service: OrderService | None = None, frontend_dist: Path | None =
 
     @app.post("/api/orders/{order_id}/accept")
     def accept(order_id: str, body: AcceptBody):
-        return svc().accept(order_id, body.option_id)
+        return svc().accept(order_id, body.option_id, body.declined_extras)
 
     @app.post("/api/orders/{order_id}/review")
     def review(order_id: str, body: ReviewBody):
