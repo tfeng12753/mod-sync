@@ -11,3 +11,5 @@ services:
     envVars:
       - key: FRONTEND_DIST
         value: /app/frontend/dist
+      - key: OPENROUTER_MODEL
+        value: anthropic/claude-fable-5.1

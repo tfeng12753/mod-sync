@@ -1,5 +1,7 @@
 # mod-sync — CLAUDE.md
 
+OpenRouter parsing defaults to `anthropic/claude-fable-5.1`; `OPENROUTER_MODEL` overrides it.
+
 Deployment: root `Dockerfile` and `render.yaml` host the React build and Python API as one Render
 web service. See [docs/render-deploy.md](docs/render-deploy.md). Production frontend calls use
 the same origin; development still uses localhost:8000. `FRONTEND_DIST` enables static serving
