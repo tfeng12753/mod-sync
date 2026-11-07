@@ -1,4 +1,6 @@
-"""Run from the repo root: uvicorn backend.parsing.server:app --reload"""
+"""Standalone parser service. Run from the repo root: uvicorn backend.parsing.server:app --reload
+
+The main app (backend/api/) calls backend.parsing.adapter.parse_request() instead."""
 
 import logging
 from fastapi import FastAPI, HTTPException
@@ -6,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .parser import ParseRequest, ParseResult, ParserValidationError, parse_modifications
 
 logger = logging.getLogger(__name__)
-app = FastAPI(title="ModSync Person 2 - Modification Parser", version="1.0")
+app = FastAPI(title="ModSync - Modification Parser", version="2.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],

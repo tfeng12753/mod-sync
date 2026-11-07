@@ -1,17 +1,23 @@
 {
-  "instructions": "I want two burgers. First one no onions and double meat. Second one extra cheese and sauce on the side.",
+  "instructions": "No onions, garlic mayo on the side, and swap the chicken for tofu.",
   "cart": [
     {
-      "cart_item_id": "burger-1",
-      "name": "Cheeseburger",
-      "ingredients": {"bun": 1, "patty": 1, "cheese": 1, "onion": 1, "sauce": 1}
-    },
-    {
-      "cart_item_id": "burger-2",
-      "name": "Cheeseburger",
-      "ingredients": {"bun": 1, "patty": 1, "cheese": 1, "onion": 1, "sauce": 1}
+      "cart_item_id": "chicken_bowl",
+      "name": "Garlic Chicken Bowl",
+      "ingredients": {
+        "rice_base": 1, "rice": 1,
+        "grilled_chicken": 1, "chicken": 1, "oil": 1,
+        "garlic_sauce": 1, "garlic": 1, "mayonnaise": 1, "lemon": 1,
+        "sliced_avocado": 1, "avocado": 1,
+        "pickled_onion": 1, "red_onion": 1, "rice_vinegar": 1, "sugar": 1
+      }
     }
   ],
-  "allowed_ingredient_ids": ["bun", "patty", "cheese", "onion", "sauce", "avocado"],
+  "allowed_ingredient_ids": [
+    "rice_base", "rice", "grilled_chicken", "chicken", "oil", "garlic_sauce", "garlic", "mayonnaise",
+    "lemon", "sliced_avocado", "avocado", "pickled_onion", "red_onion", "rice_vinegar", "sugar",
+    "crispy_tofu", "tofu", "cornstarch", "roasted_mushrooms", "mushrooms", "sesame_dressing",
+    "sesame_oil", "soy_sauce", "greens_base", "mixed_greens"
+  ],
   "clarifications": []
 }
