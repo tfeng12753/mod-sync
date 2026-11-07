@@ -33,6 +33,12 @@ export default function DemoControls() {
     dispatch({ type: 'LOG', text: `${item.name} marked out of stock` })
   })
 
+  const restock = (item) => run(`restock-${item.id}`, async () => {
+    const updated = await api.setStock(item.id, item.initial_on_hand, 'restocked (demo)')
+    dispatch({ type: 'STOCK_ITEM', item: updated })
+    dispatch({ type: 'LOG', text: `${item.name} restocked` })
+  })
+
   const reset = () => run('reset', async () => {
     await api.resetDemo()
     dispatch({ type: 'RESET_CLIENT' })
@@ -67,7 +73,9 @@ export default function DemoControls() {
                 <b>{s.name}</b>
                 <small className="muted"> {s.on_hand} {s.unit}{s.available !== s.on_hand ? ` (${s.available} avail.)` : ''}</small>
               </span>
-              <button className="btn small" disabled={out || !!busy} onClick={() => markOut(s)}>{out ? 'Out' : 'Mark out'}</button>
+              {out && s.initial_on_hand > 0
+                ? <button className="btn small" disabled={!!busy} onClick={() => restock(s)}>Restock</button>
+                : <button className="btn small" disabled={out || !!busy} onClick={() => markOut(s)}>{out ? 'Out' : 'Mark out'}</button>}
             </li>
           )
         })}

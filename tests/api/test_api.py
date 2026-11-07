@@ -202,6 +202,23 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.post(f"/api/orders/{r['order_id']}/review",
                                           json={"action": "approve"}).status_code, 409)
 
+    def test_cancel_releases_hold(self):
+        r = evaluate(self.client, "chicken_bowl", "no garlic").json()
+        held = self.service.inv.available("sesame_dressing")
+        order = self.client.post(f"/api/orders/{r['order_id']}/cancel").json()
+        self.assertEqual(order["status"], "cancelled")
+        self.assertGreater(self.service.inv.available("sesame_dressing"), held)
+        self.assertEqual(self.client.post(f"/api/orders/{r['order_id']}/cancel").status_code, 409)
+
+    def test_reject_note_and_initial_stock(self):
+        r = evaluate(self.client, "satay_noodles", "my kid is allergic to peanuts").json()
+        order = self.client.post(f"/api/orders/{r['order_id']}/review",
+                                 json={"action": "reject", "note": "shared wok"}).json()
+        self.assertEqual(order["staff_note"], "shared wok")
+        self.client.post("/api/stock/tofu", json={"on_hand": 0})
+        tofu = next(i for i in self.client.get("/api/stock").json()["items"] if i["id"] == "tofu")
+        self.assertEqual((tofu["on_hand"], tofu["initial_on_hand"]), (0, 900))
+
     def test_reset(self):
         evaluate(self.client, "chicken_bowl", "extra avo!!")
         self.client.post("/api/demo/reset")

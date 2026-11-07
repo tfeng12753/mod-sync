@@ -78,6 +78,7 @@ export const ORDER_STATUS = {
   confirmed: ['Confirmed', 'ok'],
   rejected: ['Rejected by kitchen', 'bad'],
   expired: ['Expired (no reply)', 'bad'],
+  cancelled: ['Cancelled', 'bad'],
 }
 
 // Pack-check list (client-side only) built from the kitchen instructions the API returns.

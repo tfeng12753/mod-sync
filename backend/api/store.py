@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
-STATUSES = ("awaiting_customer", "awaiting_staff", "confirmed", "rejected", "expired")
+STATUSES = ("awaiting_customer", "awaiting_staff", "confirmed", "rejected", "expired", "cancelled")
 
 
 def utcnow() -> datetime:
@@ -28,6 +28,7 @@ class Order:
     original_text: str
     evaluation: dict[str, Any]
     selected_option_id: str | None
+    staff_note: str | None = None
     # Internal: what to hold/confirm for each choice ("as_requested" or option_id).
     requirements_by_choice: dict[str, dict[str, int]] = field(default_factory=dict)
     history: list[dict[str, Any]] = field(default_factory=list)
@@ -56,6 +57,7 @@ class Order:
             "qty": self.qty,
             "original_text": self.original_text,
             "selected_option_id": self.selected_option_id,
+            "staff_note": self.staff_note,
             "kitchen_instructions": self.kitchen_instructions(),
             "evaluation": self.evaluation,
             "history": list(self.history),

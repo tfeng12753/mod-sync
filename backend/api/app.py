@@ -84,6 +84,10 @@ def create_app(service: OrderService | None = None) -> FastAPI:
     def review(order_id: str, body: ReviewBody):
         return svc().review(order_id, body.action, body.option_id, body.note)
 
+    @app.post("/api/orders/{order_id}/cancel")
+    def cancel(order_id: str):
+        return svc().cancel(order_id)
+
     @app.get("/api/orders")
     def orders():
         return svc().list_orders()

@@ -48,6 +48,7 @@ class OrderService:
                  route_fn: RouteFn | None = None, inventory_loader: Callable[[], Inventory] = load_inventory) -> None:
         self._loader = inventory_loader
         self.inv = inv or inventory_loader()
+        self._initial = {i: self.inv.stock.on_hand(i) for i in self.inv.stock.items()}
         self.parse_fn = parse_fn or _default_parse
         self.route_fn = route_fn or _default_route
         self.orders = OrderStore()
@@ -261,6 +262,7 @@ class OrderService:
             if action == "reject":
                 self.inv.release(order_id)
                 order.status = "rejected"
+                order.staff_note = note or None
                 order.log("rejected", note)
             elif action in ("approve", "edit"):
                 target = option_id if (action == "edit" or option_id is not None) else order.selected_option_id
@@ -271,6 +273,20 @@ class OrderService:
                 order.log("edited" if action == "edit" else "approved", note)
             else:
                 raise ApiError(400, "action must be approve, edit or reject.")
+            if note and action != "reject":
+                order.staff_note = note
+            return order.to_dict()
+
+    def cancel(self, order_id: str) -> dict[str, Any]:
+        """Customer withdraws an order that isn't confirmed yet; releases its stock hold."""
+        self.sweep()
+        with self.orders.lock:
+            order = self._order(order_id)
+            if order.status not in ("awaiting_customer", "awaiting_staff"):
+                raise ApiError(409, f"Order is {order.status}; it can't be cancelled.")
+            self.inv.release(order_id)
+            order.status = "cancelled"
+            order.log("cancelled", "customer cancelled")
             return order.to_dict()
 
     def _rehold(self, order: Order, key: str) -> None:
@@ -320,7 +336,8 @@ class OrderService:
             unit = inv.catalog.components[item].unit if item in inv.catalog.components else (
                 inv.catalog.ingredients[item].unit if item in inv.catalog.ingredients else "")
             out.append({"id": item, "name": inv.catalog.name_of(item), "unit": unit,
-                        "on_hand": inv.stock.on_hand(item), "available": inv.available(item)})
+                        "on_hand": inv.stock.on_hand(item), "available": inv.available(item),
+                        "initial_on_hand": self._initial.get(item, 0)})
         return out
 
     def set_stock(self, item_id: str, on_hand: int, reason: str) -> dict[str, Any]:
@@ -333,6 +350,7 @@ class OrderService:
 
     def reset(self) -> None:
         self.inv = self._loader()
+        self._initial = {i: self.inv.stock.on_hand(i) for i in self.inv.stock.items()}
         self.orders.clear()
 
 

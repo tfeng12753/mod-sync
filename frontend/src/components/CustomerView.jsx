@@ -262,7 +262,7 @@ export default function CustomerView() {
       {mine.length > 0 && <h3>Your orders</h3>}
       {mine.map((o) => {
         const [label, tone] = ORDER_STATUS[o.status] ?? [o.status, 'info']
-        const rejectNote = o.history?.filter((h) => h.event === 'rejected').at(-1)?.note
+        const rejectNote = o.staff_note ?? o.history?.filter((h) => h.event === 'rejected').at(-1)?.note
         const waiting = o.status === 'awaiting_customer' || o.status === 'awaiting_staff'
         return (
           <div key={o.order_id} className="my-order">
@@ -272,6 +272,14 @@ export default function CustomerView() {
             </div>
             {o.original_text && <div className="muted">“{o.original_text}”</div>}
             {waiting && o.expires_at && <small className="muted">Expires in {countdown(o.expires_at, state.now)}</small>}
+            {waiting && (
+              <div className="row">
+                <button className="btn small" onClick={() => api.cancel(o.order_id)
+                  .then(() => dispatch({ type: 'LOG', text: `${o.order_id} cancelled by customer` }))
+                  .catch((e) => dispatch({ type: 'LOG', text: `Cancel failed: ${e.message}` }))}>Cancel order</button>
+              </div>
+            )}
+            {o.status === 'cancelled' && <p className="muted">You cancelled this order. You won't be charged.</p>}
             {o.status === 'awaiting_customer' && evaluation?.order_id !== o.order_id && (
               <div className="row"><button className="btn small" onClick={() => setEvaluation(o.evaluation)}>Review options</button></div>
             )}

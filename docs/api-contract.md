@@ -14,7 +14,8 @@ POST /api/evaluate ─► status
   needs_clarification      → no order; show questions, re-POST with clarifications
   unavailable              → no order; show customer_message
 POST /api/orders/{id}/accept  (customer)  → "confirmed" (stock deducted) or "awaiting_staff"
-POST /api/orders/{id}/review  (staff)     → approve → "confirmed" | edit → re-evaluated | reject → "rejected"
+POST /api/orders/{id}/review  (staff)     → approve / edit → "confirmed" (stock rechecked) | reject → "rejected"
+POST /api/orders/{id}/cancel  (customer)  → "cancelled" (stock released)
 Hold expiry (10 min)                      → "expired" (stock released)
 ```
 
@@ -90,9 +91,13 @@ to `awaiting_staff`; otherwise stock is confirmed and status becomes `confirmed`
 ### `POST /api/orders/{order_id}/review`
 Staff action. Body:
 - `{"action": "approve", "option_id": "opt-1"}` (or `null` = as requested) → confirm stock → `confirmed`
-- `{"action": "edit", "option_id": "opt-2"}` → switch to another offered option, recheck, then confirm
-- `{"action": "reject", "note": "cross-contact risk"}` → release stock → `rejected`
+- `{"action": "edit", "option_id": "opt-2"}` → switch to another offered option, recheck stock, confirm
+  (edit always ends `confirmed`, or `409` if stock changed — it never goes back to `awaiting_*`)
+- `{"action": "reject", "note": "cross-contact risk"}` → release stock → `rejected`; note returned as `staff_note`
 Returns `Order`.
+
+### `POST /api/orders/{order_id}/cancel`
+Customer withdraws an `awaiting_customer` / `awaiting_staff` order. Releases the hold → `cancelled`. Returns `Order`.
 
 ### `GET /api/orders` → `Order[]` (newest first)  ·  `GET /api/orders/{order_id}` → `Order`
 ```json
@@ -101,21 +106,30 @@ Returns `Order`.
   "created_at": "...", "expires_at": "...", "channel": "doordash", "customer_name": "Sam",
   "dish": {"id": "...", "name": "..."}, "qty": 1, "original_text": "...",
   "selected_option_id": "opt-1",
+  "staff_note": null,                // staff's note (e.g. reject reason)
   "kitchen_instructions": ["..."],   // for the selected option (or as requested)
   "evaluation": { ...Evaluation... },
   "history": [{"at": "...", "event": "created|accepted|approved|edited|rejected|expired", "note": "..."}]
 }
 ```
-Statuses: `awaiting_customer`, `awaiting_staff`, `confirmed`, `rejected`, `expired`.
+Statuses: `awaiting_customer`, `awaiting_staff`, `confirmed`, `rejected`, `expired`, `cancelled`.
+
+Field types: `questions` is `string[]`; `parsed.ops` items use the inventory op shape (CLAUDE.md
+"Contracts"); `parsed.restrictions` items are `{kind, value}`; `review.evidence` matches
+`check.evidence` in `fixtures/allergy_request_example.json` (`components[]`, `allergens_present`
+`{allergen: [source strings]}`, `cross_contact[]`, `note`). `warnings` (string[]) and `forecast`
+(per-ingredient summary) may also appear on an Evaluation.
 
 ### Demo controls
-- `GET /api/stock` → `{"items": [{"id", "name", "unit", "on_hand", "available"}]}`
+- `GET /api/stock` → `{"items": [{"id", "name", "unit", "on_hand", "available", "initial_on_hand"}]}`
 - `POST /api/stock/{item_id}` body `{"on_hand": 0, "reason": "ran out"}` → updated item
-- `POST /api/demo/reset` → reload synthetic stock, clear orders
+  (restock = post `initial_on_hand`)
+- `POST /api/demo/reset` → `{"status": "reset"}`; reloads synthetic stock, clears orders
 
 ## Errors
 `400` invalid input, `404` unknown order/dish, `409` invalid transition (e.g. accept an expired order),
-`502` parser could not safely interpret the text (never treated as approved). Body: `{"detail": "..."}`.
+`502` parser could not safely interpret the text (never treated as approved; no order is created, so
+the UI should ask the customer to rephrase or call the restaurant). Body: `{"detail": "..."}`.
 
 ## Backend modules behind this
 

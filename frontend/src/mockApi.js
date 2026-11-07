@@ -74,7 +74,10 @@ const iso = (ms) => new Date(ms).toISOString()
 const clone = (x) => JSON.parse(JSON.stringify(x))
 const stockItem = (id) => stock.find((s) => s.id === id)
 const available = (s) => Math.max(0, s.on_hand - s.buffer)
-const publicStock = (s) => ({ id: s.id, name: s.name, unit: s.unit, on_hand: s.on_hand, available: available(s) })
+const publicStock = (s) => ({
+  id: s.id, name: s.name, unit: s.unit, on_hand: s.on_hand, available: available(s),
+  initial_on_hand: INITIAL_STOCK.find(([id]) => id === s.id)?.[3] ?? s.on_hand,
+})
 
 function nameOf(dish, id) {
   const all = [...dish.components, ...dish.extras, ...dish.swaps.map((s) => ({ id: s.with, name: s.with_name }))]
@@ -435,10 +438,16 @@ export async function handle(method, path, body = {}) {
     return ok(e)
   }
   if (method === 'GET' && path === '/api/orders') return ok(orders)
-  if ((m = path.match(/^\/api\/orders\/([^/]+)(?:\/(accept|review))?$/))) {
+  if ((m = path.match(/^\/api\/orders\/([^/]+)(?:\/(accept|review|cancel))?$/))) {
     const order = orders.find((o) => o.order_id === decodeURIComponent(m[1]))
     if (!order) return fail(404, `Unknown order: ${m[1]}`)
     if (method === 'GET' && !m[2]) return ok(order)
+    if (method === 'POST' && m[2] === 'cancel') {
+      if (!['awaiting_customer', 'awaiting_staff'].includes(order.status)) return fail(409, `Order is ${order.status}; it can't be cancelled.`)
+      order.status = 'cancelled'
+      order.history.push({ at: iso(Date.now()), event: 'cancelled', note: 'customer cancelled' })
+      return ok(order)
+    }
     if (method === 'POST' && m[2] === 'accept') {
       const err = acceptOrder(order, body.option_id ?? null)
       return err ? fail(...err) : ok(order)
@@ -448,6 +457,7 @@ export async function handle(method, path, body = {}) {
       const now = iso(Date.now())
       if (body.action === 'reject') {
         order.status = 'rejected'
+        order.staff_note = body.note || null
         order.history.push({ at: now, event: 'rejected', note: body.note ?? '' })
         return ok(order)
       }
